@@ -1,0 +1,40 @@
+---
+export interface Props {
+  eyebrow?: string;
+  title: string;
+  lead?: string;
+  as?: 'h2' | 'h3';
+  align?: 'start' | 'center';
+  id?: string;
+}
+
+const { eyebrow, title, lead, as = 'h2', align = 'start', id } = Astro.props;
+const Tag = as;
+---
+
+<header class:list={['sh', `sh--${align}`]} id={id} data-reveal>
+  {eyebrow && <span class="eyebrow">{eyebrow}</span>}
+  <Tag class="sh__title">{title}</Tag>
+  {lead && <p class="sh__lead text-muted">{lead}</p>}
+</header>
+
+<style>
+  .sh {
+    display: grid;
+    gap: 1rem;
+    margin-bottom: clamp(2rem, 5vw, 3.5rem);
+  }
+  .sh--center {
+    justify-items: center;
+    text-align: center;
+    margin-inline: auto;
+    max-width: 42rem;
+  }
+  .sh__title {
+    font-size: clamp(1.65rem, 4vw, 2.5rem);
+  }
+  .sh__lead {
+    font-size: clamp(1rem, 2.2vw, 1.15rem);
+    max-width: 48ch;
+  }
+</style>

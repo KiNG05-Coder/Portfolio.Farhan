@@ -1,0 +1,119 @@
+---
+/* Structural facts about the robot — not performance claims. */
+export interface Props {
+  stats: { value: string; label: string; suffix?: string }[];
+}
+const { stats } = Astro.props;
+---
+
+<dl class="stats" data-stats data-reveal>
+  {
+    stats.map((s) => (
+      <div class="stat">
+        <dt class="stat__value mono">
+          <span data-count data-value={s.value}>{s.value}</span>
+          {s.suffix && <span class="stat__suffix">{s.suffix}</span>}
+        </dt>
+        <dd class="stat__label mono">{s.label}</dd>
+      </div>
+    ))
+  }
+</dl>
+
+<style>
+  .stats {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1px;
+    background: var(--border);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    overflow: hidden;
+  }
+  @media (min-width: 720px) {
+    .stats {
+      grid-template-columns: repeat(4, 1fr);
+    }
+  }
+  .stat {
+    background: var(--surface);
+    padding: 1.4rem 1.25rem;
+    display: grid;
+    gap: 0.4rem;
+  }
+  .stat__value {
+    font-size: clamp(1.8rem, 5vw, 2.6rem);
+    font-weight: 600;
+    letter-spacing: -0.02em;
+    color: var(--text);
+    display: flex;
+    align-items: baseline;
+    gap: 0.15rem;
+  }
+  .stat__suffix {
+    font-size: 0.9rem;
+    color: var(--accent);
+  }
+  .stat__label {
+    font-size: 0.68rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--text-dim);
+  }
+</style>
+
+<script>
+  const run = () => {
+    const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    document.querySelectorAll<HTMLElement>('[data-stats]').forEach((strip) => {
+      if (strip.dataset.done === 'true' || strip.dataset.bound === 'true') return;
+      strip.dataset.bound = 'true';
+      const items = [...strip.querySelectorAll<HTMLElement>('[data-count]')].map(
+        (el) => ({ el, target: parseFloat(el.dataset.value || el.textContent || '0') })
+      );
+      // Final, correct values regardless of animation.
+      const settle = () => {
+        items.forEach(({ el, target }) => {
+          if (!Number.isNaN(target)) el.textContent = String(target);
+        });
+        strip.dataset.done = 'true';
+      };
+
+      if (reduce) return settle();
+
+      const animate = () => {
+        if (strip.dataset.done === 'true') return;
+        const start = performance.now();
+        const dur = 900;
+        const tick = (now: number) => {
+          const t = Math.min(1, (now - start) / dur);
+          const eased = 1 - Math.pow(1 - t, 3);
+          items.forEach(({ el, target }) => {
+            if (!Number.isNaN(target)) el.textContent = String(Math.round(target * eased));
+          });
+          if (t < 1) requestAnimationFrame(tick);
+          else settle();
+        };
+        requestAnimationFrame(tick);
+        // Safety net if RAF is throttled (e.g. background tab).
+        setTimeout(settle, dur + 400);
+      };
+
+      if (!('IntersectionObserver' in window)) return animate();
+      const io = new IntersectionObserver(
+        (entries) => {
+          entries.forEach((e) => {
+            if (e.isIntersecting) {
+              io.disconnect();
+              animate();
+            }
+          });
+        },
+        { threshold: 0.35 }
+      );
+      io.observe(strip);
+    });
+  };
+  run();
+  document.addEventListener('astro:page-load', run);
+</script>

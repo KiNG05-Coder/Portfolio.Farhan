@@ -1,0 +1,75 @@
+---
+export interface Props {
+  items: { slug: string; title: string; order: number }[];
+  current?: string;
+}
+const { items, current } = Astro.props;
+const sorted = [...items].sort((a, b) => a.order - b.order);
+---
+
+<nav class="docsnav" aria-label="Documentation">
+  <span class="docsnav__title mono">ARGUS-6 Documentation</span>
+  <ol>
+    <li>
+      <a href="/documentation" class:list={['docsnav__link', { 'is-current': !current }]}>
+        <span class="docsnav__num mono">00</span> Overview
+      </a>
+    </li>
+    {
+      sorted.map((item, i) => (
+        <li>
+          <a
+            href={`/documentation/${item.slug}`}
+            class:list={['docsnav__link', { 'is-current': current === item.slug }]}
+            aria-current={current === item.slug ? 'page' : undefined}
+          >
+            <span class="docsnav__num mono">{String(i + 1).padStart(2, '0')}</span>
+            {item.title}
+          </a>
+        </li>
+      ))
+    }
+  </ol>
+</nav>
+
+<style>
+  .docsnav {
+    display: grid;
+    gap: 0.75rem;
+  }
+  .docsnav__title {
+    font-size: 0.66rem;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--text-dim);
+  }
+  .docsnav ol {
+    display: grid;
+    gap: 0.15rem;
+  }
+  .docsnav__link {
+    display: flex;
+    align-items: baseline;
+    gap: 0.6rem;
+    padding: 0.5rem 0.65rem;
+    border-radius: 6px;
+    font-size: 0.88rem;
+    color: var(--text-muted);
+    border-left: 2px solid transparent;
+    transition: color 0.2s var(--ease), background 0.2s var(--ease),
+      border-color 0.2s var(--ease);
+  }
+  .docsnav__link:hover {
+    color: var(--text);
+    background: rgba(255, 255, 255, 0.03);
+  }
+  .docsnav__link.is-current {
+    color: var(--text);
+    background: var(--accent-soft);
+    border-left-color: var(--accent);
+  }
+  .docsnav__num {
+    font-size: 0.66rem;
+    color: var(--text-dim);
+  }
+</style>

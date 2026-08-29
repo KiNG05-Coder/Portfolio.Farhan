@@ -1,0 +1,320 @@
+---
+/* ============================================================
+   ARGUS-6 SYSTEM ARCHITECTURE — interactive diagram
+   Edit node descriptions in NODES below.
+   Behaviour: click / Enter on a node to show its description.
+   Fully responsive: two columns on desktop, stacked on mobile.
+   ============================================================ */
+
+const NODES: Record<
+  string,
+  { title: string; kind: 'root' | 'controller' | 'module'; desc: string }
+> = {
+  'argus-6': {
+    title: 'ARGUS-6',
+    kind: 'root',
+    desc: 'The complete robot. Responsibilities are split between a Linux computer for high-level work and a microcontroller for real-time motion.',
+  },
+  pi: {
+    title: 'Raspberry Pi',
+    kind: 'controller',
+    desc: 'High-level computer. Handles decisions, perception and autonomy. Runs Linux and ROS 2.',
+  },
+  mega: {
+    title: 'Arduino Mega',
+    kind: 'controller',
+    desc: 'Real-time controller. Handles motion and low-level control where precise timing matters.',
+  },
+  ros: {
+    title: 'ROS 2',
+    kind: 'module',
+    desc: 'Robotics middleware used for modular software, communication between components and integration.',
+  },
+  ai: {
+    title: 'AI',
+    kind: 'module',
+    desc: 'Planned lightweight perception (YOLO) for detecting people, trash and other configurable objects.',
+  },
+  nav: {
+    title: 'Navigation',
+    kind: 'module',
+    desc: 'Planned localization, waypoint navigation, exploration and obstacle-aware movement.',
+  },
+  ik: {
+    title: 'Inverse kinematics',
+    kind: 'module',
+    desc: 'Converts a desired foot position into the joint angles for each leg.',
+  },
+  gait: {
+    title: 'Gait',
+    kind: 'module',
+    desc: 'Coordinates the six legs to produce standing, walking and turning.',
+  },
+  safety: {
+    title: 'Safety',
+    kind: 'module',
+    desc: 'Low-level safety handling: command validation, watchdogs and safe stopping.',
+  },
+};
+
+const piModules = ['ros', 'ai', 'nav'];
+const megaModules = ['ik', 'gait', 'safety'];
+---
+
+<div class="arch" data-arch>
+  <div class="arch__diagram">
+    <!-- Root -->
+    <div class="arch__root">
+      <button class="node node--root" data-node="argus-6" aria-describedby="arch-detail">
+        <span class="node__title mono">ARGUS-6</span>
+      </button>
+    </div>
+
+    <span class="arch__spine" aria-hidden="true"></span>
+
+    <!-- Two controllers -->
+    <div class="arch__cols">
+      {
+        (
+          [
+            ['pi', 'High-level', piModules],
+            ['mega', 'Real-time', megaModules],
+          ] as const
+        ).map(([id, tag, mods]) => (
+          <div class="arch__col">
+            <button
+              class="node node--controller"
+              data-node={id}
+              aria-describedby="arch-detail"
+            >
+              <span class="node__title mono">{NODES[id].title}</span>
+              <span class="node__tag mono">{tag}</span>
+            </button>
+            <span class="arch__drop" aria-hidden="true"></span>
+            <div class="arch__modules">
+              {mods.map((m) => (
+                <button
+                  class="node node--module"
+                  data-node={m}
+                  aria-describedby="arch-detail"
+                >
+                  <span class="node__title mono">{NODES[m].title}</span>
+                </button>
+              ))}
+            </div>
+          </div>
+        ))
+      }
+    </div>
+
+    <div class="arch__serial mono" aria-hidden="true">
+      <span></span>SERIAL<span></span>
+    </div>
+    <p class="arch__serial-note">
+      The two controllers communicate over a custom serial protocol.
+    </p>
+  </div>
+
+  <div class="arch__detail panel" id="arch-detail" aria-live="polite" data-arch-detail>
+    <span class="arch__detail-hint mono">Select a block</span>
+    <div class="arch__detail-content" hidden>
+      <h3 class="arch__detail-title mono" data-detail-title></h3>
+      <p class="arch__detail-desc" data-detail-desc></p>
+    </div>
+  </div>
+
+  <script
+    is:inline
+    type="application/json"
+    data-arch-nodes
+    set:html={JSON.stringify(NODES)}
+  />
+</div>
+
+<script>
+  const initArch = () => {
+    document.querySelectorAll<HTMLElement>('[data-arch]').forEach((root) => {
+      const dataEl = root.querySelector<HTMLScriptElement>('[data-arch-nodes]');
+      const detail = root.querySelector<HTMLElement>('[data-arch-detail]');
+      if (!dataEl || !detail || root.dataset.ready === 'true') return;
+      root.dataset.ready = 'true';
+      const NODES = JSON.parse(dataEl.textContent || '{}') as Record<
+        string,
+        { title: string; desc: string }
+      >;
+      const hint = detail.querySelector<HTMLElement>('.arch__detail-hint')!;
+      const content = detail.querySelector<HTMLElement>('.arch__detail-content')!;
+      const titleEl = detail.querySelector<HTMLElement>('[data-detail-title]')!;
+      const descEl = detail.querySelector<HTMLElement>('[data-detail-desc]')!;
+      const nodes = root.querySelectorAll<HTMLButtonElement>('.node');
+
+      const select = (btn: HTMLButtonElement) => {
+        nodes.forEach((n) => n.classList.toggle('is-active', n === btn));
+        const data = NODES[btn.dataset.node || ''];
+        if (!data) return;
+        hint.hidden = true;
+        content.hidden = false;
+        titleEl.textContent = data.title;
+        descEl.textContent = data.desc;
+      };
+
+      nodes.forEach((btn) => btn.addEventListener('click', () => select(btn)));
+    });
+  };
+
+  initArch();
+  document.addEventListener('astro:page-load', initArch);
+</script>
+
+<style>
+  .arch {
+    display: grid;
+    gap: 1.5rem;
+  }
+  @media (min-width: 940px) {
+    .arch {
+      grid-template-columns: 1.4fr 1fr;
+      align-items: start;
+    }
+  }
+
+  .arch__diagram {
+    display: grid;
+    justify-items: center;
+    gap: 0;
+    padding: 1.5rem;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    background: var(--surface);
+    background-image: linear-gradient(var(--grid-line) 1px, transparent 1px),
+      linear-gradient(90deg, var(--grid-line) 1px, transparent 1px);
+    background-size: 40px 40px;
+  }
+
+  .node {
+    display: grid;
+    gap: 0.2rem;
+    padding: 0.7rem 1rem;
+    border: 1px solid var(--border-strong);
+    border-radius: var(--radius-sm);
+    background: var(--surface-raised);
+    color: var(--text);
+    text-align: center;
+    transition: border-color 0.2s var(--ease), background 0.2s var(--ease),
+      transform 0.2s var(--ease);
+  }
+  .node:hover {
+    border-color: var(--accent-line);
+    transform: translateY(-2px);
+  }
+  .node.is-active {
+    border-color: var(--accent);
+    background: var(--accent-soft);
+  }
+  .node__title {
+    font-size: 0.78rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+  .node__tag {
+    font-size: 0.6rem;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--text-dim);
+  }
+  .node--root {
+    padding-inline: 1.6rem;
+    border-color: var(--accent-line);
+  }
+  .node--root .node__title {
+    color: var(--accent);
+  }
+
+  .arch__spine {
+    width: 1px;
+    height: 2rem;
+    background: var(--border-strong);
+  }
+
+  .arch__cols {
+    display: grid;
+    gap: 1.5rem;
+    width: 100%;
+  }
+  @media (min-width: 560px) {
+    .arch__cols {
+      grid-template-columns: 1fr 1fr;
+      gap: 1rem;
+    }
+  }
+
+  .arch__col {
+    display: grid;
+    justify-items: center;
+    gap: 0;
+  }
+  .arch__drop {
+    width: 1px;
+    height: 1.5rem;
+    background: var(--border-strong);
+  }
+  .arch__modules {
+    display: grid;
+    gap: 0.6rem;
+    width: 100%;
+  }
+  .arch__modules .node {
+    width: 100%;
+  }
+
+  .arch__serial {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    margin-top: 1.75rem;
+    font-size: 0.68rem;
+    letter-spacing: 0.2em;
+    color: var(--text-dim);
+  }
+  .arch__serial span {
+    width: clamp(2rem, 12vw, 5rem);
+    height: 1px;
+    background: var(--border-strong);
+  }
+  .arch__serial-note {
+    margin-top: 0.5rem;
+    font-size: 0.8rem;
+    color: var(--text-dim);
+    text-align: center;
+  }
+
+  .arch__detail {
+    padding: 1.25rem;
+    min-height: 8rem;
+    position: sticky;
+    top: 6rem;
+  }
+  .arch__detail-hint {
+    font-size: 0.72rem;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--text-dim);
+  }
+  .arch__detail-title {
+    font-size: 0.9rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin-bottom: 0.5rem;
+  }
+  .arch__detail-desc {
+    font-size: 0.92rem;
+    color: var(--text-muted);
+  }
+
+  @media (max-width: 939px) {
+    .arch__detail {
+      position: static;
+    }
+  }
+</style>

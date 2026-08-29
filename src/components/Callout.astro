@@ -1,0 +1,49 @@
+---
+export interface Props {
+  /** "note" = neutral context; "caution" = a limit / honesty caveat. */
+  variant?: 'note' | 'caution';
+  title?: string;
+}
+const { variant = 'note', title } = Astro.props;
+---
+
+<aside class:list={['callout', `callout--${variant}`]} data-reveal>
+  <span class="callout__tag mono">{title ?? (variant === 'caution' ? 'Reality check' : 'Note')}</span>
+  <div class="callout__body">
+    <slot />
+  </div>
+</aside>
+
+<style>
+  .callout {
+    display: grid;
+    gap: 0.55rem;
+    padding: 1.15rem 1.25rem;
+    border: 1px solid var(--border);
+    border-left-width: 2px;
+    border-radius: var(--radius-sm);
+    background: var(--bg-elev);
+  }
+  .callout--caution {
+    border-left-color: var(--status-dev);
+  }
+  .callout--note {
+    border-left-color: var(--accent-line);
+  }
+  .callout__tag {
+    font-size: 0.66rem;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--text-dim);
+  }
+  .callout--caution .callout__tag {
+    color: var(--status-dev);
+  }
+  .callout__body {
+    font-size: 0.92rem;
+    color: var(--text-muted);
+  }
+  .callout__body :global(p + p) {
+    margin-top: 0.6em;
+  }
+</style>

@@ -1,0 +1,250 @@
+---
+import { getCollection, render } from 'astro:content';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import DocsNav from '../../components/DocsNav.astro';
+
+export async function getStaticPaths() {
+  const docs = await getCollection('docs');
+  const sorted = [...docs].sort((a, b) => a.data.order - b.data.order);
+  return sorted.map((entry, i) => ({
+    params: { slug: entry.id },
+    props: {
+      entry,
+      prev: sorted[i - 1] ?? null,
+      next: sorted[i + 1] ?? null,
+      all: sorted,
+    },
+  }));
+}
+
+const { entry, prev, next, all } = Astro.props;
+const { Content } = await render(entry);
+
+const navItems = all.map((d: (typeof all)[number]) => ({
+  slug: d.id,
+  title: d.data.title,
+  order: d.data.order,
+}));
+---
+
+<BaseLayout
+  title={`${entry.data.title} — ARGUS-6 Documentation | Farhan Saif`}
+  description={entry.data.summary}
+  path={`/documentation/${entry.id}`}
+>
+  <div class="section doc-page">
+    <div class="container docs-shell">
+      <aside class="docs-shell__nav">
+        <DocsNav items={navItems} current={entry.id} />
+        <a class="docs-shell__back mono" href="/argus-6">&larr; Back to ARGUS-6</a>
+      </aside>
+
+      <article class="docs-shell__main">
+        <header class="doc-head" data-reveal>
+          <span class="eyebrow">Documentation</span>
+          <h1>{entry.data.title}</h1>
+          <p class="doc-head__summary text-muted">{entry.data.summary}</p>
+        </header>
+
+        <div class="doc-prose" data-reveal>
+          <Content />
+        </div>
+
+        <nav class="doc-pager" aria-label="Documentation pages">
+          {
+            prev ? (
+              <a class="doc-pager__link" href={`/documentation/${prev.id}`}>
+                <span class="mono">&larr; Previous</span>
+                <span>{prev.data.title}</span>
+              </a>
+            ) : (
+              <span />
+            )
+          }
+          {
+            next && (
+              <a class="doc-pager__link doc-pager__link--next" href={`/documentation/${next.id}`}>
+                <span class="mono">Next &rarr;</span>
+                <span>{next.data.title}</span>
+              </a>
+            )
+          }
+        </nav>
+      </article>
+    </div>
+  </div>
+</BaseLayout>
+
+<style>
+  .docs-shell {
+    display: grid;
+    gap: 2.5rem;
+  }
+  @media (min-width: 940px) {
+    .docs-shell {
+      grid-template-columns: 250px 1fr;
+      gap: 3.5rem;
+      align-items: start;
+    }
+    .docs-shell__nav {
+      position: sticky;
+      top: 6rem;
+      display: grid;
+      gap: 1.5rem;
+    }
+  }
+  .docs-shell__back {
+    font-size: 0.75rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--text-dim);
+  }
+  .docs-shell__back:hover {
+    color: var(--accent);
+  }
+
+  .doc-head {
+    display: grid;
+    gap: 0.85rem;
+    padding-bottom: 1.75rem;
+    margin-bottom: 2rem;
+    border-bottom: 1px solid var(--border);
+  }
+  .doc-head h1 {
+    font-size: clamp(1.9rem, 5vw, 2.75rem);
+  }
+  .doc-head__summary {
+    font-size: 1.05rem;
+    max-width: 52ch;
+  }
+
+  .doc-pager {
+    display: flex;
+    justify-content: space-between;
+    gap: 1rem;
+    margin-top: 3.5rem;
+    padding-top: 1.75rem;
+    border-top: 1px solid var(--border);
+  }
+  .doc-pager__link {
+    display: grid;
+    gap: 0.3rem;
+    padding: 0.9rem 1.1rem;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    max-width: 48%;
+    transition: border-color 0.2s var(--ease);
+  }
+  .doc-pager__link:hover {
+    border-color: var(--accent-line);
+  }
+  .doc-pager__link--next {
+    text-align: right;
+  }
+  .doc-pager__link .mono {
+    font-size: 0.68rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--text-dim);
+  }
+  .doc-pager__link span:last-child {
+    font-size: 0.92rem;
+    color: var(--text);
+  }
+</style>
+
+<style is:global>
+  .doc-prose {
+    font-size: 1rem;
+    line-height: 1.75;
+    color: var(--text-muted);
+    max-width: 68ch;
+  }
+  .doc-prose > * + * {
+    margin-top: 1.15rem;
+  }
+  .doc-prose h2 {
+    font-size: 1.3rem;
+    color: var(--text);
+    margin-top: 2.5rem;
+    letter-spacing: -0.01em;
+  }
+  .doc-prose h3 {
+    font-size: 1.05rem;
+    color: var(--text);
+    margin-top: 2rem;
+  }
+  .doc-prose strong {
+    color: var(--text);
+    font-weight: 600;
+  }
+  .doc-prose a {
+    color: var(--accent);
+    text-decoration: underline;
+    text-underline-offset: 3px;
+  }
+  .doc-prose ul,
+  .doc-prose ol {
+    padding-left: 1.4rem;
+    display: grid;
+    gap: 0.5rem;
+  }
+  .doc-prose ul {
+    list-style: none;
+  }
+  .doc-prose ul li {
+    position: relative;
+  }
+  .doc-prose ul li::before {
+    content: '';
+    position: absolute;
+    left: -1.1rem;
+    top: 0.7em;
+    width: 5px;
+    height: 5px;
+    background: var(--accent-line);
+    border-radius: 1px;
+  }
+  .doc-prose ol {
+    list-style: decimal;
+  }
+  .doc-prose ol li::marker {
+    color: var(--text-dim);
+    font-family: var(--font-mono);
+    font-size: 0.85em;
+  }
+  .doc-prose code {
+    font-family: var(--font-mono);
+    font-size: 0.85em;
+    background: rgba(255, 255, 255, 0.05);
+    padding: 0.12rem 0.4rem;
+    border-radius: 4px;
+    color: var(--text);
+  }
+  .doc-prose table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.9rem;
+    display: block;
+    overflow-x: auto;
+  }
+  .doc-prose th,
+  .doc-prose td {
+    text-align: left;
+    padding: 0.6rem 0.9rem;
+    border: 1px solid var(--border);
+  }
+  .doc-prose th {
+    font-family: var(--font-mono);
+    font-size: 0.72rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--text-dim);
+    background: var(--bg-elev);
+  }
+  .doc-prose blockquote {
+    border-left: 2px solid var(--accent-line);
+    padding-left: 1rem;
+    color: var(--text-dim);
+  }
+</style>

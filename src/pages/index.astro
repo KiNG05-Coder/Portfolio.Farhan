@@ -1,0 +1,307 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import SectionHeading from '../components/SectionHeading.astro';
+import Placeholder from '../components/Placeholder.astro';
+import StatusBadge from '../components/StatusBadge.astro';
+import AchievementCard from '../components/AchievementCard.astro';
+import SkillGroup from '../components/SkillGroup.astro';
+import { site } from '../data/site';
+import { flagshipProject } from '../data/projects';
+import { achievements } from '../data/achievements';
+import { skillGroups } from '../data/skills';
+import { capabilities } from '../data/capabilities';
+
+const highlightCaps = capabilities.filter((c) => c.status === 'working').slice(0, 4);
+---
+
+<BaseLayout path="/">
+  {/* ---------------- HERO ---------------- */}
+  <section class="hero">
+    <span class="grid-bg" aria-hidden="true"></span>
+    <div class="container hero__inner">
+      <div class="hero__text">
+        <p class="eyebrow" data-reveal>Robotics · AI · Engineering</p>
+        <h1 class="hero__name" data-reveal>Farhan Saif</h1>
+        <p class="hero__title mono" data-reveal>{site.title}</p>
+        <p class="hero__intro" data-reveal>{site.intro}</p>
+        <div class="hero__cta" data-reveal>
+          <a class="btn btn--primary" href="/portfolio">
+            Explore my work <span class="arrow" aria-hidden="true">→</span>
+          </a>
+          <a class="btn" href="/argus-6">
+            Explore ARGUS-6 <span class="arrow" aria-hidden="true">→</span>
+          </a>
+        </div>
+      </div>
+
+      <div class="hero__visual" data-reveal>
+        <Placeholder
+          src="/assets/profile/farhan.jpg"
+          alt="Placeholder for a profile photo of Farhan Saif — add your own image, or leave as-is."
+          ratio="4 / 5"
+          label="PROFILE IMAGE — OPTIONAL, REPLACE IF DESIRED"
+          hint="public/assets/profile/farhan.jpg"
+          eager
+        />
+        <div class="hero__chip panel panel--glass mono">
+          <span class="hero__chip-dot" aria-hidden="true"></span>
+          Currently building: ARGUS-6
+        </div>
+      </div>
+    </div>
+  </section>
+
+  {/* ---------------- FEATURED PROJECT ---------------- */}
+  <section class="section featured">
+    <div class="container">
+      <SectionHeading
+        eyebrow="Featured Project"
+        title="ARGUS-6"
+        lead="A robot capable of assisting in human rescue and environmental conservation."
+      />
+
+      <div class="featured__grid">
+        <div class="featured__media" data-reveal>
+          <Placeholder
+            src="/assets/argus-6/argus-6-hero.jpg"
+            alt="Placeholder for a photo of the ARGUS-6 robot — replace with your own image."
+            ratio="16 / 10"
+            label="ARGUS-6 — REPLACE WITH YOUR IMAGE"
+            hint="public/assets/argus-6/argus-6-hero.jpg"
+          />
+        </div>
+
+        <div class="featured__body">
+          <p class="featured__desc" data-reveal>
+            ARGUS-6 is a six-legged robot built to help in situations that are
+            dangerous or difficult for people. It separates high-level autonomy
+            and perception from real-time motion control, and is being developed
+            and tested one capability at a time.
+          </p>
+
+          <div class="featured__status" data-reveal>
+            <span class="featured__status-label mono">Project status</span>
+            <StatusBadge status={flagshipProject.status} label={flagshipProject.statusLabel} />
+          </div>
+
+          <ul class="featured__caps" data-reveal>
+            {
+              highlightCaps.map((c) => (
+                <li>
+                  <span class="mono">{c.name}</span>
+                  <StatusBadge status={c.status} label={c.statusLabel} size="sm" />
+                </li>
+              ))
+            }
+          </ul>
+
+          <a class="btn btn--primary" href="/argus-6" data-reveal>
+            Open the ARGUS-6 project
+            <span class="arrow" aria-hidden="true">→</span>
+          </a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  {/* ---------------- ACHIEVEMENTS PREVIEW ---------------- */}
+  <section class="section achievements-preview">
+    <div class="container">
+      <SectionHeading
+        eyebrow="Achievements"
+        title="Recognised work"
+        lead="Awards earned for the EcoGuard environmental robotics project."
+      />
+      <div class="ap__grid">
+        {achievements.map((a) => <AchievementCard achievement={a} />)}
+      </div>
+      <a class="btn ap__more" href="/portfolio#achievements" data-reveal>
+        See all achievements <span class="arrow" aria-hidden="true">→</span>
+      </a>
+    </div>
+  </section>
+
+  {/* ---------------- SKILLS PREVIEW ---------------- */}
+  <section class="section skills-preview">
+    <div class="container">
+      <SectionHeading
+        eyebrow="Skills"
+        title="Tools and areas I work with"
+        lead="Languages, electronics and build skills used across projects — not certifications."
+      />
+      <div class="sp__grid">
+        {skillGroups.map((g, i) => <SkillGroup group={g} index={i} />)}
+      </div>
+      <a class="btn sp__more" href="/portfolio#skills" data-reveal>
+        More about the portfolio <span class="arrow" aria-hidden="true">→</span>
+      </a>
+    </div>
+  </section>
+
+  <script
+    is:inline
+    type="application/ld+json"
+    set:html={JSON.stringify({
+      '@context': 'https://schema.org',
+      '@type': 'Person',
+      name: site.name,
+      description: site.intro,
+      jobTitle: site.title,
+      url: site.url,
+      knowsAbout: ['Robotics', 'Artificial Intelligence', 'Electronics', 'Programming'],
+    })}
+  />
+</BaseLayout>
+
+<style>
+  .hero {
+    position: relative;
+    padding-block: clamp(4rem, 12vw, 8rem) clamp(4rem, 10vw, 7rem);
+    overflow: hidden;
+    border-bottom: 1px solid var(--border);
+  }
+  .hero__inner {
+    position: relative;
+    z-index: 1;
+    display: grid;
+    gap: clamp(2.5rem, 6vw, 4rem);
+    align-items: center;
+  }
+  @media (min-width: 900px) {
+    .hero__inner {
+      grid-template-columns: 1.25fr 0.85fr;
+    }
+  }
+
+  .hero__name {
+    font-size: clamp(2.8rem, 9vw, 5.5rem);
+    letter-spacing: -0.03em;
+    margin-top: 1rem;
+  }
+  .hero__title {
+    font-size: clamp(0.9rem, 2.4vw, 1.15rem);
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin-top: 0.75rem;
+  }
+  .hero__intro {
+    margin-top: 1.5rem;
+    font-size: clamp(1.05rem, 2.5vw, 1.3rem);
+    color: var(--text-muted);
+    max-width: 42ch;
+  }
+  .hero__cta {
+    margin-top: 2.25rem;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.9rem;
+  }
+
+  .hero__visual {
+    position: relative;
+  }
+  .hero__chip {
+    position: absolute;
+    left: 50%;
+    bottom: -1rem;
+    transform: translateX(-50%);
+    display: inline-flex;
+    align-items: center;
+    gap: 0.55rem;
+    padding: 0.55rem 1rem;
+    font-size: 0.7rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    white-space: nowrap;
+    color: var(--text-muted);
+  }
+  .hero__chip-dot {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: var(--status-dev);
+  }
+
+  /* Featured */
+  .featured {
+    border-bottom: 1px solid var(--border);
+  }
+  .featured__grid {
+    display: grid;
+    gap: 2rem;
+  }
+  @media (min-width: 900px) {
+    .featured__grid {
+      grid-template-columns: 1.1fr 0.9fr;
+      gap: 3rem;
+      align-items: center;
+    }
+  }
+  .featured__body {
+    display: grid;
+    gap: 1.4rem;
+    align-content: start;
+  }
+  .featured__desc {
+    font-size: 1.05rem;
+    color: var(--text-muted);
+  }
+  .featured__status {
+    display: flex;
+    align-items: center;
+    gap: 0.9rem;
+    flex-wrap: wrap;
+  }
+  .featured__status-label {
+    font-size: 0.68rem;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--text-dim);
+  }
+  .featured__caps {
+    display: grid;
+    gap: 0.6rem;
+    padding: 1.1rem 0;
+    border-block: 1px solid var(--border);
+  }
+  .featured__caps li {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem;
+  }
+  .featured__caps .mono {
+    font-size: 0.8rem;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--text);
+  }
+
+  .achievements-preview {
+    border-bottom: 1px solid var(--border);
+  }
+  .ap__grid {
+    display: grid;
+    gap: 1.5rem;
+  }
+  @media (min-width: 680px) {
+    .ap__grid {
+      grid-template-columns: 1fr 1fr;
+    }
+  }
+  .ap__more,
+  .sp__more {
+    margin-top: 2rem;
+  }
+
+  .sp__grid {
+    display: grid;
+    gap: 1.5rem;
+  }
+  @media (min-width: 760px) {
+    .sp__grid {
+      grid-template-columns: repeat(3, 1fr);
+    }
+  }
+</style>

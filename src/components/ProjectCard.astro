@@ -1,0 +1,195 @@
+---
+import Placeholder from './Placeholder.astro';
+import StatusBadge from './StatusBadge.astro';
+import type { Project } from '../data/projects';
+
+export interface Props {
+  project: Project;
+  featured?: boolean;
+}
+const { project, featured = false } = Astro.props;
+---
+
+<article class:list={['pc', { 'pc--featured': featured }]} data-reveal>
+  <div class="pc__media">
+    <Placeholder
+      src={project.image}
+      alt={project.imageAlt}
+      ratio={featured ? '16 / 10' : '16 / 9'}
+      label={`${project.name.toUpperCase()} — REPLACE WITH YOUR IMAGE`}
+      hint={`Drop a file at public${project.image}`}
+    />
+    {project.flagship && <span class="pc__flag mono">Flagship</span>}
+  </div>
+
+  <div class="pc__body">
+    <div class="pc__topline">
+      <h3 class="pc__name">{project.name}</h3>
+      <StatusBadge status={project.status} label={project.statusLabel} size="sm" />
+    </div>
+    <p class="pc__tagline mono">{project.tagline}</p>
+    <p class="pc__desc text-muted">{project.description}</p>
+
+    {
+      project.subProjects && (
+        <ul class="pc__subs">
+          {project.subProjects.map((s) => (
+            <li>
+              <span class="mono">{s.name}</span>
+              <span class="text-muted"> — {s.note}</span>
+            </li>
+          ))}
+        </ul>
+      )
+    }
+
+    {
+      project.achievements.length > 0 && (
+        <ul class="pc__ach">
+          {project.achievements.map((a) => (
+            <li class="mono">{a}</li>
+          ))}
+        </ul>
+      )
+    }
+
+    {
+      project.technologies.length > 0 && (
+        <ul class="pc__tech">
+          {project.technologies.map((t) => (
+            <li class="mono">{t}</li>
+          ))}
+        </ul>
+      )
+    }
+
+    {
+      project.href && (
+        <a class="btn pc__cta" href={project.href}>
+          Open {project.name}
+          <span class="arrow" aria-hidden="true">→</span>
+        </a>
+      )
+    }
+  </div>
+</article>
+
+<style>
+  .pc {
+    display: grid;
+    gap: 1.5rem;
+    padding: 1.25rem;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    background: var(--surface);
+    transition: border-color 0.25s var(--ease);
+  }
+  .pc:hover {
+    border-color: var(--border-strong);
+  }
+  .pc--featured {
+    padding: clamp(1.25rem, 3vw, 2rem);
+  }
+  @media (min-width: 780px) {
+    .pc--featured {
+      grid-template-columns: 1.1fr 1fr;
+      gap: 2.5rem;
+      align-items: center;
+    }
+  }
+
+  .pc__media {
+    position: relative;
+  }
+  .pc__flag {
+    position: absolute;
+    top: 0.75rem;
+    left: 0.75rem;
+    z-index: 2;
+    font-size: 0.6rem;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--accent);
+    background: color-mix(in srgb, var(--bg) 78%, transparent);
+    border: 1px solid var(--accent-line);
+    padding: 0.28rem 0.6rem;
+    border-radius: 999px;
+    backdrop-filter: blur(4px);
+  }
+
+  .pc__body {
+    display: grid;
+    gap: 0.85rem;
+    align-content: start;
+  }
+  .pc__topline {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+  }
+  .pc__name {
+    font-size: clamp(1.3rem, 3vw, 1.75rem);
+  }
+  .pc__tagline {
+    font-size: 0.75rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--accent);
+  }
+  .pc__desc {
+    font-size: 0.95rem;
+  }
+
+  .pc__subs {
+    display: grid;
+    gap: 0.35rem;
+    padding: 0.75rem 0;
+    border-top: 1px solid var(--border);
+    font-size: 0.85rem;
+  }
+  .pc__subs .mono {
+    font-size: 0.78rem;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+  }
+
+  .pc__ach {
+    display: grid;
+    gap: 0.4rem;
+  }
+  .pc__ach li {
+    font-size: 0.76rem;
+    letter-spacing: 0.05em;
+    color: var(--text);
+    padding-left: 1.1rem;
+    position: relative;
+  }
+  .pc__ach li::before {
+    content: '◆';
+    position: absolute;
+    left: 0;
+    color: var(--status-dev);
+    font-size: 0.7rem;
+  }
+
+  .pc__tech {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem;
+  }
+  .pc__tech li {
+    font-size: 0.68rem;
+    letter-spacing: 0.05em;
+    padding: 0.3rem 0.55rem;
+    border: 1px solid var(--border);
+    border-radius: 5px;
+    color: var(--text-dim);
+  }
+
+  .pc__cta {
+    margin-top: 0.4rem;
+    justify-self: start;
+  }
+</style>

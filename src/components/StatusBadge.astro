@@ -1,0 +1,81 @@
+---
+import type { Status } from '../data/status';
+import { statusMeta } from '../data/status';
+
+export interface Props {
+  status: Status;
+  /** Optional override text (e.g. an ambiguous / custom label). */
+  label?: string;
+  size?: 'sm' | 'md';
+}
+
+const { status, label, size = 'md' } = Astro.props;
+const text = label ?? statusMeta[status].label;
+const tone =
+  status === 'working' || status === 'tested'
+    ? 'ok'
+    : status === 'in-development'
+      ? 'dev'
+      : 'planned';
+---
+
+<span
+  class:list={['badge', `badge--${tone}`, `badge--${size}`]}
+  title={statusMeta[status].description}
+>
+  <span class="badge__dot" aria-hidden="true"></span>
+  <span class="badge__text mono">{text}</span>
+</span>
+
+<style>
+  .badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.3rem 0.7rem;
+    border-radius: 999px;
+    border: 1px solid var(--border-strong);
+    white-space: nowrap;
+  }
+  .badge--sm {
+    padding: 0.2rem 0.55rem;
+  }
+  .badge__text {
+    font-size: 0.68rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--text-muted);
+  }
+  .badge--sm .badge__text {
+    font-size: 0.62rem;
+  }
+  .badge__dot {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    flex: none;
+  }
+  .badge--ok {
+    background: var(--status-working-bg);
+    border-color: color-mix(in srgb, var(--status-working) 40%, transparent);
+  }
+  .badge--ok .badge__dot {
+    background: var(--status-working);
+    box-shadow: 0 0 0 3px var(--status-working-bg);
+  }
+  .badge--dev {
+    background: var(--status-dev-bg);
+    border-color: color-mix(in srgb, var(--status-dev) 40%, transparent);
+  }
+  .badge--dev .badge__dot {
+    background: var(--status-dev);
+    box-shadow: 0 0 0 3px var(--status-dev-bg);
+  }
+  .badge--planned {
+    background: var(--status-planned-bg);
+    border-color: var(--border-strong);
+  }
+  .badge--planned .badge__dot {
+    background: var(--status-planned);
+  }
+</style>

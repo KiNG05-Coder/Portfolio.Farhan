@@ -1,0 +1,63 @@
+---
+import Placeholder from './Placeholder.astro';
+import type { Achievement } from '../data/achievements';
+
+export interface Props {
+  achievement: Achievement;
+}
+const { achievement } = Astro.props;
+const { competition, award, year, project, image, imageAlt } = achievement;
+---
+
+<article class="ac panel" data-reveal>
+  <div class="ac__media">
+    <Placeholder
+      src={image}
+      alt={imageAlt}
+      ratio="4 / 3"
+      label="CERTIFICATE IMAGE — REPLACE WITH YOUR ORIGINAL"
+      hint={`Drop a scan/photo at public${image}`}
+    />
+  </div>
+  <div class="ac__body">
+    <span class="ac__year mono">{year}</span>
+    <h3 class="ac__comp">{competition}</h3>
+    <p class="ac__award mono">{award}</p>
+    <p class="ac__project text-muted">Project: {project}</p>
+  </div>
+</article>
+
+<style>
+  .ac {
+    display: grid;
+    overflow: hidden;
+  }
+  .ac__media :global(.asset) {
+    border: 0;
+    border-bottom: 1px solid var(--border);
+    border-radius: 0;
+  }
+  .ac__body {
+    padding: 1.3rem;
+    display: grid;
+    gap: 0.35rem;
+  }
+  .ac__year {
+    font-size: 0.7rem;
+    letter-spacing: 0.16em;
+    color: var(--text-dim);
+  }
+  .ac__comp {
+    font-size: 1.15rem;
+  }
+  .ac__award {
+    font-size: 0.8rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--status-dev);
+  }
+  .ac__project {
+    font-size: 0.85rem;
+    margin-top: 0.2rem;
+  }
+</style>

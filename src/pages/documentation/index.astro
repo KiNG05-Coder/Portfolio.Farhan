@@ -1,0 +1,104 @@
+---
+import { getCollection } from 'astro:content';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import PageHeader from '../../components/PageHeader.astro';
+import DocsNav from '../../components/DocsNav.astro';
+
+const docs = await getCollection('docs');
+const items = docs
+  .map((d) => ({ slug: d.id, title: d.data.title, order: d.data.order, summary: d.data.summary }))
+  .sort((a, b) => a.order - b.order);
+---
+
+<BaseLayout
+  title="ARGUS-6 Documentation — Farhan Saif"
+  description="Technical documentation for ARGUS-6: architecture, software, firmware, communication, locomotion, navigation, AI & perception, manipulation, safety and testing."
+  path="/documentation"
+>
+  <PageHeader
+    eyebrow="Documentation"
+    title="ARGUS-6 Documentation"
+    lead="Technical reference for the ARGUS-6 project. Each section can be expanded as the robot develops."
+  />
+
+  <div class="section">
+    <div class="container docs-shell">
+      <aside class="docs-shell__nav">
+        <DocsNav items={items} />
+      </aside>
+
+      <div class="docs-shell__main">
+        <ol class="doc-index">
+          {
+            items.map((item, i) => (
+              <li data-reveal style={`--reveal-delay:${i * 50}ms`}>
+                <a href={`/documentation/${item.slug}`} class="doc-index__card panel">
+                  <span class="doc-index__num mono">{String(i + 1).padStart(2, '0')}</span>
+                  <span class="doc-index__body">
+                    <span class="doc-index__title">{item.title}</span>
+                    <span class="doc-index__summary text-muted">{item.summary}</span>
+                  </span>
+                  <span class="doc-index__arrow" aria-hidden="true">→</span>
+                </a>
+              </li>
+            ))
+          }
+        </ol>
+      </div>
+    </div>
+  </div>
+</BaseLayout>
+
+<style>
+  .docs-shell {
+    display: grid;
+    gap: 2.5rem;
+  }
+  @media (min-width: 940px) {
+    .docs-shell {
+      grid-template-columns: 250px 1fr;
+      gap: 3.5rem;
+      align-items: start;
+    }
+    .docs-shell__nav {
+      position: sticky;
+      top: 6rem;
+    }
+  }
+
+  .doc-index {
+    display: grid;
+    gap: 0.85rem;
+  }
+  .doc-index__card {
+    display: flex;
+    align-items: center;
+    gap: 1.1rem;
+    padding: 1.15rem 1.35rem;
+    transition: border-color 0.2s var(--ease), transform 0.2s var(--ease);
+  }
+  .doc-index__card:hover {
+    border-color: var(--accent-line);
+    transform: translateX(3px);
+  }
+  .doc-index__num {
+    font-size: 0.75rem;
+    color: var(--accent);
+    flex: none;
+  }
+  .doc-index__body {
+    display: grid;
+    gap: 0.25rem;
+  }
+  .doc-index__title {
+    font-weight: 600;
+  }
+  .doc-index__summary {
+    font-size: 0.88rem;
+  }
+  .doc-index__arrow {
+    margin-left: auto;
+    color: var(--text-dim);
+    flex: none;
+  }
+</style>

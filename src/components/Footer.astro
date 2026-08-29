@@ -1,0 +1,78 @@
+---
+import { nav, site } from '../data/site';
+const year = new Date().getFullYear();
+---
+
+<footer class="footer">
+  <div class="container footer__inner">
+    <div class="footer__brand">
+      <span class="mono footer__name">{site.name}</span>
+      <span class="footer__title">{site.title}</span>
+    </div>
+
+    <nav aria-label="Footer">
+      <ul class="footer__links">
+        {nav.map((i) => <li><a href={i.href}>{i.label}</a></li>)}
+      </ul>
+    </nav>
+
+    <p class="footer__meta mono">
+      &copy; {year} {site.name}. Built as a personal portfolio.
+    </p>
+  </div>
+
+  <style>
+    .footer {
+      border-top: 1px solid var(--border);
+      background: var(--bg-elev);
+      padding-block: 3rem 2.5rem;
+    }
+    .footer__inner {
+      display: grid;
+      gap: 1.75rem;
+    }
+    .footer__brand {
+      display: grid;
+      gap: 0.3rem;
+    }
+    .footer__name {
+      font-size: 0.95rem;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+    .footer__title {
+      color: var(--text-dim);
+      font-size: 0.9rem;
+    }
+    .footer__links {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.35rem 1.4rem;
+    }
+    .footer__links a {
+      font-family: var(--font-mono);
+      font-size: 0.76rem;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--text-muted);
+      transition: color 0.2s var(--ease);
+    }
+    .footer__links a:hover {
+      color: var(--text);
+    }
+    .footer__meta {
+      color: var(--text-dim);
+      font-size: 0.75rem;
+    }
+
+    @media (min-width: 720px) {
+      .footer__inner {
+        grid-template-columns: 1fr auto;
+        align-items: start;
+      }
+      .footer__meta {
+        grid-column: 1 / -1;
+      }
+    }
+  </style>
+</footer>

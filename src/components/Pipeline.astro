@@ -1,0 +1,175 @@
+---
+import StatusBadge from './StatusBadge.astro';
+import type { Status } from '../data/status';
+
+export type PipelineStep =
+  | string
+  | {
+      label: string;
+      note?: string;
+      status?: Status;
+      statusLabel?: string;
+      /** Marks an alternate / branch outcome, e.g. "abort". */
+      branch?: boolean;
+    };
+
+export interface Props {
+  steps: PipelineStep[];
+  /** Accessible label for the ordered list. */
+  label: string;
+  /** "flow" = process arrows; "stack" = layered (top → bottom authority). */
+  variant?: 'flow' | 'stack';
+  compact?: boolean;
+}
+
+const { steps, label, variant = 'flow', compact = false } = Astro.props;
+
+const norm = steps.map((s) =>
+  typeof s === 'string' ? { label: s } : s
+) as Exclude<PipelineStep, string>[];
+---
+
+<ol
+  class:list={['pipe', `pipe--${variant}`, { 'pipe--compact': compact }]}
+  aria-label={label}
+  data-reveal
+>
+  {
+    norm.map((step, i) => (
+      <li
+        class:list={['pipe__step', { 'pipe__step--branch': step.branch }]}
+        style={`--i:${i}`}
+      >
+        <div class="pipe__node">
+          <span class="pipe__index mono">{String(i + 1).padStart(2, '0')}</span>
+          <div class="pipe__body">
+            <span class="pipe__label mono">{step.label}</span>
+            {step.status && (
+              <StatusBadge
+                status={step.status}
+                label={step.statusLabel}
+                size="sm"
+              />
+            )}
+            {step.note && <span class="pipe__note">{step.note}</span>}
+          </div>
+        </div>
+        {i < norm.length - 1 && (
+          <span class="pipe__connector" aria-hidden="true">
+            <span class="pipe__arrow">{variant === 'stack' ? '↓' : '→'}</span>
+          </span>
+        )}
+      </li>
+    ))
+  }
+</ol>
+
+<style>
+  .pipe {
+    display: grid;
+    gap: 0;
+    counter-reset: step;
+    max-width: 620px;
+  }
+  .pipe--flow,
+  .pipe--stack {
+    margin-inline: auto;
+  }
+
+  .pipe__step {
+    position: relative;
+    opacity: 0;
+    transform: translateY(10px);
+    transition: opacity 0.5s var(--ease), transform 0.5s var(--ease);
+    transition-delay: calc(var(--i) * 60ms);
+  }
+  [data-reveal].is-visible .pipe__step,
+  .is-visible .pipe__step {
+    opacity: 1;
+    transform: none;
+  }
+
+  .pipe__node {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: 0.9rem;
+    align-items: start;
+    padding: 0.9rem 1rem;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    transition: border-color 0.25s var(--ease), background 0.25s var(--ease),
+      transform 0.25s var(--ease);
+  }
+  .pipe__node:hover {
+    border-color: var(--accent-line);
+    transform: translateX(2px);
+  }
+
+  .pipe--compact .pipe__node {
+    padding: 0.65rem 0.85rem;
+  }
+
+  .pipe__index {
+    font-size: 0.7rem;
+    color: var(--accent);
+    padding-top: 0.15rem;
+  }
+
+  .pipe__body {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.5rem 0.75rem;
+  }
+
+  .pipe__label {
+    font-size: 0.82rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--text);
+  }
+
+  .pipe__note {
+    flex-basis: 100%;
+    font-size: 0.85rem;
+    color: var(--text-muted);
+    letter-spacing: 0;
+    text-transform: none;
+  }
+
+  .pipe__connector {
+    display: grid;
+    place-items: center;
+    height: 1.5rem;
+    position: relative;
+  }
+  .pipe__connector::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    width: 1px;
+    margin-inline: auto;
+    background: var(--border-strong);
+  }
+  .pipe__arrow {
+    position: relative;
+    font-size: 0.8rem;
+    color: var(--text-dim);
+    background: var(--bg);
+    padding: 0.1rem;
+    line-height: 1;
+  }
+
+  .pipe__step--branch .pipe__node {
+    border-style: dashed;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .pipe__step {
+      opacity: 1;
+      transform: none;
+      transition: none;
+    }
+  }
+</style>

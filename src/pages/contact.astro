@@ -1,0 +1,76 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import PageHeader from '../components/PageHeader.astro';
+import { site } from '../data/site';
+---
+
+<BaseLayout
+  title="Contact — Farhan Saif"
+  description="Get in touch with Farhan Saif by email."
+  path="/contact"
+>
+  <PageHeader
+    eyebrow="Contact"
+    title="Get in touch"
+    lead="The best way to reach me is by email."
+  />
+
+  <section class="section">
+    <div class="container">
+      <div class="contact panel" data-reveal>
+        <span class="contact__label mono">Email</span>
+        {
+          site.emailIsPlaceholder ? (
+            <>
+              <p class="contact__value mono">{site.email}</p>
+              <p class="contact__hint text-muted">
+                Placeholder address. Replace <code>email</code> in{' '}
+                <code>src/data/site.ts</code> with the real one, then set{' '}
+                <code>emailIsPlaceholder</code> to <code>false</code>.
+              </p>
+            </>
+          ) : (
+            <a class="contact__value contact__value--link mono" href={`mailto:${site.email}`}>
+              {site.email}
+            </a>
+          )
+        }
+      </div>
+    </div>
+  </section>
+</BaseLayout>
+
+<style>
+  .contact {
+    padding: clamp(1.75rem, 5vw, 3rem);
+    display: grid;
+    gap: 0.75rem;
+    max-width: 40rem;
+  }
+  .contact__label {
+    font-size: 0.68rem;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--text-dim);
+  }
+  .contact__value {
+    font-size: clamp(1.1rem, 3.5vw, 1.6rem);
+    color: var(--text);
+    word-break: break-all;
+  }
+  .contact__value--link {
+    color: var(--accent);
+    justify-self: start;
+  }
+  .contact__hint {
+    font-size: 0.85rem;
+    margin-top: 0.5rem;
+  }
+  .contact__hint code {
+    font-family: var(--font-mono);
+    font-size: 0.8em;
+    background: rgba(255, 255, 255, 0.05);
+    padding: 0.1rem 0.35rem;
+    border-radius: 4px;
+  }
+</style>

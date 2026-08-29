@@ -1,0 +1,742 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import SectionHeading from '../components/SectionHeading.astro';
+import Placeholder from '../components/Placeholder.astro';
+import Pipeline from '../components/Pipeline.astro';
+import StatStrip from '../components/StatStrip.astro';
+import StatusBadge from '../components/StatusBadge.astro';
+import Callout from '../components/Callout.astro';
+import { ecoguard } from '../data/ecoguard';
+import { achievements } from '../data/achievements';
+
+const eg = ecoguard;
+
+const sections = [
+  ['problem', 'The Problem'],
+  ['workflow', 'How It Works'],
+  ['riverix', 'Riverix'],
+  ['sky-cleanse', 'Sky-Cleanse'],
+  ['sdg', 'SDG Goals'],
+  ['technology', 'Technology'],
+  ['scale', 'Project Scale'],
+  ['team', 'Team'],
+];
+---
+
+<BaseLayout
+  title={eg.metaTitle}
+  description={eg.metaDescription}
+  path="/ecoguard"
+>
+  {/* ---------------- HERO ---------------- */}
+  <section class="eg-hero">
+    <span class="grid-bg" aria-hidden="true"></span>
+    <div class="container eg-hero__inner">
+      <div class="eg-hero__text">
+        <p class="eyebrow" data-reveal>Environmental Robotics Project</p>
+        <h1 class="eg-hero__title" data-reveal>{eg.hero.title}</h1>
+        <p class="eg-hero__sub mono" data-reveal>{eg.hero.subtitle}</p>
+        <p class="eg-hero__lede" data-reveal>{eg.hero.lede}</p>
+
+        <ul class="eg-hero__features" data-reveal>
+          {eg.hero.keyFeatures.map((f) => <li class="mono">{f}</li>)}
+        </ul>
+
+        <div class="eg-hero__meta" data-reveal>
+          <StatusBadge status="tested" label="Completed" />
+          <span class="mono eg-hero__by">
+            By Farhan Saif &amp; Shreyan Chakraborty
+          </span>
+        </div>
+      </div>
+
+      <div class="eg-hero__visual" data-reveal>
+        <Placeholder
+          src="/assets/ecoguard/ecoguard-hero.jpg"
+          alt="Placeholder for a hero photo of the EcoGuard platforms (Riverix and Sky-Cleanse) — replace with your own media."
+          ratio="4 / 3"
+          label="ECOGUARD HERO IMAGE / VIDEO — REPLACE WITH YOUR MEDIA"
+          hint="public/assets/ecoguard/ecoguard-hero.jpg"
+          eager
+        />
+      </div>
+    </div>
+  </section>
+
+  {/* ---------------- IN-PAGE NAV ---------------- */}
+  <nav class="eg-toc" aria-label="On this page">
+    <div class="container">
+      <span class="eg-toc__label mono">On this page</span>
+      <ul class="scroll-x">
+        {sections.map(([id, label]) => <li><a href={`#${id}`} class="mono">{label}</a></li>)}
+      </ul>
+    </div>
+  </nav>
+
+  {/* ---------------- THE PROBLEM ---------------- */}
+  <section class="section" id="problem">
+    <div class="container">
+      <SectionHeading
+        eyebrow="The Problem"
+        title={eg.problem.subheading}
+        lead={eg.problem.body}
+      />
+      <div class="grid-cards grid-cards--4">
+        {
+          eg.problem.categories.map((c, i) => (
+            <article class="mini-card panel" data-reveal style={`--reveal-delay:${i * 60}ms`}>
+              <span class="mini-card__num mono">{String(i + 1).padStart(2, '0')}</span>
+              <h3 class="mini-card__title mono">{c.name}</h3>
+              <p class="mini-card__text text-muted">{c.text}</p>
+            </article>
+          ))
+        }
+      </div>
+    </div>
+  </section>
+
+  {/* ---------------- HOW IT WORKS ---------------- */}
+  <section class="section band" id="workflow">
+    <div class="container">
+      <SectionHeading
+        eyebrow="How It Works"
+        title="How each platform works"
+        lead={eg.workflow.intro}
+      />
+      <div class="workflow">
+        <div class="workflow__col" data-reveal>
+          <h3 class="workflow__name mono">Riverix — water surface robot</h3>
+          <Pipeline label="Riverix operational sequence" variant="stack" steps={[...eg.workflow.riverix]} />
+        </div>
+        <div class="workflow__col" data-reveal>
+          <h3 class="workflow__name mono">Sky-Cleanse — environmental drone</h3>
+          <Pipeline label="Sky-Cleanse operational sequence" variant="stack" steps={[...eg.workflow.skyCleanse]} />
+        </div>
+      </div>
+    </div>
+  </section>
+
+  {/* ---------------- RIVERIX ---------------- */}
+  <section class="section" id="riverix">
+    <div class="container">
+      <SectionHeading
+        eyebrow="Project 01 — Riverix"
+        title={eg.riverix.subtitle}
+        lead={eg.riverix.description}
+      />
+
+      <div class="two-col">
+        <div class="stack" data-reveal>
+          <Placeholder
+            src="/assets/ecoguard/riverix.jpg"
+            alt="Placeholder for a photo of the Riverix water surface robot — replace with your own image."
+            ratio="4 / 3"
+            label="RIVERIX IMAGE — REPLACE WITH YOUR IMAGE"
+            hint="public/assets/ecoguard/riverix.jpg"
+          />
+          <div class="spec">
+            <span class="spec__label mono">Operating modes</span>
+            <ul class="chips">
+              {eg.riverix.modes.map((m) => <li class="mono">{m}</li>)}
+            </ul>
+          </div>
+          <div class="spec">
+            <span class="spec__label mono">Pricing</span>
+            <dl class="pricing">
+              <div><dt class="mono">Selling price</dt><dd>{eg.riverix.pricing.selling}</dd></div>
+              <div><dt class="mono">Production cost</dt><dd>{eg.riverix.pricing.cost}</dd></div>
+            </dl>
+          </div>
+        </div>
+
+        <div class="stack" data-reveal>
+          <div class="spec">
+            <span class="spec__label mono">Water quality sensors</span>
+            <ul class="sensor-list">
+              {
+                eg.riverix.sensors.map((s) => (
+                  <li>
+                    <span class="mono sensor-list__name">{s.name}</span>
+                    <span class="text-muted">{s.text}</span>
+                  </li>
+                ))
+              }
+            </ul>
+          </div>
+          <div class="spec">
+            <span class="spec__label mono">Advanced features</span>
+            <ul class="feature-list">
+              {eg.riverix.features.map((f) => <li>{f}</li>)}
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  {/* ---------------- SKY-CLEANSE ---------------- */}
+  <section class="section band" id="sky-cleanse">
+    <div class="container">
+      <SectionHeading
+        eyebrow="Project 02 — Sky-Cleanse"
+        title={eg.skyCleanse.subtitle}
+        lead={eg.skyCleanse.description}
+      />
+
+      <div class="two-col">
+        <div class="stack" data-reveal>
+          <Placeholder
+            src="/assets/ecoguard/sky-cleanse.jpg"
+            alt="Placeholder for a photo of the Sky-Cleanse environmental drone — replace with your own image."
+            ratio="4 / 3"
+            label="SKY-CLEANSE IMAGE — REPLACE WITH YOUR IMAGE"
+            hint="public/assets/ecoguard/sky-cleanse.jpg"
+          />
+          <div class="spec">
+            <span class="spec__label mono">Capabilities</span>
+            <ul class="chips">
+              {eg.skyCleanse.capabilities.map((c) => <li class="mono">{c}</li>)}
+            </ul>
+          </div>
+          <div class="spec">
+            <span class="spec__label mono">Purification & fertilisation</span>
+            <ul class="feature-list">
+              {eg.skyCleanse.purification.map((p) => <li>{p}</li>)}
+            </ul>
+          </div>
+        </div>
+
+        <div class="stack" data-reveal>
+          <div class="spec">
+            <span class="spec__label mono">Atmospheric sensors</span>
+            <ul class="sensor-list">
+              {
+                eg.skyCleanse.sensors.map((s) => (
+                  <li>
+                    <span class="mono sensor-list__name">{s.name}</span>
+                    <span class="text-muted">{s.text}</span>
+                  </li>
+                ))
+              }
+            </ul>
+          </div>
+          <Callout title="MOXI filter">
+            <p>
+              The 3D-printed housing is screwable, so the filter can be replaced
+              in the field in seconds without specialist tools.
+            </p>
+          </Callout>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  {/* ---------------- SDG GOALS ---------------- */}
+  <section class="section" id="sdg">
+    <div class="container">
+      <SectionHeading
+        eyebrow="SDG Goals"
+        title="Aligned with global climate action"
+        lead="Both platforms were engineered with the UN Sustainable Development Goals at the core of every design decision. The work directly advances five of them."
+      />
+      <div class="grid-cards grid-cards--3">
+        {
+          eg.sdgs.map((g, i) => (
+            <article class="sdg-card panel" data-reveal style={`--reveal-delay:${i * 50}ms`}>
+              <span class="sdg-card__code mono">{g.code}</span>
+              <h3 class="sdg-card__name">{g.name}</h3>
+              <p class="sdg-card__text text-muted">{g.text}</p>
+              <span class="sdg-card__platform mono">{g.platform}</span>
+            </article>
+          ))
+        }
+      </div>
+    </div>
+  </section>
+
+  {/* ---------------- TECHNOLOGY ---------------- */}
+  <section class="section band" id="technology">
+    <div class="container">
+      <SectionHeading
+        eyebrow="Technology"
+        title="Engineering behind the mission"
+        lead="Complementary technologies that together form a complete environmental intelligence and remediation system."
+      />
+      <div class="grid-cards grid-cards--3">
+        {
+          eg.technology.map((t, i) => (
+            <article class="tech-card panel" data-reveal style={`--reveal-delay:${i * 50}ms`}>
+              <span class="tech-card__num mono">{String(i + 1).padStart(2, '0')}</span>
+              <h3 class="tech-card__name mono">{t.name}</h3>
+              <p class="tech-card__text text-muted">{t.text}</p>
+            </article>
+          ))
+        }
+      </div>
+    </div>
+  </section>
+
+  {/* ---------------- PROJECT SCALE ---------------- */}
+  <section class="section" id="scale">
+    <div class="container">
+      <SectionHeading
+        eyebrow="Project Scale"
+        title="The numbers behind the mission"
+        lead="EcoGuard combines two platforms and nine environmental sensors across air and water."
+      />
+      <StatStrip stats={[...eg.stats]} />
+      <p class="scale__note mono" data-reveal>
+        Deployment forecasts are not published here — no field-deployment figures
+        have been recorded yet.
+      </p>
+    </div>
+  </section>
+
+  {/* ---------------- TEAM ---------------- */}
+  <section class="section band" id="team">
+    <div class="container">
+      <SectionHeading
+        eyebrow="Team"
+        title="Built by two engineers"
+        lead={eg.team.intro}
+      />
+      <div class="team">
+        {
+          eg.team.members.map((m) => (
+            <article class="team-card panel" data-reveal>
+              <span class="team-card__name">{m.name}</span>
+              <span class="team-card__role mono text-muted">{m.role}</span>
+            </article>
+          ))
+        }
+      </div>
+      <p class="team__ack text-muted" data-reveal>{eg.team.acknowledgements}</p>
+    </div>
+  </section>
+
+  {/* ---------------- ACHIEVEMENTS / LINKS ---------------- */}
+  <section class="section">
+    <div class="container">
+      <div class="eg-close panel" data-reveal>
+        <div>
+          <h2 class="mono">Recognised work</h2>
+          <ul class="eg-close__awards">
+            {
+              achievements.map((a) => (
+                <li class="mono">
+                  {a.competition} {a.year} — {a.award}
+                </li>
+              ))
+            }
+          </ul>
+          <p class="text-muted">Both Gold Medals were awarded for EcoGuard.</p>
+        </div>
+        <div class="eg-close__actions">
+          <a class="btn" href="/portfolio#achievements">
+            See achievements <span class="arrow" aria-hidden="true">→</span>
+          </a>
+          <a class="btn" href={eg.links.github} target="_blank" rel="noopener noreferrer">
+            Source code <span class="arrow" aria-hidden="true">↗</span>
+          </a>
+        </div>
+      </div>
+    </div>
+  </section>
+</BaseLayout>
+
+<style>
+  /* Hero */
+  .eg-hero {
+    position: relative;
+    padding-block: clamp(4.5rem, 12vw, 8rem) clamp(3rem, 7vw, 5rem);
+    overflow: hidden;
+    border-bottom: 1px solid var(--border);
+  }
+  .eg-hero__inner {
+    position: relative;
+    z-index: 1;
+    display: grid;
+    gap: clamp(2.5rem, 6vw, 4rem);
+    align-items: center;
+  }
+  @media (min-width: 900px) {
+    .eg-hero__inner {
+      grid-template-columns: 1fr 1fr;
+    }
+  }
+  .eg-hero__title {
+    font-size: clamp(3rem, 11vw, 6rem);
+    letter-spacing: -0.04em;
+    margin-top: 0.75rem;
+  }
+  .eg-hero__sub {
+    margin-top: 0.75rem;
+    font-size: clamp(0.85rem, 2vw, 1.05rem);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--accent);
+  }
+  .eg-hero__lede {
+    margin-top: 1.25rem;
+    font-size: clamp(1.02rem, 2.4vw, 1.2rem);
+    color: var(--text-muted);
+    max-width: 46ch;
+  }
+  .eg-hero__features {
+    margin-top: 1.5rem;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+  }
+  .eg-hero__features li {
+    font-size: 0.68rem;
+    letter-spacing: 0.05em;
+    padding: 0.35rem 0.65rem;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    color: var(--text-muted);
+  }
+  .eg-hero__meta {
+    margin-top: 1.75rem;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    flex-wrap: wrap;
+  }
+  .eg-hero__by {
+    font-size: 0.72rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--text-dim);
+  }
+
+  /* TOC */
+  .eg-toc {
+    position: sticky;
+    top: 4.25rem;
+    z-index: 50;
+    background: color-mix(in srgb, var(--bg) 92%, transparent);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border-bottom: 1px solid var(--border);
+  }
+  .eg-toc .container {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+  }
+  .eg-toc ul.scroll-x {
+    min-width: 0;
+    flex: 1;
+    display: flex;
+    gap: 0.25rem;
+    padding-block: 0.5rem;
+    white-space: nowrap;
+  }
+  .eg-toc__label {
+    font-size: 0.62rem;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--text-dim);
+    flex: none;
+    padding-block: 0.75rem;
+  }
+  @media (max-width: 620px) {
+    .eg-toc__label {
+      display: none;
+    }
+  }
+  .eg-toc a {
+    display: inline-block;
+    padding: 0.4rem 0.7rem;
+    font-size: 0.68rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    border-radius: 5px;
+    transition: color 0.2s var(--ease), background 0.2s var(--ease);
+  }
+  .eg-toc a:hover {
+    color: var(--text);
+    background: rgba(255, 255, 255, 0.04);
+  }
+
+  /* Shared */
+  .band {
+    border-block: 1px solid var(--border);
+    background: var(--bg-elev);
+  }
+  .two-col {
+    display: grid;
+    gap: 2rem;
+  }
+  @media (min-width: 900px) {
+    .two-col {
+      grid-template-columns: 1fr 1fr;
+      gap: 3rem;
+      align-items: start;
+    }
+  }
+  .stack {
+    display: grid;
+    gap: 1.5rem;
+    align-content: start;
+  }
+
+  .grid-cards {
+    display: grid;
+    gap: 1.25rem;
+  }
+  @media (min-width: 620px) {
+    .grid-cards--4,
+    .grid-cards--3 {
+      grid-template-columns: repeat(2, 1fr);
+    }
+  }
+  @media (min-width: 1000px) {
+    .grid-cards--4 {
+      grid-template-columns: repeat(4, 1fr);
+    }
+    .grid-cards--3 {
+      grid-template-columns: repeat(3, 1fr);
+    }
+  }
+
+  .mini-card,
+  .sdg-card,
+  .tech-card {
+    padding: 1.4rem;
+    display: grid;
+    gap: 0.6rem;
+    align-content: start;
+    transition: border-color 0.25s var(--ease), transform 0.25s var(--ease);
+  }
+  .mini-card:hover,
+  .sdg-card:hover,
+  .tech-card:hover {
+    border-color: var(--accent-line);
+    transform: translateY(-3px);
+  }
+  .mini-card__num,
+  .tech-card__num {
+    font-size: 0.72rem;
+    color: var(--accent);
+  }
+  .mini-card__title,
+  .tech-card__name {
+    font-size: 0.85rem;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+  }
+  .mini-card__text,
+  .tech-card__text,
+  .sdg-card__text {
+    font-size: 0.9rem;
+  }
+  .sdg-card__code {
+    font-size: 0.72rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--accent);
+  }
+  .sdg-card__name {
+    font-size: 1.05rem;
+  }
+  .sdg-card__platform {
+    font-size: 0.66rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--text-dim);
+    padding-top: 0.5rem;
+    border-top: 1px solid var(--border);
+  }
+
+  /* Workflow */
+  .workflow {
+    display: grid;
+    gap: 2.5rem;
+  }
+  @media (min-width: 900px) {
+    .workflow {
+      grid-template-columns: 1fr 1fr;
+      gap: 3rem;
+      align-items: start;
+    }
+  }
+  .workflow__name {
+    font-size: 0.8rem;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--text);
+    margin-bottom: 1.25rem;
+    padding-bottom: 0.75rem;
+    border-bottom: 1px solid var(--border);
+  }
+
+  /* Specs */
+  .spec {
+    display: grid;
+    gap: 0.75rem;
+  }
+  .spec__label {
+    font-size: 0.66rem;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--text-dim);
+  }
+  .chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+  }
+  .chips li {
+    font-size: 0.72rem;
+    letter-spacing: 0.04em;
+    padding: 0.4rem 0.7rem;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    background: var(--surface);
+    color: var(--text-muted);
+  }
+  .sensor-list {
+    display: grid;
+    gap: 0.75rem;
+  }
+  .sensor-list li {
+    display: grid;
+    gap: 0.15rem;
+    padding: 0.75rem 0.9rem;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    background: var(--surface);
+    font-size: 0.88rem;
+  }
+  .sensor-list__name {
+    font-size: 0.75rem;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--text);
+  }
+  .feature-list {
+    display: grid;
+    gap: 0.5rem;
+  }
+  .feature-list li {
+    position: relative;
+    padding-left: 1.1rem;
+    font-size: 0.88rem;
+    color: var(--text-muted);
+  }
+  .feature-list li::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0.6em;
+    width: 5px;
+    height: 5px;
+    background: var(--accent-line);
+    border-radius: 1px;
+  }
+  .pricing {
+    display: grid;
+    gap: 0.75rem;
+  }
+  .pricing div {
+    display: flex;
+    justify-content: space-between;
+    gap: 1rem;
+    padding: 0.6rem 0.9rem;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    background: var(--surface);
+  }
+  .pricing dt {
+    font-size: 0.68rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--text-dim);
+  }
+  .pricing dd {
+    font-size: 0.9rem;
+    text-align: right;
+  }
+
+  .scale__note {
+    margin-top: 1.5rem;
+    font-size: 0.75rem;
+    color: var(--text-dim);
+  }
+
+  /* Team */
+  .team {
+    display: grid;
+    gap: 1.25rem;
+  }
+  @media (min-width: 620px) {
+    .team {
+      grid-template-columns: repeat(2, 1fr);
+    }
+  }
+  .team-card {
+    padding: 1.5rem;
+    display: grid;
+    gap: 0.35rem;
+  }
+  .team-card__name {
+    font-size: 1.1rem;
+    font-weight: 600;
+  }
+  .team-card__role {
+    font-size: 0.72rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+  .team__ack {
+    margin-top: 1.5rem;
+    font-size: 0.9rem;
+    max-width: 60ch;
+  }
+
+  /* Close */
+  .eg-close {
+    padding: clamp(1.5rem, 4vw, 2.5rem);
+    display: grid;
+    gap: 1.75rem;
+  }
+  @media (min-width: 780px) {
+    .eg-close {
+      grid-template-columns: 1fr auto;
+      align-items: center;
+    }
+  }
+  .eg-close h2 {
+    font-size: 1.1rem;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    margin-bottom: 0.75rem;
+  }
+  .eg-close__awards {
+    display: grid;
+    gap: 0.4rem;
+    margin-bottom: 0.75rem;
+  }
+  .eg-close__awards li {
+    font-size: 0.78rem;
+    letter-spacing: 0.04em;
+    color: var(--text);
+    padding-left: 1.1rem;
+    position: relative;
+  }
+  .eg-close__awards li::before {
+    content: '◆';
+    position: absolute;
+    left: 0;
+    color: var(--status-dev);
+    font-size: 0.7rem;
+  }
+  .eg-close__actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+  }
+</style>
