@@ -2,6 +2,7 @@
 import { getCollection, render } from 'astro:content';
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import DocsNav from '../../components/DocsNav.astro';
+import { link } from '../../lib/link';
 
 export async function getStaticPaths() {
   const docs = await getCollection('docs');
@@ -36,7 +37,7 @@ const navItems = all.map((d: (typeof all)[number]) => ({
     <div class="container docs-shell">
       <aside class="docs-shell__nav">
         <DocsNav items={navItems} current={entry.id} />
-        <a class="docs-shell__back mono" href="/argus-6">&larr; Back to ARGUS-6</a>
+        <a class="docs-shell__back mono" href={link('/argus-6')}>&larr; Back to ARGUS-6</a>
       </aside>
 
       <article class="docs-shell__main">
@@ -53,7 +54,7 @@ const navItems = all.map((d: (typeof all)[number]) => ({
         <nav class="doc-pager" aria-label="Documentation pages">
           {
             prev ? (
-              <a class="doc-pager__link" href={`/documentation/${prev.id}`}>
+              <a class="doc-pager__link" href={link(`/documentation/${prev.id}`)}>
                 <span class="mono">&larr; Previous</span>
                 <span>{prev.data.title}</span>
               </a>
@@ -63,7 +64,7 @@ const navItems = all.map((d: (typeof all)[number]) => ({
           }
           {
             next && (
-              <a class="doc-pager__link doc-pager__link--next" href={`/documentation/${next.id}`}>
+              <a class="doc-pager__link doc-pager__link--next" href={link(`/documentation/${next.id}`)}>
                 <span class="mono">Next &rarr;</span>
                 <span>{next.data.title}</span>
               </a>

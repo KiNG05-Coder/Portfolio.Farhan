@@ -11,6 +11,7 @@ import Callout from '../components/Callout.astro';
 import { capabilities } from '../data/capabilities';
 import { decisions } from '../data/decisions';
 import { testStages, evidenceSlots } from '../data/testing';
+import { link } from '../lib/link';
 
 const sections = [
   ['mission', 'The Mission'],
@@ -79,7 +80,7 @@ const structuralStats = [
       <span class="a6-toc__label mono">On this page</span>
       <ul class="scroll-x">
         {sections.map(([id, label]) => <li><a href={`#${id}`} class="mono">{label}</a></li>)}
-        <li><a href="/documentation" class="mono a6-toc__doc">Documentation →</a></li>
+        <li><a href={link('/documentation')} class="mono a6-toc__doc">Documentation →</a></li>
       </ul>
     </div>
   </nav>
@@ -543,7 +544,7 @@ const structuralStats = [
             testing in more detail.
           </p>
         </div>
-        <a class="btn btn--primary" href="/documentation">
+        <a class="btn btn--primary" href={link('/documentation')}>
           Open documentation <span class="arrow" aria-hidden="true">→</span>
         </a>
       </div>

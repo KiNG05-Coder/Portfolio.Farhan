@@ -2,6 +2,7 @@
 import Placeholder from './Placeholder.astro';
 import StatusBadge from './StatusBadge.astro';
 import type { Project } from '../data/projects';
+import { link } from '../lib/link';
 
 export interface Props {
   project: Project;
@@ -65,7 +66,7 @@ const { project, featured = false } = Astro.props;
 
     {
       project.href && (
-        <a class="btn pc__cta" href={project.href}>
+        <a class="btn pc__cta" href={link(project.href)}>
           Open {project.name}
           <span class="arrow" aria-hidden="true">→</span>
         </a>

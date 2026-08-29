@@ -1,5 +1,6 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro';
+import { link } from '../lib/link';
 ---
 
 <BaseLayout title="Page not found — Farhan Saif" path="/404">
@@ -11,8 +12,8 @@ import BaseLayout from '../layouts/BaseLayout.astro';
         The link may be out of date, or the page may have moved.
       </p>
       <div class="nf__actions" data-reveal>
-        <a class="btn btn--primary" href="/">Back home</a>
-        <a class="btn" href="/argus-6">Go to ARGUS-6</a>
+        <a class="btn btn--primary" href={link('/')}>Back home</a>
+        <a class="btn" href={link('/argus-6')}>Go to ARGUS-6</a>
       </div>
     </div>
   </section>

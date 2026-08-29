@@ -1,6 +1,7 @@
 ---
 import fs from 'node:fs';
 import path from 'node:path';
+import { link } from '../lib/link';
 
 export interface Props {
   /** Path under /public, e.g. "/assets/argus-6/argus-6-hero.jpg". */
@@ -41,7 +42,7 @@ const autoLabel = label ?? 'IMAGE PLACEHOLDER — REPLACE WITH YOUR ORIGINAL';
   {
     exists ? (
       <img
-        src={src}
+        src={link(src)}
         alt={alt}
         loading={eager ? 'eager' : 'lazy'}
         decoding="async"

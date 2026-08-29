@@ -10,6 +10,7 @@ import { site } from '../data/site';
 import { skillGroups } from '../data/skills';
 import { projects } from '../data/projects';
 import { achievements } from '../data/achievements';
+import { link } from '../lib/link';
 ---
 
 <BaseLayout
@@ -64,7 +65,7 @@ import { achievements } from '../data/achievements';
           </div>
           <div>
             <dt class="mono">Flagship project</dt>
-            <dd><a href="/argus-6">ARGUS-6</a></dd>
+            <dd><a href={link('/argus-6')}>ARGUS-6</a></dd>
           </div>
         </dl>
       </aside>

@@ -4,24 +4,22 @@ import mdx from '@astrojs/mdx';
 import sitemap from '@astrojs/sitemap';
 
 /* ------------------------------------------------------------------
-   `site` is the public URL of the deployed site. It is only used for
-   canonical URLs, Open Graph tags and the generated sitemap — the site
-   still builds and works if it is slightly wrong, so you can set it
-   after the first deploy.
+   Configured for GitHub Pages on the repo:
+     https://github.com/KiNG05-Coder/Portfolio.Farhan
 
-   Set it to whichever applies:
-   • Vercel / Netlify : "https://your-project.vercel.app"  (or .netlify.app)
-   • GitHub user site : "https://YOUR-USERNAME.github.io"
-   • GitHub project   : "https://YOUR-USERNAME.github.io"  + set `base` below
-   • Custom domain    : "https://your-domain.com"
+   Live URL will be:
+     https://king05-coder.github.io/Portfolio.Farhan/
 
-   `base` must ONLY be set for a GitHub *project* repo (served from a
-   sub-path like /farhan-saif-portfolio). Leave it commented out for
-   Vercel, Netlify, a GitHub user site, or a custom domain.
+   `base` MUST match the repo name for a GitHub *project* site, or the
+   CSS / JS / links will 404. If you later:
+     • rename the repo            -> change `base` to '/new-name'
+     • add a custom domain        -> set base: '/'  (or delete the line)
+     • switch to Vercel / Netlify -> set base: '/'  (or delete the line)
+   `site` only affects canonical URLs, Open Graph tags and the sitemap.
    ------------------------------------------------------------------ */
 export default defineConfig({
-  site: 'https://REPLACE-ME.example.com',
-  // base: '/farhan-saif-portfolio',
+  site: 'https://king05-coder.github.io',
+  base: '/Portfolio.Farhan',
   integrations: [mdx(), sitemap()],
   build: {
     inlineStylesheets: 'auto',

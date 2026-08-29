@@ -1,4 +1,6 @@
 ---
+import { link } from '../lib/link';
+
 export interface Props {
   items: { slug: string; title: string; order: number }[];
   current?: string;
@@ -11,7 +13,7 @@ const sorted = [...items].sort((a, b) => a.order - b.order);
   <span class="docsnav__title mono">ARGUS-6 Documentation</span>
   <ol>
     <li>
-      <a href="/documentation" class:list={['docsnav__link', { 'is-current': !current }]}>
+      <a href={link('/documentation')} class:list={['docsnav__link', { 'is-current': !current }]}>
         <span class="docsnav__num mono">00</span> Overview
       </a>
     </li>
@@ -19,7 +21,7 @@ const sorted = [...items].sort((a, b) => a.order - b.order);
       sorted.map((item, i) => (
         <li>
           <a
-            href={`/documentation/${item.slug}`}
+            href={link(`/documentation/${item.slug}`)}
             class:list={['docsnav__link', { 'is-current': current === item.slug }]}
             aria-current={current === item.slug ? 'page' : undefined}
           >

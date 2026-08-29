@@ -3,6 +3,7 @@ import { getCollection } from 'astro:content';
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import PageHeader from '../../components/PageHeader.astro';
 import DocsNav from '../../components/DocsNav.astro';
+import { link } from '../../lib/link';
 
 const docs = await getCollection('docs');
 const items = docs
@@ -32,7 +33,7 @@ const items = docs
           {
             items.map((item, i) => (
               <li data-reveal style={`--reveal-delay:${i * 50}ms`}>
-                <a href={`/documentation/${item.slug}`} class="doc-index__card panel">
+                <a href={link(`/documentation/${item.slug}`)} class="doc-index__card panel">
                   <span class="doc-index__num mono">{String(i + 1).padStart(2, '0')}</span>
                   <span class="doc-index__body">
                     <span class="doc-index__title">{item.title}</span>

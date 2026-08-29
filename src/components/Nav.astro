@@ -2,7 +2,9 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { nav, site } from '../data/site';
+import { link } from '../lib/link';
 
+const base = (import.meta.env.BASE_URL || '/').replace(/\/$/, '');
 const current = Astro.url.pathname.replace(/\/$/, '') || '/';
 
 // Optional site logo. Drop a file at public/assets/branding/logo.png
@@ -16,18 +18,19 @@ const logo = logoCandidates.find((rel) =>
 );
 
 const isActive = (href: string) => {
-  const h = href.replace(/\/$/, '') || '/';
-  if (h === '/') return current === '/';
+  const h = `${base}${href}`.replace(/\/$/, '') || '/';
+  const home = base || '/';
+  if (h === home) return current === home;
   return current === h || current.startsWith(h + '/');
 };
 ---
 
 <header class="nav" data-nav>
   <div class="container nav__inner">
-    <a href="/" class="brand" aria-label={`${site.name} — home`}>
+    <a href={link('/')} class="brand" aria-label={`${site.name} — home`}>
       {
         logo ? (
-          <img src={logo} alt={`${site.name} logo`} height="28" />
+          <img src={link(logo)} alt={`${site.name} logo`} height="28" />
         ) : (
           <>
             <span class="brand__mark" aria-hidden="true">FS</span>
@@ -43,7 +46,7 @@ const isActive = (href: string) => {
           nav.map((item) => (
             <li>
               <a
-                href={item.href}
+                href={link(item.href)}
                 class:list={['nav__link', { 'is-active': isActive(item.href) }]}
                 aria-current={isActive(item.href) ? 'page' : undefined}
               >
@@ -72,7 +75,7 @@ const isActive = (href: string) => {
         nav.map((item) => (
           <li>
             <a
-              href={item.href}
+              href={link(item.href)}
               class:list={['nav__link', { 'is-active': isActive(item.href) }]}
               aria-current={isActive(item.href) ? 'page' : undefined}
             >
