@@ -1,7 +1,15 @@
-# Normalise line endings: store LF in the repo, check out native.
-* text=auto eol=lf
+# Line endings:
+#   - Normalise to LF inside the repo.
+#   - Check out with the platform's native endings (CRLF on Windows),
+#     so files open correctly in every editor, including Notepad.
+* text=auto
 
-# Treat these as binary (never touch line endings).
+# Always LF (parsers / CI that dislike CRLF):
+*.yml  text eol=lf
+*.yaml text eol=lf
+*.sh   text eol=lf
+
+# Binary — never touch:
 *.png   binary
 *.jpg   binary
 *.jpeg  binary
