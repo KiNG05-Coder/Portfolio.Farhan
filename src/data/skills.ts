@@ -22,9 +22,11 @@ export const skillGroups: SkillGroup[] = [
     blurb: 'Building, wiring and programming physical systems.',
     items: [
       'Robot programming',
+      'ESP32',
       'Raspberry Pi',
       'Arduino',
       'Circuit making',
+      '3D modelling',
       'Soldering',
     ],
   },
