@@ -12,32 +12,26 @@ Snapshot so work can resume cleanly in a new session.
 - ARGUS-6 locomotion changed from 3-DOF to **2-DOF** (6 legs × 2 = 12 joints)
   everywhere, including the docs and the stat strip.
 - Skills → "Robotics & Electronics" now includes **ESP32** and **3D modelling**.
-- Deployed to GitHub Pages (repo `KiNG05-Coder/Portfolio.Farhan`) on the custom
-  domain **farhansaif.dev**: `site: 'https://farhansaif.dev'` in astro.config.mjs
-  (no `base` — served from the domain root), `public/CNAME` holds the domain, and
-  a `link()` helper (src/lib/link.ts) that every internal link / asset path goes
-  through (a no-op now that base is '/').
+- **Deployed on Vercel**, auto-deploys from `main`:
+  https://farhansaifportfolio.vercel.app — `site` in astro.config.mjs points
+  there. No `base` (served from the domain root); the `link()` helper in
+  src/lib/link.ts is a no-op in that case. The old GitHub Pages workflow and
+  CNAME files were removed. `farhansaif.dev` was tried but never registered.
 - Line endings: files check out as native CRLF on Windows (`.gitattributes`).
-- Local git repo with commits; remote `origin` points at the repo above.
 - Build + `astro check` both clean (17 pages, 0 errors).
 
 ## What's NOT done yet
 
-1. **DNS for farhansaif.dev.** At the registrar, add for the apex (`@`):
-   A records `185.199.108.153` / `.109.153` / `.110.153` / `.111.153`
-   (optionally AAAA `2606:50c0:8000::153` … `8003::153`), and a `www` CNAME to
-   `king05-coder.github.io`. Then GitHub Settings -> Pages should verify the
-   custom domain; tick **Enforce HTTPS** once the cert is issued (`.dev` is
-   HTTPS-only, so the site 404s/errs until then — can take up to ~1 h).
-2. **Real images.** Drop files into `public/assets/...` with these exact names
-   (all optional - placeholders show until then):
-   - `argus-6/argus-6-hero.jpg`, `argus-6/argus-6-card.jpg`
-   - `ecoguard/ecoguard-hero.jpg`, `ecoguard/ecoguard-card.jpg`,
-     `ecoguard/riverix.jpg`, `ecoguard/sky-cleanse.jpg`
+1. **Remaining placeholders.** Drop `.jpg` files into `public/assets/...` at the
+   exact paths the `<Placeholder src=...>` calls expect and they replace the
+   marked boxes automatically. Still missing (optional):
+   - `ecoguard/riverix.jpg`, `ecoguard/sky-cleanse.jpg` (currently animated
+     scenes, not placeholders)
    - `achievements/innovation-world-cup.jpg`, `achievements/i3c.jpg`
-   - `profile/farhan.jpg`, `profile/farhan-workspace.jpg` (optional)
    - `branding/logo.svg` or `logo.png` (optional site logo)
-   Files must be `.jpg`. Then commit + push.
+2. **Custom domain (optional).** If a real domain is bought, add it in Vercel →
+   Settings → Domains and update `site` in astro.config.mjs + `url` in
+   src/data/site.ts + the Sitemap line in public/robots.txt.
 
 ## Editing reminders
 
@@ -48,5 +42,6 @@ Snapshot so work can resume cleanly in a new session.
 
 ## The other folder
 
-`C:\Users\User\Desktop\farhan-saif-portfolio` is a plain, non-git copy (no
-GitHub setup, no base path). Backup only. The GitHub folder is the real one.
+`C:\Users\User\Desktop\farhan-saif-portfolio` is a plain, non-git copy. Backup
+only — this folder (`farhan-saif-portfolio-github`) is the real one that Vercel
+deploys from.

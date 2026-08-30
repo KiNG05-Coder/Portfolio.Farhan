@@ -25,7 +25,7 @@ export const site = {
   emailIsPlaceholder: false,
 
   /** Production URL — keep in sync with `site` in astro.config.mjs. */
-  url: 'https://farhansaif.dev',
+  url: 'https://farhansaifportfolio.vercel.app',
 } as const;
 
 export const nav = [

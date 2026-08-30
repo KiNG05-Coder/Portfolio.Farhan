@@ -4,17 +4,15 @@ import mdx from '@astrojs/mdx';
 import sitemap from '@astrojs/sitemap';
 
 /* ------------------------------------------------------------------
-   Deployed to GitHub Pages (repo: KiNG05-Coder/Portfolio.Farhan) on the
-   custom domain https://farhansaif.dev — see public/CNAME.
+   Deployed on Vercel (auto-deploys from `main`):
+     https://farhansaifportfolio.vercel.app
 
-   Because the site is served from the domain root, there is NO `base`
-   path. If you ever move OFF the custom domain back to the project URL
-   (king05-coder.github.io/Portfolio.Farhan/), re-add:
-       base: '/Portfolio.Farhan',
-   `site` sets canonical URLs, Open Graph tags and the sitemap.
+   Served from the domain root, so there is NO `base` path.
+   `site` sets canonical URLs, Open Graph tags and the sitemap — update
+   it here if a custom domain is added on Vercel later.
    ------------------------------------------------------------------ */
 export default defineConfig({
-  site: 'https://farhansaif.dev',
+  site: 'https://farhansaifportfolio.vercel.app',
   integrations: [mdx(), sitemap()],
   build: {
     inlineStylesheets: 'auto',
