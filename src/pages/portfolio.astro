@@ -5,7 +5,7 @@ import SectionHeading from '../components/SectionHeading.astro';
 import SkillGroup from '../components/SkillGroup.astro';
 import ProjectCard from '../components/ProjectCard.astro';
 import AchievementCard from '../components/AchievementCard.astro';
-import Placeholder from '../components/Placeholder.astro';
+import WorkbenchScene from '../components/WorkbenchScene.astro';
 import { site } from '../data/site';
 import { skillGroups } from '../data/skills';
 import { projects } from '../data/projects';
@@ -52,13 +52,7 @@ import { link } from '../lib/link';
       </div>
 
       <aside class="about__aside" data-reveal>
-        <Placeholder
-          src="/assets/profile/farhan-workspace.jpg"
-          alt="Placeholder for a photo of Farhan's workspace or bench — optional, replace if desired."
-          ratio="4 / 5"
-          label="OPTIONAL IMAGE — WORKSPACE / BENCH"
-          hint="public/assets/profile/farhan-workspace.jpg"
-        />
+        <WorkbenchScene />
         <dl class="about__facts panel">
           <div>
             <dt class="mono">Based in</dt>

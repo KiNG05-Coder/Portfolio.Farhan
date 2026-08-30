@@ -1,0 +1,450 @@
+---
+/* ============================================================
+   WORKBENCH SCENE
+   Animated stand-in for a photo of Farhan's bench: a
+   microcontroller wired to three modules on a PCB, with data
+   pulses running along the traces, status LEDs blinking at
+   their own rates, an occasional solder flash, and a live
+   oscilloscope trace scrolling across the bottom.
+
+   Canvas-based, accent-tinted, pauses when off-screen or the
+   tab is hidden, and draws a single static frame for
+   reduced-motion users. Content is never hidden by script — the
+   frame, HUD and a fallback still render if the canvas fails.
+   ============================================================ */
+---
+
+<figure
+  class="wbn"
+  data-reveal
+  aria-label="Animation: a microcontroller on a workbench, wired to a sensor, a radio and a servo driver. Data pulses run along the traces, status LEDs blink, and an oscilloscope trace scrolls along the bottom."
+>
+  <canvas class="wbn__canvas" data-workbench aria-hidden="true"></canvas>
+
+  <div class="wbn__hud mono" aria-hidden="true">
+    <span class="wbn__tag">WORKBENCH · BUILD &amp; TEST</span>
+    <span class="wbn__bus" data-wbn="bus">I²C</span>
+  </div>
+
+  <span class="wbn__corner wbn__corner--tl" aria-hidden="true"></span>
+  <span class="wbn__corner wbn__corner--br" aria-hidden="true"></span>
+</figure>
+
+<style>
+  .wbn {
+    position: relative;
+    aspect-ratio: 4 / 5;
+    border-radius: var(--radius);
+    overflow: hidden;
+    border: 1px solid var(--border);
+    background:
+      radial-gradient(
+        120% 80% at 30% 0%,
+        rgba(91, 157, 255, 0.09),
+        transparent 60%
+      ),
+      var(--surface);
+  }
+  .wbn__canvas {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+  }
+
+  .wbn__hud {
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 0;
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 1rem;
+    padding: 0.85rem 0.95rem;
+    background: linear-gradient(
+      to bottom,
+      color-mix(in srgb, var(--surface) 82%, transparent),
+      transparent
+    );
+  }
+  .wbn__tag {
+    font-size: 0.56rem;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--accent);
+  }
+  .wbn__bus {
+    font-size: 0.6rem;
+    letter-spacing: 0.12em;
+    color: var(--text-muted);
+    font-variant-numeric: tabular-nums;
+  }
+
+  .wbn__corner {
+    position: absolute;
+    width: 14px;
+    height: 14px;
+    border: 1px solid var(--accent-line);
+    pointer-events: none;
+  }
+  .wbn__corner--tl {
+    top: 10px;
+    left: 10px;
+    border-right: 0;
+    border-bottom: 0;
+  }
+  .wbn__corner--br {
+    right: 10px;
+    bottom: 10px;
+    border-left: 0;
+    border-top: 0;
+  }
+</style>
+
+<script>
+  type Pulse = { edge: number; t: number; speed: number };
+
+  const initWorkbench = () => {
+    const reduce = window.matchMedia(
+      '(prefers-reduced-motion: reduce)'
+    ).matches;
+
+    document
+      .querySelectorAll<HTMLCanvasElement>('[data-workbench]')
+      .forEach((canvas) => {
+        if (canvas.dataset.bound === 'true') return;
+        canvas.dataset.bound = 'true';
+
+        const ctx = canvas.getContext('2d');
+        const host = canvas.parentElement as HTMLElement | null;
+        if (!ctx || !host) return;
+
+        const ACCENT = '91, 157, 255';
+        const busEl = host.querySelector<HTMLElement>('[data-wbn="bus"]');
+        const BUSES = ['I²C', 'UART', 'SPI', 'PWM', 'ADC'];
+
+        // Layout in normalised [0,1] space. The MCU sits centre-left;
+        // three modules sit around it, each joined by an L-shaped trace.
+        const MCU = { x: 0.34, y: 0.52, w: 0.26, h: 0.3 };
+        const MODULES = [
+          { x: 0.78, y: 0.24, label: 'RADIO' },
+          { x: 0.8, y: 0.6, label: 'SERVO' },
+          { x: 0.2, y: 0.83, label: 'SENSOR' },
+        ];
+        // Each edge: a polyline from an MCU pin to a module.
+        const edgeFor = (m: { x: number; y: number }) => {
+          const from = { x: MCU.x + MCU.w, y: MCU.y };
+          if (m.y < MCU.y) return [from, { x: m.x, y: from.y }, { x: m.x, y: m.y }];
+          if (m.x < MCU.x)
+            return [
+              { x: MCU.x, y: MCU.y + MCU.h * 0.3 },
+              { x: m.x, y: MCU.y + MCU.h * 0.3 },
+              { x: m.x, y: m.y },
+            ];
+          return [
+            { x: from.x, y: MCU.y + MCU.h * 0.2 },
+            { x: m.x, y: MCU.y + MCU.h * 0.2 },
+            { x: m.x, y: m.y },
+          ];
+        };
+
+        let w = 0;
+        let h = 0;
+        let dpr = 1;
+        let raf = 0;
+        let running = false;
+        let t0 = 0;
+        let pulses: Pulse[] = [];
+        let nextPulse = 0;
+        let lastBus = 0;
+        let solder = { x: 0, y: 0, born: -1 };
+        let nextSolder = 1500;
+
+        const resize = () => {
+          const rect = host.getBoundingClientRect();
+          dpr = Math.min(window.devicePixelRatio || 1, 2);
+          w = rect.width;
+          h = rect.height;
+          canvas.width = Math.round(w * dpr);
+          canvas.height = Math.round(h * dpr);
+          ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+        };
+
+        const P = (p: { x: number; y: number }) => ({ x: p.x * w, y: p.y * h });
+        const edges = () => MODULES.map((m) => edgeFor(m).map(P));
+
+        const polyPos = (pts: { x: number; y: number }[], s: number) => {
+          const seg: number[] = [];
+          let total = 0;
+          for (let i = 0; i < pts.length - 1; i++) {
+            const d = Math.hypot(pts[i + 1].x - pts[i].x, pts[i + 1].y - pts[i].y);
+            seg.push(d);
+            total += d;
+          }
+          let target = Math.max(0, Math.min(1, s)) * total;
+          for (let i = 0; i < seg.length; i++) {
+            if (target <= seg[i] || i === seg.length - 1) {
+              const f = seg[i] === 0 ? 0 : Math.min(1, target / seg[i]);
+              return {
+                x: pts[i].x + (pts[i + 1].x - pts[i].x) * f,
+                y: pts[i].y + (pts[i + 1].y - pts[i].y) * f,
+              };
+            }
+            target -= seg[i];
+          }
+          return pts[pts.length - 1];
+        };
+
+        const traceGrid = () => {
+          ctx.strokeStyle = `rgba(${ACCENT}, 0.05)`;
+          ctx.lineWidth = 1;
+          const step = 26;
+          for (let x = (w % step) / 2; x < w; x += step) {
+            ctx.beginPath();
+            ctx.moveTo(x, 0);
+            ctx.lineTo(x, h);
+            ctx.stroke();
+          }
+          for (let y = (h % step) / 2; y < h; y += step) {
+            ctx.beginPath();
+            ctx.moveTo(0, y);
+            ctx.lineTo(w, y);
+            ctx.stroke();
+          }
+        };
+
+        const drawBoard = (tt: number) => {
+          const E = edges();
+
+          // Traces.
+          E.forEach((pts) => {
+            ctx.beginPath();
+            pts.forEach((p, i) => (i ? ctx.lineTo(p.x, p.y) : ctx.moveTo(p.x, p.y)));
+            ctx.strokeStyle = `rgba(${ACCENT}, 0.3)`;
+            ctx.lineWidth = 1.5;
+            ctx.stroke();
+          });
+
+          // Modules.
+          MODULES.forEach((m, i) => {
+            const c = P(m);
+            const s = Math.min(w, h) * 0.06;
+            ctx.strokeStyle = `rgba(${ACCENT}, 0.5)`;
+            ctx.lineWidth = 1.25;
+            ctx.strokeRect(c.x - s, c.y - s * 0.7, s * 2, s * 1.4);
+            // Module status LED, each with its own blink rate.
+            const rate = [1.3, 0.7, 2.1][i];
+            const on = (Math.sin(tt * Math.PI * 2 * rate) + 1) / 2;
+            ctx.beginPath();
+            ctx.arc(c.x + s - 4, c.y - s * 0.7 + 4, 2.4, 0, Math.PI * 2);
+            ctx.fillStyle = `rgba(${ACCENT}, ${0.25 + on * 0.7})`;
+            ctx.fill();
+            ctx.fillStyle = `rgba(${ACCENT}, 0.55)`;
+            ctx.font = '8px ui-monospace, monospace';
+            ctx.textAlign = 'center';
+            ctx.fillText(m.label, c.x, c.y + s * 1.05);
+          });
+
+          // MCU body.
+          const b = P({ x: MCU.x, y: MCU.y });
+          const bw = MCU.w * w;
+          const bh = MCU.h * h;
+          ctx.fillStyle = 'rgba(20, 26, 36, 0.9)';
+          ctx.strokeStyle = `rgba(${ACCENT}, 0.55)`;
+          ctx.lineWidth = 1.5;
+          ctx.beginPath();
+          ctx.rect(b.x - bw / 2, b.y - bh / 2, bw, bh);
+          ctx.fill();
+          ctx.stroke();
+          // Pin headers on all four sides.
+          ctx.strokeStyle = `rgba(${ACCENT}, 0.4)`;
+          ctx.lineWidth = 2;
+          for (let k = 1; k < 6; k++) {
+            const fx = b.x - bw / 2 + (bw * k) / 6;
+            ctx.beginPath();
+            ctx.moveTo(fx, b.y - bh / 2);
+            ctx.lineTo(fx, b.y - bh / 2 - 5);
+            ctx.moveTo(fx, b.y + bh / 2);
+            ctx.lineTo(fx, b.y + bh / 2 + 5);
+            ctx.stroke();
+          }
+          for (let k = 1; k < 5; k++) {
+            const fy = b.y - bh / 2 + (bh * k) / 5;
+            ctx.beginPath();
+            ctx.moveTo(b.x - bw / 2, fy);
+            ctx.lineTo(b.x - bw / 2 - 5, fy);
+            ctx.moveTo(b.x + bw / 2, fy);
+            ctx.lineTo(b.x + bw / 2 + 5, fy);
+            ctx.stroke();
+          }
+          // MCU "power" LED — steady heartbeat.
+          const hb = Math.pow((Math.sin(tt * Math.PI * 2 * 1.1) + 1) / 2, 3);
+          ctx.beginPath();
+          ctx.arc(b.x - bw / 2 + 8, b.y - bh / 2 + 8, 2.6, 0, Math.PI * 2);
+          ctx.fillStyle = `rgba(120, 200, 140, ${0.35 + hb * 0.6})`;
+          ctx.fill();
+          ctx.fillStyle = `rgba(${ACCENT}, 0.6)`;
+          ctx.font = '8px ui-monospace, monospace';
+          ctx.textAlign = 'center';
+          ctx.fillText('MCU', b.x, b.y + 3);
+
+          return E;
+        };
+
+        const frame = (now: number) => {
+          if (!canvas.isConnected) {
+            running = false;
+            return;
+          }
+          if (!t0) {
+            t0 = now;
+            nextPulse = now + 400;
+            nextSolder = now + 1600;
+          }
+          const tt = (now - t0) / 1000;
+          ctx.clearRect(0, 0, w, h);
+
+          traceGrid();
+          const E = drawBoard(tt);
+
+          // Spawn pulses on random edges, alternating direction.
+          if (now >= nextPulse) {
+            nextPulse = now + 520 + Math.random() * 900;
+            pulses.push({
+              edge: Math.floor(Math.random() * E.length),
+              t: 0,
+              speed: 0.5 + Math.random() * 0.5,
+            });
+          }
+          pulses = pulses.filter((pl) => {
+            pl.t += (pl.speed * 16) / 1000;
+            if (pl.t > 1) return false;
+            const pts = E[pl.edge];
+            const pos = polyPos(pts, pl.t);
+            const glow = Math.sin(pl.t * Math.PI); // fade in and out
+            ctx.beginPath();
+            ctx.arc(pos.x, pos.y, 3.2, 0, Math.PI * 2);
+            ctx.fillStyle = `rgba(150, 190, 255, ${0.85 * glow})`;
+            ctx.fill();
+            ctx.beginPath();
+            ctx.arc(pos.x, pos.y, 7, 0, Math.PI * 2);
+            ctx.fillStyle = `rgba(${ACCENT}, ${0.18 * glow})`;
+            ctx.fill();
+            return true;
+          });
+
+          // Occasional solder flash at a module joint.
+          if (now >= nextSolder) {
+            nextSolder = now + 2600 + Math.random() * 2600;
+            const m = MODULES[Math.floor(Math.random() * MODULES.length)];
+            const c = P(m);
+            solder = { x: c.x, y: c.y - Math.min(w, h) * 0.04, born: now };
+          }
+          if (solder.born > 0) {
+            const age = (now - solder.born) / 1000;
+            if (age < 0.5) {
+              const k = 1 - age / 0.5;
+              ctx.beginPath();
+              ctx.arc(solder.x, solder.y, 2 + k * 5, 0, Math.PI * 2);
+              ctx.fillStyle = `rgba(255, 224, 170, ${0.9 * k})`;
+              ctx.fill();
+              ctx.beginPath();
+              ctx.arc(solder.x, solder.y, 4 + k * 14, 0, Math.PI * 2);
+              ctx.fillStyle = `rgba(255, 200, 130, ${0.2 * k})`;
+              ctx.fill();
+            }
+          }
+
+          // Oscilloscope trace along the bottom.
+          const oy = h - 26;
+          ctx.beginPath();
+          for (let x = 0; x <= w; x += 4) {
+            const phase = x * 0.05 - tt * 6;
+            const sq = Math.sign(Math.sin(phase)) * 8;
+            const wob = Math.sin(x * 0.3 + tt * 12) * 1.5;
+            const y = oy + sq * 0.75 + wob;
+            if (x === 0) ctx.moveTo(x, y);
+            else ctx.lineTo(x, y);
+          }
+          ctx.strokeStyle = `rgba(${ACCENT}, 0.5)`;
+          ctx.lineWidth = 1.25;
+          ctx.stroke();
+
+          // Cycle the HUD bus label.
+          if (now - lastBus > 2200 && busEl) {
+            lastBus = now;
+            busEl.textContent = BUSES[Math.floor(tt / 2.2) % BUSES.length];
+          }
+
+          raf = requestAnimationFrame(frame);
+        };
+
+        const staticFrame = () => {
+          t0 = 0;
+          ctx.clearRect(0, 0, w, h);
+          traceGrid();
+          const E = drawBoard(0.25);
+          // A couple of resting pulses mid-trace.
+          [0, 2].forEach((e) => {
+            const pos = polyPos(E[e], 0.55);
+            ctx.beginPath();
+            ctx.arc(pos.x, pos.y, 3.2, 0, Math.PI * 2);
+            ctx.fillStyle = 'rgba(150, 190, 255, 0.85)';
+            ctx.fill();
+          });
+          const oy = h - 26;
+          ctx.beginPath();
+          for (let x = 0; x <= w; x += 4) {
+            const y = oy + Math.sign(Math.sin(x * 0.05)) * 6;
+            if (x === 0) ctx.moveTo(x, y);
+            else ctx.lineTo(x, y);
+          }
+          ctx.strokeStyle = `rgba(${ACCENT}, 0.4)`;
+          ctx.lineWidth = 1.25;
+          ctx.stroke();
+        };
+
+        const start = () => {
+          if (running || reduce) return;
+          running = true;
+          raf = requestAnimationFrame(frame);
+        };
+        const stop = () => {
+          running = false;
+          cancelAnimationFrame(raf);
+        };
+
+        resize();
+        staticFrame();
+        if (reduce) return;
+
+        const io = new IntersectionObserver(
+          (entries) => {
+            for (const e of entries) {
+              if (e.isIntersecting) start();
+              else stop();
+            }
+          },
+          { threshold: 0 }
+        );
+        io.observe(canvas);
+
+        let rt = 0;
+        window.addEventListener('resize', () => {
+          window.clearTimeout(rt);
+          rt = window.setTimeout(() => {
+            resize();
+            if (!running) staticFrame();
+          }, 180);
+        });
+        document.addEventListener('visibilitychange', () => {
+          if (document.hidden) stop();
+          else if (canvas.isConnected) start();
+        });
+      });
+  };
+
+  initWorkbench();
+  document.addEventListener('astro:page-load', initWorkbench);
+</script>
