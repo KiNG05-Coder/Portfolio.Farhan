@@ -13,7 +13,7 @@ const year = new Date().getFullYear();
 
     <nav aria-label="Footer">
       <ul class="footer__links">
-        {nav.map((i) => <li><a href={link(i.href)}>{i.label}</a></li>)}
+        {nav.map((i) => <li><a class="link-sweep" href={link(i.href)}>{i.label}</a></li>)}
       </ul>
     </nav>
 

@@ -1,4 +1,6 @@
 ---
+import ParticleField from './ParticleField.astro';
+
 export interface Props {
   eyebrow: string;
   title: string;
@@ -8,10 +10,11 @@ const { eyebrow, title, lead } = Astro.props;
 ---
 
 <header class="ph">
-  <span class="grid-bg" aria-hidden="true"></span>
+  <span class="grid-bg" aria-hidden="true" data-parallax="0.14"></span>
+  <ParticleField area={26000} />
   <div class="container ph__inner">
     <span class="eyebrow" data-reveal>{eyebrow}</span>
-    <h1 class="ph__title" data-reveal>{title}</h1>
+    <h1 class="ph__title" data-reveal data-decode>{title}</h1>
     {lead && <p class="ph__lead text-muted" data-reveal>{lead}</p>}
     <slot />
   </div>

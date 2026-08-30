@@ -36,6 +36,19 @@ const tone =
     border-radius: 999px;
     border: 1px solid var(--border-strong);
     white-space: nowrap;
+    max-width: 100%;
+  }
+  /* On narrow screens a long status label would overflow a pill; let it
+     wrap and soften the shape so it still reads cleanly. */
+  @media (max-width: 560px) {
+    .badge {
+      white-space: normal;
+      border-radius: 10px;
+      align-items: flex-start;
+    }
+    .badge__dot {
+      margin-top: 0.35rem;
+    }
   }
   .badge--sm {
     padding: 0.2rem 0.55rem;

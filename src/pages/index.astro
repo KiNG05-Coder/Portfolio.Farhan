@@ -1,6 +1,7 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro';
 import SectionHeading from '../components/SectionHeading.astro';
+import ParticleField from '../components/ParticleField.astro';
 import Placeholder from '../components/Placeholder.astro';
 import StatusBadge from '../components/StatusBadge.astro';
 import AchievementCard from '../components/AchievementCard.astro';
@@ -18,11 +19,12 @@ const highlightCaps = capabilities.filter((c) => c.status === 'working').slice(0
 <BaseLayout path="/">
   {/* ---------------- HERO ---------------- */}
   <section class="hero">
-    <span class="grid-bg" aria-hidden="true"></span>
+    <span class="grid-bg" aria-hidden="true" data-parallax="0.16"></span>
+    <ParticleField />
     <div class="container hero__inner">
       <div class="hero__text">
         <p class="eyebrow" data-reveal>Robotics · AI · Engineering</p>
-        <h1 class="hero__name" data-reveal>Farhan Saif</h1>
+        <h1 class="hero__name" data-reveal data-decode>Farhan Saif</h1>
         <p class="hero__title mono" data-reveal>{site.title}</p>
         <p class="hero__intro" data-reveal>{site.intro}</p>
         <div class="hero__cta" data-reveal>
@@ -133,7 +135,7 @@ const highlightCaps = capabilities.filter((c) => c.status === 'working').slice(0
         title="Tools and areas I work with"
         lead="Languages, electronics and build skills used across projects — not certifications."
       />
-      <div class="sp__grid">
+      <div class="sp__grid stagger">
         {skillGroups.map((g, i) => <SkillGroup group={g} index={i} />)}
       </div>
       <a class="btn sp__more" href={link('/portfolio#skills')} data-reveal>
@@ -201,9 +203,44 @@ const highlightCaps = capabilities.filter((c) => c.status === 'working').slice(0
     flex-wrap: wrap;
     gap: 0.9rem;
   }
+  @media (max-width: 460px) {
+    .hero__cta {
+      flex-direction: column;
+      align-items: stretch;
+    }
+    .hero__cta .btn {
+      justify-content: center;
+    }
+  }
 
   .hero__visual {
     position: relative;
+    isolation: isolate;
+  }
+  /* Accent frame — a subtle gradient ring + corner ticks around the
+     hero image so it reads as a deliberate object, not a loose photo. */
+  .hero__visual::before {
+    content: "";
+    position: absolute;
+    inset: -0.6rem;
+    border-radius: calc(var(--radius) + 0.6rem);
+    padding: 1px;
+    background: linear-gradient(
+      150deg,
+      var(--accent-line),
+      transparent 40%,
+      transparent 60%,
+      rgba(143, 109, 255, 0.35)
+    );
+    -webkit-mask: linear-gradient(#000 0 0) content-box,
+      linear-gradient(#000 0 0);
+    -webkit-mask-composite: xor;
+    mask-composite: exclude;
+    pointer-events: none;
+    z-index: -1;
+  }
+  .hero__visual :global(.asset) {
+    box-shadow: var(--shadow-lg);
   }
   .hero__chip {
     position: absolute;
@@ -213,12 +250,13 @@ const highlightCaps = capabilities.filter((c) => c.status === 'working').slice(0
     display: inline-flex;
     align-items: center;
     gap: 0.55rem;
-    padding: 0.55rem 1rem;
+    padding: 0.6rem 1.05rem;
     font-size: 0.7rem;
     letter-spacing: 0.08em;
     text-transform: uppercase;
     white-space: nowrap;
     color: var(--text-muted);
+    box-shadow: var(--shadow-md);
   }
   .hero__chip-dot {
     width: 7px;
@@ -302,6 +340,7 @@ const highlightCaps = capabilities.filter((c) => c.status === 'working').slice(0
   .sp__grid {
     display: grid;
     gap: 1.5rem;
+    align-items: start;
   }
   @media (min-width: 760px) {
     .sp__grid {

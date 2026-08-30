@@ -56,6 +56,7 @@ const fullTitle = title === site.metaTitle ? title : `${title}`;
   <body>
     <a class="skip-link" href="#main">Skip to content</a>
     <Nav />
+    <div class="scroll-progress" aria-hidden="true"><span data-scroll-progress></span></div>
     <main id="main" transition:animate={fade({ duration: '0.28s' })}>
       <slot />
     </main>
@@ -167,6 +168,145 @@ const fullTitle = title === site.metaTitle ? title : `${title}`;
 
       initTilt();
       document.addEventListener('astro:page-load', initTilt);
+    </script>
+
+    <script>
+      // ---- Scroll progress bar ----
+      // ClientRouter swaps <body>, so re-resolve the bar each time.
+      let bar = document.querySelector<HTMLElement>('[data-scroll-progress]');
+      const syncProgress = () => {
+        if (!bar || !bar.isConnected) {
+          bar = document.querySelector<HTMLElement>('[data-scroll-progress]');
+        }
+        if (!bar) return;
+        const doc = document.documentElement;
+        const max = doc.scrollHeight - doc.clientHeight;
+        const p = max > 4 ? Math.min(1, doc.scrollTop / max) : 0;
+        bar.style.transform = `scaleX(${p.toFixed(4)})`;
+      };
+      window.addEventListener('scroll', syncProgress, { passive: true });
+      window.addEventListener('resize', syncProgress);
+      syncProgress();
+
+      // ---- Parallax drift on [data-parallax] elements ----
+      const reduceMotion = window.matchMedia(
+        '(prefers-reduced-motion: reduce)'
+      ).matches;
+
+      let parallaxEls: HTMLElement[] = [];
+      let ticking = false;
+      const applyParallax = () => {
+        ticking = false;
+        const vh = window.innerHeight;
+        for (const el of parallaxEls) {
+          const rect = el.getBoundingClientRect();
+          if (rect.bottom < -vh || rect.top > vh * 2) continue;
+          const speed = parseFloat(el.dataset.parallax || '0.12');
+          const mid = rect.top + rect.height / 2 - vh / 2;
+          el.style.transform = `translate3d(0, ${(-mid * speed).toFixed(1)}px, 0)`;
+        }
+      };
+      const onParallaxScroll = () => {
+        if (ticking || reduceMotion) return;
+        ticking = true;
+        requestAnimationFrame(applyParallax);
+      };
+      if (!reduceMotion) {
+        window.addEventListener('scroll', onParallaxScroll, { passive: true });
+        window.addEventListener('resize', onParallaxScroll);
+      }
+
+      // ---- Headline decode ----
+      // The final text is always restored, even if anything throws, so a
+      // headline can never get stuck mid-scramble.
+      const DECODE_CHARS = 'ABCDEFGHJKLMNPQRSTUVWXYZ0123456789#%<>/';
+      const decode = (el: HTMLElement) => {
+        const final = el.dataset.decodeText ?? el.textContent ?? '';
+        el.dataset.decodeText = final;
+        if (reduceMotion || !final.trim()) {
+          el.textContent = final;
+          return;
+        }
+        const chars = final.split('');
+        const total = 26;
+        let frame = 0;
+        const settleAt = (i: number) =>
+          Math.floor((i / Math.max(1, chars.length)) * (total - 8)) + 4;
+        window.setTimeout(() => {
+          if (el.textContent !== final) el.textContent = final;
+        }, total * 32 + 400);
+        const tick = () => {
+          try {
+            el.textContent = chars
+              .map((c, i) => {
+                if (c === ' ' || c === '\n') return c;
+                if (frame >= settleAt(i)) return c;
+                return DECODE_CHARS[
+                  (Math.random() * DECODE_CHARS.length) | 0
+                ];
+              })
+              .join('');
+          } catch {
+            el.textContent = final;
+            return;
+          }
+          frame++;
+          if (frame <= total) window.setTimeout(tick, 28);
+          else el.textContent = final;
+        };
+        tick();
+      };
+
+      // ---- "In view" toggles for banded sections and signal flow ----
+      const litObserver = new IntersectionObserver(
+        (entries) => {
+          for (const e of entries) {
+            if (e.isIntersecting) {
+              e.target.classList.add('is-lit');
+              litObserver.unobserve(e.target);
+            }
+          }
+        },
+        { rootMargin: '0px 0px -12% 0px', threshold: 0.15 }
+      );
+      const flowObserver = new IntersectionObserver(
+        (entries) => {
+          for (const e of entries) {
+            e.target.classList.toggle('flow-active', e.isIntersecting);
+          }
+        },
+        { threshold: 0 }
+      );
+
+      const initMotion = () => {
+        // parallax
+        parallaxEls = [
+          ...document.querySelectorAll<HTMLElement>('[data-parallax]'),
+        ];
+        if (!reduceMotion && parallaxEls.length) applyParallax();
+
+        // decode
+        document
+          .querySelectorAll<HTMLElement>('[data-decode]')
+          .forEach((el) => {
+            if (el.dataset.decodeBound === 'true') return;
+            el.dataset.decodeBound = 'true';
+            decode(el);
+          });
+
+        // banded sections + flow blocks
+        document
+          .querySelectorAll('.section.band')
+          .forEach((el) => litObserver.observe(el));
+        document
+          .querySelectorAll('[data-flow]')
+          .forEach((el) => flowObserver.observe(el));
+
+        syncProgress();
+      };
+
+      initMotion();
+      document.addEventListener('astro:page-load', initMotion);
     </script>
   </body>
 </html>

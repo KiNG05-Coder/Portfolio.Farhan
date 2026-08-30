@@ -89,7 +89,7 @@ import { link } from '../lib/link';
         title="Technical skills"
         lead="Organised by area. These are tools and skills used in real projects — no skill levels or certifications are implied."
       />
-      <div class="skills__grid">
+      <div class="skills__grid stagger">
         {skillGroups.map((g, i) => <SkillGroup group={g} index={i} />)}
       </div>
     </div>
@@ -172,6 +172,7 @@ import { link } from '../lib/link';
   .skills__grid {
     display: grid;
     gap: 1.5rem;
+    align-items: start;
   }
   @media (min-width: 760px) {
     .skills__grid {

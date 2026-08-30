@@ -1,0 +1,403 @@
+---
+/* ============================================================
+   RIVERIX SCENE
+   Animated stand-in for a Riverix photo: an autonomous surface
+   vessel patrolling a GPS-waypoint route over rippling water,
+   pinging obstacle sonar at each waypoint and streaming live
+   water-quality telemetry to a corner HUD.
+
+   Canvas-based, accent-tinted, pauses when off-screen or the
+   tab is hidden, and draws a single static frame for
+   reduced-motion users. Content is never hidden by script — the
+   frame, HUD and a fallback still render if the canvas fails.
+   ============================================================ */
+---
+
+<figure
+  class="rvx"
+  data-reveal
+  aria-label="Animation: the Riverix surface robot follows a line of GPS waypoints across rippling water, emitting obstacle sonar and streaming pH, TDS and turbidity readings."
+>
+  <canvas class="rvx__canvas" data-riverix aria-hidden="true"></canvas>
+
+  <div class="rvx__hud mono" aria-hidden="true">
+    <span class="rvx__tag">RIVERIX · AUTONOMOUS PATROL</span>
+    <dl class="rvx__readout">
+      <div><dt>pH</dt><dd data-rvx="ph">7.2</dd></div>
+      <div><dt>TDS</dt><dd data-rvx="tds">318<small>ppm</small></dd></div>
+      <div><dt>TURB</dt><dd data-rvx="turb">12<small>NTU</small></dd></div>
+    </dl>
+  </div>
+
+  <span class="rvx__corner rvx__corner--tl" aria-hidden="true"></span>
+  <span class="rvx__corner rvx__corner--br" aria-hidden="true"></span>
+</figure>
+
+<style>
+  .rvx {
+    position: relative;
+    aspect-ratio: 4 / 3;
+    border-radius: var(--radius);
+    overflow: hidden;
+    border: 1px solid var(--border);
+    background:
+      radial-gradient(
+        120% 90% at 50% 0%,
+        rgba(91, 157, 255, 0.08),
+        transparent 60%
+      ),
+      var(--surface);
+  }
+  .rvx__canvas {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+  }
+
+  .rvx__hud {
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 1rem;
+    padding: 0.9rem 1rem;
+    background: linear-gradient(
+      to top,
+      color-mix(in srgb, var(--surface) 88%, transparent),
+      transparent
+    );
+  }
+  .rvx__tag {
+    font-size: 0.58rem;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--accent);
+  }
+  .rvx__readout {
+    display: flex;
+    gap: 0.9rem;
+  }
+  .rvx__readout div {
+    display: grid;
+    gap: 0.1rem;
+    justify-items: end;
+  }
+  .rvx__readout dt {
+    font-size: 0.5rem;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--text-dim);
+  }
+  .rvx__readout dd {
+    font-size: 0.82rem;
+    color: var(--text);
+    font-variant-numeric: tabular-nums;
+  }
+  .rvx__readout small {
+    font-size: 0.5rem;
+    color: var(--text-dim);
+    margin-left: 0.15rem;
+  }
+
+  .rvx__corner {
+    position: absolute;
+    width: 14px;
+    height: 14px;
+    border: 1px solid var(--accent-line);
+    pointer-events: none;
+  }
+  .rvx__corner--tl {
+    top: 10px;
+    left: 10px;
+    border-right: 0;
+    border-bottom: 0;
+  }
+  .rvx__corner--br {
+    right: 10px;
+    bottom: 10px;
+    border-left: 0;
+    border-top: 0;
+  }
+
+  @media (max-width: 380px) {
+    .rvx__readout {
+      display: none;
+    }
+  }
+</style>
+
+<script>
+  type Ring = { x: number; y: number; r: number; max: number; born: number };
+
+  const initRiverix = () => {
+    const reduce = window.matchMedia(
+      '(prefers-reduced-motion: reduce)'
+    ).matches;
+
+    document
+      .querySelectorAll<HTMLCanvasElement>('[data-riverix]')
+      .forEach((canvas) => {
+        if (canvas.dataset.bound === 'true') return;
+        canvas.dataset.bound = 'true';
+
+        const ctx = canvas.getContext('2d');
+        const host = canvas.parentElement as HTMLElement | null;
+        if (!ctx || !host) return;
+
+        const ACCENT = '91, 157, 255';
+        const WP = [
+          { x: 0.09, y: 0.72 },
+          { x: 0.29, y: 0.4 },
+          { x: 0.5, y: 0.6 },
+          { x: 0.72, y: 0.32 },
+          { x: 0.92, y: 0.54 },
+        ];
+
+        const readouts = {
+          ph: host.querySelector<HTMLElement>('[data-rvx="ph"]'),
+          tds: host.querySelector<HTMLElement>('[data-rvx="tds"]'),
+          turb: host.querySelector<HTMLElement>('[data-rvx="turb"]'),
+        };
+
+        let w = 0;
+        let h = 0;
+        let dpr = 1;
+        let raf = 0;
+        let running = false;
+        let t0 = 0;
+        let lastSeg = -1;
+        let lastTele = 0;
+        let rings: Ring[] = [];
+
+        const resize = () => {
+          const rect = host.getBoundingClientRect();
+          dpr = Math.min(window.devicePixelRatio || 1, 2);
+          w = rect.width;
+          h = rect.height;
+          canvas.width = Math.round(w * dpr);
+          canvas.height = Math.round(h * dpr);
+          ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+        };
+
+        const pts = () => WP.map((p) => ({ x: p.x * w, y: p.y * h }));
+
+        // Point along the waypoint polyline for s in [0, 1].
+        const pathPos = (s: number) => {
+          const P = pts();
+          const seg: number[] = [];
+          let total = 0;
+          for (let i = 0; i < P.length - 1; i++) {
+            const d = Math.hypot(P[i + 1].x - P[i].x, P[i + 1].y - P[i].y);
+            seg.push(d);
+            total += d;
+          }
+          let target = Math.max(0, Math.min(1, s)) * total;
+          for (let i = 0; i < seg.length; i++) {
+            if (target <= seg[i] || i === seg.length - 1) {
+              const f = seg[i] === 0 ? 0 : Math.min(1, target / seg[i]);
+              return {
+                x: P[i].x + (P[i + 1].x - P[i].x) * f,
+                y: P[i].y + (P[i + 1].y - P[i].y) * f,
+                seg: i,
+              };
+            }
+            target -= seg[i];
+          }
+          return { x: P[P.length - 1].x, y: P[P.length - 1].y, seg: seg.length - 1 };
+        };
+
+        const drawWater = (tt: number) => {
+          for (let b = 0; b < 5; b++) {
+            const yBase = h * (0.22 + b * 0.15);
+            ctx.beginPath();
+            for (let x = 0; x <= w; x += 8) {
+              const y =
+                yBase +
+                Math.sin(x * 0.021 + tt * 0.9 + b) * 4 +
+                Math.sin(x * 0.011 - tt * 0.5 + b * 2) * 3;
+              if (x === 0) ctx.moveTo(x, y);
+              else ctx.lineTo(x, y);
+            }
+            ctx.strokeStyle = `rgba(${ACCENT}, ${0.05 + b * 0.02})`;
+            ctx.lineWidth = 1;
+            ctx.stroke();
+          }
+        };
+
+        const drawRoute = (tt: number) => {
+          const P = pts();
+          ctx.setLineDash([4, 6]);
+          ctx.lineDashOffset = -tt * 22;
+          ctx.beginPath();
+          P.forEach((p, i) => (i ? ctx.lineTo(p.x, p.y) : ctx.moveTo(p.x, p.y)));
+          ctx.strokeStyle = `rgba(${ACCENT}, 0.32)`;
+          ctx.lineWidth = 1.25;
+          ctx.stroke();
+          ctx.setLineDash([]);
+          P.forEach((p) => {
+            ctx.beginPath();
+            ctx.arc(p.x, p.y, 3, 0, Math.PI * 2);
+            ctx.fillStyle = `rgba(${ACCENT}, 0.5)`;
+            ctx.fill();
+          });
+        };
+
+        const frame = (now: number) => {
+          if (!canvas.isConnected) {
+            running = false;
+            return;
+          }
+          if (!t0) t0 = now;
+          const tt = (now - t0) / 1000;
+          ctx.clearRect(0, 0, w, h);
+
+          drawWater(tt);
+          drawRoute(tt);
+
+          // Vessel ping-pongs along the route.
+          const period = 11;
+          const phase = (tt % (period * 2)) / period;
+          const s = phase <= 1 ? phase : 2 - phase;
+          const pos = pathPos(s);
+          const dir = phase <= 1 ? 1 : -1;
+          const ahead = pathPos(s + 0.015 * dir);
+          const angle = Math.atan2(ahead.y - pos.y, ahead.x - pos.x);
+
+          // Sonar ping whenever the vessel enters a new segment.
+          if (pos.seg !== lastSeg) {
+            lastSeg = pos.seg;
+            rings.push({
+              x: pos.x,
+              y: pos.y,
+              r: 5,
+              max: Math.min(w, h) * 0.3,
+              born: now,
+            });
+          }
+          rings = rings.filter((rg) => {
+            const age = (now - rg.born) / 1000;
+            rg.r = 5 + age * 58;
+            if (rg.r > rg.max) return false;
+            ctx.beginPath();
+            ctx.arc(rg.x, rg.y, rg.r, 0, Math.PI * 2);
+            ctx.strokeStyle = `rgba(${ACCENT}, ${0.4 * (1 - rg.r / rg.max)})`;
+            ctx.lineWidth = 1;
+            ctx.stroke();
+            return true;
+          });
+
+          // Telemetry tether to the HUD corner.
+          ctx.beginPath();
+          ctx.moveTo(pos.x, pos.y);
+          ctx.lineTo(20, h - 20);
+          ctx.strokeStyle = `rgba(${ACCENT}, 0.14)`;
+          ctx.lineWidth = 1;
+          ctx.stroke();
+
+          // Vessel.
+          ctx.save();
+          ctx.translate(pos.x, pos.y);
+          ctx.rotate(angle);
+          ctx.beginPath();
+          ctx.moveTo(9, 0);
+          ctx.lineTo(-6, 5);
+          ctx.lineTo(-3, 0);
+          ctx.lineTo(-6, -5);
+          ctx.closePath();
+          ctx.fillStyle = `rgba(120, 178, 255, 0.95)`;
+          ctx.fill();
+          ctx.restore();
+          ctx.beginPath();
+          ctx.arc(pos.x, pos.y, 2.5, 0, Math.PI * 2);
+          ctx.fillStyle = 'rgba(255, 255, 255, 0.9)';
+          ctx.fill();
+
+          // Drift the sensor numbers a little as the vessel moves.
+          if (now - lastTele > 1100) {
+            lastTele = now;
+            const wobble = (base: number, amp: number, dp = 0) =>
+              (base + (Math.random() - 0.5) * amp).toFixed(dp);
+            if (readouts.ph) readouts.ph.textContent = wobble(7.15, 0.5, 2);
+            if (readouts.tds)
+              readouts.tds.innerHTML = `${wobble(320, 40)}<small>ppm</small>`;
+            if (readouts.turb)
+              readouts.turb.innerHTML = `${wobble(12, 8)}<small>NTU</small>`;
+          }
+
+          raf = requestAnimationFrame(frame);
+        };
+
+        const staticFrame = () => {
+          t0 = 0;
+          ctx.clearRect(0, 0, w, h);
+          drawWater(0.6);
+          drawRoute(0);
+          const pos = pathPos(0.46);
+          ctx.beginPath();
+          ctx.arc(pos.x, pos.y, Math.min(w, h) * 0.16, 0, Math.PI * 2);
+          ctx.strokeStyle = `rgba(${ACCENT}, 0.22)`;
+          ctx.lineWidth = 1;
+          ctx.stroke();
+          ctx.save();
+          ctx.translate(pos.x, pos.y);
+          ctx.beginPath();
+          ctx.moveTo(9, 0);
+          ctx.lineTo(-6, 5);
+          ctx.lineTo(-3, 0);
+          ctx.lineTo(-6, -5);
+          ctx.closePath();
+          ctx.fillStyle = 'rgba(120, 178, 255, 0.95)';
+          ctx.fill();
+          ctx.restore();
+        };
+
+        const start = () => {
+          if (running || reduce) return;
+          running = true;
+          raf = requestAnimationFrame(frame);
+        };
+        const stop = () => {
+          running = false;
+          cancelAnimationFrame(raf);
+        };
+
+        resize();
+        if (reduce) {
+          staticFrame();
+          return;
+        }
+        staticFrame();
+
+        const io = new IntersectionObserver(
+          (entries) => {
+            for (const e of entries) {
+              if (e.isIntersecting) start();
+              else stop();
+            }
+          },
+          { threshold: 0 }
+        );
+        io.observe(canvas);
+
+        let rt = 0;
+        window.addEventListener('resize', () => {
+          window.clearTimeout(rt);
+          rt = window.setTimeout(() => {
+            resize();
+            if (!running) staticFrame();
+          }, 180);
+        });
+        document.addEventListener('visibilitychange', () => {
+          if (document.hidden) stop();
+          else if (canvas.isConnected) start();
+        });
+      });
+  };
+
+  initRiverix();
+  document.addEventListener('astro:page-load', initRiverix);
+</script>

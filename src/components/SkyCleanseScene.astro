@@ -1,0 +1,373 @@
+---
+/* ============================================================
+   SKY-CLEANSE SCENE
+   Animated stand-in for a Sky-Cleanse photo: a hovering
+   environmental drone drawing polluted air — drifting
+   particulate dots — into a central MOXI filter intake, where
+   the particles are captured and fade out. A corner HUD counts
+   the air-quality index down as the air clears.
+
+   Canvas-based, accent-tinted, pauses when off-screen or the
+   tab is hidden, and draws a single static frame for
+   reduced-motion users. Content is never hidden by script.
+   ============================================================ */
+---
+
+<figure
+  class="skc"
+  data-reveal
+  aria-label="Animation: the Sky-Cleanse drone hovers while pulling airborne particulate matter into its central filter, and an air-quality index falls as the air is cleaned."
+>
+  <canvas class="skc__canvas" data-skycleanse aria-hidden="true"></canvas>
+
+  <div class="skc__hud mono" aria-hidden="true">
+    <span class="skc__tag">SKY-CLEANSE · MOXI INTAKE</span>
+    <div class="skc__aqi">
+      <span class="skc__aqi-num" data-skc="aqi">168</span>
+      <span class="skc__aqi-label">AQI</span>
+    </div>
+  </div>
+
+  <div class="skc__sensors mono" aria-hidden="true">
+    <span>PMS7003</span><span>MQ-7</span><span>MH-Z19E</span>
+  </div>
+
+  <span class="skc__corner skc__corner--tl" aria-hidden="true"></span>
+  <span class="skc__corner skc__corner--br" aria-hidden="true"></span>
+</figure>
+
+<style>
+  .skc {
+    position: relative;
+    aspect-ratio: 4 / 3;
+    border-radius: var(--radius);
+    overflow: hidden;
+    border: 1px solid var(--border);
+    background:
+      radial-gradient(
+        90% 70% at 50% 42%,
+        rgba(91, 157, 255, 0.1),
+        transparent 65%
+      ),
+      var(--surface);
+  }
+  .skc__canvas {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+  }
+
+  .skc__hud {
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 1rem;
+    padding: 0.9rem 1rem;
+    background: linear-gradient(
+      to top,
+      color-mix(in srgb, var(--surface) 88%, transparent),
+      transparent
+    );
+  }
+  .skc__tag {
+    font-size: 0.58rem;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--accent);
+  }
+  .skc__aqi {
+    display: flex;
+    align-items: baseline;
+    gap: 0.3rem;
+  }
+  .skc__aqi-num {
+    font-size: 1.1rem;
+    color: var(--text);
+    font-variant-numeric: tabular-nums;
+  }
+  .skc__aqi-label {
+    font-size: 0.5rem;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--text-dim);
+  }
+
+  .skc__sensors {
+    position: absolute;
+    top: 0.9rem;
+    left: 1rem;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.35rem;
+  }
+  .skc__sensors span {
+    font-size: 0.5rem;
+    letter-spacing: 0.1em;
+    padding: 0.2rem 0.4rem;
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    color: var(--text-dim);
+  }
+
+  .skc__corner {
+    position: absolute;
+    width: 14px;
+    height: 14px;
+    border: 1px solid var(--accent-line);
+    pointer-events: none;
+  }
+  .skc__corner--tl {
+    top: 10px;
+    left: 10px;
+    border-right: 0;
+    border-bottom: 0;
+  }
+  .skc__corner--br {
+    right: 10px;
+    bottom: 10px;
+    border-left: 0;
+    border-top: 0;
+  }
+
+  @media (max-width: 380px) {
+    .skc__sensors {
+      display: none;
+    }
+  }
+</style>
+
+<script>
+  type Mote = { a: number; dist: number; speed: number; r: number; hue: number };
+
+  const initSkyCleanse = () => {
+    const reduce = window.matchMedia(
+      '(prefers-reduced-motion: reduce)'
+    ).matches;
+
+    document
+      .querySelectorAll<HTMLCanvasElement>('[data-skycleanse]')
+      .forEach((canvas) => {
+        if (canvas.dataset.bound === 'true') return;
+        canvas.dataset.bound = 'true';
+
+        const ctx = canvas.getContext('2d');
+        const host = canvas.parentElement as HTMLElement | null;
+        if (!ctx || !host) return;
+
+        const ACCENT = '91, 157, 255';
+        const aqiEl = host.querySelector<HTMLElement>('[data-skc="aqi"]');
+
+        let w = 0;
+        let h = 0;
+        let dpr = 1;
+        let raf = 0;
+        let running = false;
+        let t0 = 0;
+        let motes: Mote[] = [];
+        let aqi = 168;
+
+        const spawn = (): Mote => ({
+          a: Math.random() * Math.PI * 2,
+          dist: Math.max(w, h) * (0.45 + Math.random() * 0.25),
+          speed: 0.4 + Math.random() * 0.7,
+          r: 0.8 + Math.random() * 1.8,
+          hue: Math.random(),
+        });
+
+        const resize = () => {
+          const rect = host.getBoundingClientRect();
+          dpr = Math.min(window.devicePixelRatio || 1, 2);
+          w = rect.width;
+          h = rect.height;
+          canvas.width = Math.round(w * dpr);
+          canvas.height = Math.round(h * dpr);
+          ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+          const target = Math.round((w * h) / 1900);
+          motes = Array.from({ length: Math.max(40, Math.min(150, target)) }, spawn);
+        };
+
+        const cx = () => w / 2;
+        const cy = () => h * 0.42;
+
+        const drawDrone = (tt: number) => {
+          const bob = Math.sin(tt * 1.6) * 3;
+          const x = cx();
+          const y = cy() + bob;
+          const span = Math.min(w, h) * 0.13;
+
+          // Intake pull rings.
+          for (let i = 0; i < 3; i++) {
+            const p = ((tt * 0.6 + i / 3) % 1);
+            ctx.beginPath();
+            ctx.arc(x, y, span * (0.5 + p * 2.4), 0, Math.PI * 2);
+            ctx.strokeStyle = `rgba(${ACCENT}, ${0.28 * (1 - p)})`;
+            ctx.lineWidth = 1;
+            ctx.stroke();
+          }
+
+          // Body.
+          ctx.fillStyle = 'rgba(120, 178, 255, 0.95)';
+          ctx.strokeStyle = `rgba(${ACCENT}, 0.6)`;
+          ctx.lineWidth = 1.5;
+          ctx.beginPath();
+          ctx.roundRect?.(x - span * 0.5, y - span * 0.32, span, span * 0.64, 4);
+          if (!ctx.roundRect) ctx.rect(x - span * 0.5, y - span * 0.32, span, span * 0.64);
+          ctx.fill();
+
+          // Arms + rotors.
+          for (const s of [-1, 1]) {
+            const ax = x + s * span * 1.15;
+            ctx.beginPath();
+            ctx.moveTo(x + s * span * 0.4, y);
+            ctx.lineTo(ax, y - span * 0.35);
+            ctx.strokeStyle = `rgba(${ACCENT}, 0.7)`;
+            ctx.lineWidth = 2;
+            ctx.stroke();
+            const spin = tt * 26 * s;
+            for (let k = 0; k < 2; k++) {
+              const ang = spin + k * Math.PI;
+              ctx.beginPath();
+              ctx.ellipse(
+                ax,
+                y - span * 0.35,
+                span * 0.55,
+                span * 0.12,
+                ang,
+                0,
+                Math.PI * 2
+              );
+              ctx.strokeStyle = `rgba(${ACCENT}, 0.35)`;
+              ctx.lineWidth = 1;
+              ctx.stroke();
+            }
+          }
+
+          // Intake core.
+          ctx.beginPath();
+          ctx.arc(x, y, span * 0.22 + Math.sin(tt * 4) * 1.2, 0, Math.PI * 2);
+          ctx.fillStyle = 'rgba(255, 255, 255, 0.9)';
+          ctx.fill();
+
+          return { x, y };
+        };
+
+        const frame = (now: number) => {
+          if (!canvas.isConnected) {
+            running = false;
+            return;
+          }
+          if (!t0) t0 = now;
+          const tt = (now - t0) / 1000;
+          ctx.clearRect(0, 0, w, h);
+
+          const core = drawDrone(tt);
+          let captured = 0;
+
+          for (const m of motes) {
+            m.dist -= m.speed;
+            m.a += 0.004;
+            const x = core.x + Math.cos(m.a) * m.dist;
+            const y = core.y + Math.sin(m.a) * m.dist * 0.82;
+            const near = Math.max(0, 1 - m.dist / (Math.max(w, h) * 0.7));
+
+            if (m.dist <= Math.min(w, h) * 0.06) {
+              captured++;
+              Object.assign(m, spawn());
+              continue;
+            }
+
+            ctx.beginPath();
+            ctx.arc(x, y, m.r, 0, Math.PI * 2);
+            const g = m.hue > 0.55;
+            ctx.fillStyle = g
+              ? `rgba(150, 160, 175, ${0.25 + near * 0.4})`
+              : `rgba(${ACCENT}, ${0.3 + near * 0.5})`;
+            ctx.fill();
+
+            // Streak toward the intake as it gets close.
+            if (near > 0.5) {
+              ctx.beginPath();
+              ctx.moveTo(x, y);
+              ctx.lineTo(
+                x - Math.cos(m.a) * 6 * near,
+                y - Math.sin(m.a) * 6 * near
+              );
+              ctx.strokeStyle = `rgba(${ACCENT}, ${0.25 * near})`;
+              ctx.lineWidth = 1;
+              ctx.stroke();
+            }
+          }
+
+          // AQI eases down as motes are captured, then slowly rebreathes.
+          aqi += (captured > 0 ? -captured * 0.6 : 0.25) ;
+          aqi = Math.max(38, Math.min(172, aqi));
+          if (aqiEl) aqiEl.textContent = String(Math.round(aqi));
+
+          raf = requestAnimationFrame(frame);
+        };
+
+        const staticFrame = () => {
+          t0 = 0;
+          ctx.clearRect(0, 0, w, h);
+          const core = drawDrone(0.4);
+          for (const m of motes.slice(0, 60)) {
+            const x = core.x + Math.cos(m.a) * m.dist;
+            const y = core.y + Math.sin(m.a) * m.dist * 0.82;
+            ctx.beginPath();
+            ctx.arc(x, y, m.r, 0, Math.PI * 2);
+            ctx.fillStyle =
+              m.hue > 0.55
+                ? 'rgba(150, 160, 175, 0.4)'
+                : `rgba(${ACCENT}, 0.5)`;
+            ctx.fill();
+          }
+        };
+
+        const start = () => {
+          if (running || reduce) return;
+          running = true;
+          raf = requestAnimationFrame(frame);
+        };
+        const stop = () => {
+          running = false;
+          cancelAnimationFrame(raf);
+        };
+
+        resize();
+        staticFrame();
+        if (reduce) return;
+
+        const io = new IntersectionObserver(
+          (entries) => {
+            for (const e of entries) {
+              if (e.isIntersecting) start();
+              else stop();
+            }
+          },
+          { threshold: 0 }
+        );
+        io.observe(canvas);
+
+        let rt = 0;
+        window.addEventListener('resize', () => {
+          window.clearTimeout(rt);
+          rt = window.setTimeout(() => {
+            resize();
+            if (!running) staticFrame();
+          }, 180);
+        });
+        document.addEventListener('visibilitychange', () => {
+          if (document.hidden) stop();
+          else if (canvas.isConnected) start();
+        });
+      });
+  };
+
+  initSkyCleanse();
+  document.addEventListener('astro:page-load', initSkyCleanse);
+</script>

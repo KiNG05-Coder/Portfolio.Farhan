@@ -1,0 +1,217 @@
+---
+/* ============================================================
+   PARTICLE FIELD
+   A slow, sparse constellation of nodes and links that sits
+   behind hero content. Canvas-based, accent-tinted, cursor
+   aware. Pauses when off-screen or when the tab is hidden, and
+   renders a single static frame for reduced-motion users.
+
+   Drop <ParticleField /> inside any `position: relative;
+   overflow: hidden` section, after the .grid-bg span.
+   ============================================================ */
+
+export interface Props {
+  /** Roughly how dense the field is. Lower = more particles. */
+  area?: number;
+}
+const { area = 19000 } = Astro.props;
+---
+
+<canvas
+  class="pfield"
+  data-particle-field
+  data-area={area}
+  aria-hidden="true"></canvas>
+
+<style>
+  .pfield {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 0;
+    pointer-events: none;
+    display: block;
+  }
+</style>
+
+<script>
+  type P = { x: number; y: number; vx: number; vy: number; r: number };
+
+  const initFields = () => {
+    const reduce = window.matchMedia(
+      '(prefers-reduced-motion: reduce)'
+    ).matches;
+
+    document
+      .querySelectorAll<HTMLCanvasElement>('[data-particle-field]')
+      .forEach((canvas) => {
+        if (canvas.dataset.fieldBound === 'true') return;
+        canvas.dataset.fieldBound = 'true';
+
+        const ctx = canvas.getContext('2d');
+        const host = canvas.parentElement;
+        if (!ctx || !host) return;
+
+        const AREA = Number(canvas.dataset.area) || 19000;
+        const LINK = 132;
+        let w = 0;
+        let h = 0;
+        let dpr = 1;
+        let particles: P[] = [];
+        const pointer = { x: -999, y: -999, on: false };
+        let running = false;
+        let raf = 0;
+
+        const build = () => {
+          const rect = host.getBoundingClientRect();
+          dpr = Math.min(window.devicePixelRatio || 1, 2);
+          w = rect.width;
+          h = rect.height;
+          canvas.width = Math.round(w * dpr);
+          canvas.height = Math.round(h * dpr);
+          ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+
+          const count = Math.max(
+            16,
+            Math.min(78, Math.round((w * h) / AREA))
+          );
+          particles = Array.from({ length: count }, () => ({
+            x: Math.random() * w,
+            y: Math.random() * h,
+            vx: (Math.random() - 0.5) * 0.3,
+            vy: (Math.random() - 0.5) * 0.3,
+            r: Math.random() * 1.1 + 0.7,
+          }));
+        };
+
+        const draw = () => {
+          ctx.clearRect(0, 0, w, h);
+
+          for (const p of particles) {
+            ctx.beginPath();
+            ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+            ctx.fillStyle = 'rgba(91, 157, 255, 0.55)';
+            ctx.fill();
+          }
+
+          for (let i = 0; i < particles.length; i++) {
+            const a = particles[i];
+            for (let j = i + 1; j < particles.length; j++) {
+              const b = particles[j];
+              const dx = a.x - b.x;
+              const dy = a.y - b.y;
+              const d = Math.hypot(dx, dy);
+              if (d > LINK) continue;
+              const alpha = (1 - d / LINK) * 0.22;
+              ctx.strokeStyle = `rgba(91, 157, 255, ${alpha})`;
+              ctx.lineWidth = 1;
+              ctx.beginPath();
+              ctx.moveTo(a.x, a.y);
+              ctx.lineTo(b.x, b.y);
+              ctx.stroke();
+            }
+
+            if (pointer.on) {
+              const dx = a.x - pointer.x;
+              const dy = a.y - pointer.y;
+              const d = Math.hypot(dx, dy);
+              if (d < LINK * 1.6) {
+                const alpha = (1 - d / (LINK * 1.6)) * 0.5;
+                ctx.strokeStyle = `rgba(120, 178, 255, ${alpha})`;
+                ctx.lineWidth = 1;
+                ctx.beginPath();
+                ctx.moveTo(a.x, a.y);
+                ctx.lineTo(pointer.x, pointer.y);
+                ctx.stroke();
+              }
+            }
+          }
+        };
+
+        const step = () => {
+          if (!canvas.isConnected) {
+            running = false;
+            return;
+          }
+          for (const p of particles) {
+            p.x += p.vx;
+            p.y += p.vy;
+            if (p.x < -20) p.x = w + 20;
+            else if (p.x > w + 20) p.x = -20;
+            if (p.y < -20) p.y = h + 20;
+            else if (p.y > h + 20) p.y = -20;
+
+            if (pointer.on) {
+              const dx = p.x - pointer.x;
+              const dy = p.y - pointer.y;
+              const d = Math.hypot(dx, dy);
+              if (d < 120 && d > 0.01) {
+                const f = (1 - d / 120) * 0.4;
+                p.x += (dx / d) * f;
+                p.y += (dy / d) * f;
+              }
+            }
+          }
+          draw();
+          raf = requestAnimationFrame(step);
+        };
+
+        const start = () => {
+          if (running || reduce) return;
+          running = true;
+          raf = requestAnimationFrame(step);
+        };
+        const stop = () => {
+          running = false;
+          cancelAnimationFrame(raf);
+        };
+
+        build();
+        draw();
+
+        if (reduce) return;
+
+        const io = new IntersectionObserver(
+          (entries) => {
+            for (const e of entries) {
+              if (e.isIntersecting) start();
+              else stop();
+            }
+          },
+          { threshold: 0 }
+        );
+        io.observe(canvas);
+
+        let resizeT = 0;
+        const onResize = () => {
+          window.clearTimeout(resizeT);
+          resizeT = window.setTimeout(() => {
+            build();
+            draw();
+          }, 180);
+        };
+        window.addEventListener('resize', onResize);
+
+        host.addEventListener('pointermove', (e: PointerEvent) => {
+          const rect = host.getBoundingClientRect();
+          pointer.x = e.clientX - rect.left;
+          pointer.y = e.clientY - rect.top;
+          pointer.on = true;
+        });
+        host.addEventListener('pointerleave', () => {
+          pointer.on = false;
+          pointer.x = -999;
+          pointer.y = -999;
+        });
+
+        document.addEventListener('visibilitychange', () => {
+          if (document.hidden) stop();
+          else if (canvas.isConnected) start();
+        });
+      });
+  };
+
+  initFields();
+  document.addEventListener('astro:page-load', initFields);
+</script>

@@ -8,14 +8,29 @@
   /* ---- Surfaces ---- */
   --bg: #08090b;
   --bg-elev: #0d0f12;
-  --surface: #101318;
-  --surface-raised: #161a20;
+  --surface: #111419;
+  --surface-raised: #171b22;
   --surface-glass: rgba(22, 26, 32, 0.6);
+  /* gradient used on raised panels for a soft top-lit look */
+  --surface-grad: linear-gradient(
+    180deg,
+    rgba(255, 255, 255, 0.035),
+    rgba(255, 255, 255, 0) 42%
+  );
 
   /* ---- Lines ---- */
-  --border: rgba(255, 255, 255, 0.08);
-  --border-strong: rgba(255, 255, 255, 0.16);
+  --border: rgba(255, 255, 255, 0.09);
+  --border-strong: rgba(255, 255, 255, 0.17);
   --grid-line: rgba(255, 255, 255, 0.028);
+
+  /* ---- Elevation (dark-tuned: deep and soft) ---- */
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.4);
+  --shadow-md: 0 8px 24px -8px rgba(0, 0, 0, 0.55),
+    0 2px 6px rgba(0, 0, 0, 0.35);
+  --shadow-lg: 0 24px 60px -18px rgba(0, 0, 0, 0.65),
+    0 8px 20px -8px rgba(0, 0, 0, 0.45);
+  --glow-accent: 0 0 0 1px var(--accent-line),
+    0 12px 40px -12px color-mix(in srgb, var(--accent) 45%, transparent);
 
   /* ---- Text ---- */
   --text: #e7e9ee;
@@ -46,7 +61,7 @@
   --maxw-prose: 720px;
   --radius: 12px;
   --radius-sm: 8px;
-  --section-y: clamp(4rem, 9vw, 8rem);
+  --section-y: clamp(3.5rem, 7.5vw, 6.25rem);
 
   /* ---- Motion ---- */
   --ease: cubic-bezier(0.22, 1, 0.36, 1);
@@ -84,6 +99,33 @@ body {
   -moz-osx-font-smoothing: grayscale;
   text-rendering: optimizeLegibility;
   overflow-x: hidden;
+}
+
+/* Ambient depth — a fixed, very soft accent wash near the top and a
+   cool vignette at the edges so the near-black page reads as lit space
+   rather than a flat fill. Purely decorative, sits behind all content. */
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background:
+    radial-gradient(
+      60rem 40rem at 50% -8rem,
+      color-mix(in srgb, var(--accent) 12%, transparent),
+      transparent 70%
+    ),
+    radial-gradient(
+      50rem 50rem at 100% 0%,
+      rgba(143, 109, 255, 0.06),
+      transparent 60%
+    ),
+    radial-gradient(
+      70rem 70rem at 0% 100%,
+      rgba(0, 0, 0, 0.5),
+      transparent 55%
+    );
 }
 
 img,
@@ -178,20 +220,22 @@ ol {
 
 .eyebrow {
   font-family: var(--font-mono);
-  font-size: 0.75rem;
-  letter-spacing: 0.18em;
+  font-size: 0.78rem;
+  letter-spacing: 0.2em;
   text-transform: uppercase;
   color: var(--accent);
   display: inline-flex;
   align-items: center;
-  gap: 0.6rem;
+  gap: 0.7rem;
 }
 
 .eyebrow::before {
   content: "";
-  width: 1.6rem;
-  height: 1px;
-  background: var(--accent-line);
+  width: 1.9rem;
+  height: 2px;
+  border-radius: 2px;
+  background: linear-gradient(90deg, var(--accent), transparent);
+  box-shadow: 0 0 12px color-mix(in srgb, var(--accent) 55%, transparent);
 }
 
 .mono {
@@ -208,13 +252,14 @@ ol {
 
 .grid-bg {
   position: absolute;
-  inset: 0;
+  inset: -30% 0;
   background-image: linear-gradient(var(--grid-line) 1px, transparent 1px),
     linear-gradient(90deg, var(--grid-line) 1px, transparent 1px);
   background-size: 56px 56px;
-  mask-image: radial-gradient(ellipse 80% 60% at 50% 0%, #000 30%, transparent 75%);
+  mask-image: radial-gradient(ellipse 80% 45% at 50% 30%, #000 30%, transparent 75%);
   pointer-events: none;
   z-index: 0;
+  will-change: transform;
 }
 
 /* ============================================================
@@ -236,25 +281,29 @@ ol {
   background: var(--btn-bg);
   color: var(--text);
   transition: border-color 0.25s var(--ease), background 0.25s var(--ease),
-    transform 0.25s var(--ease), color 0.25s var(--ease);
+    transform 0.25s var(--ease), color 0.25s var(--ease),
+    box-shadow 0.25s var(--ease);
   will-change: transform;
 }
 
 .btn:hover {
   transform: translateY(-2px);
   border-color: var(--accent-line);
+  background: rgba(255, 255, 255, 0.03);
+  box-shadow: var(--shadow-md);
 }
 
 .btn--primary {
-  --btn-bg: var(--accent);
+  --btn-bg: linear-gradient(180deg, #78b0ff, var(--accent));
   color: #04101f;
-  border-color: var(--accent);
+  border-color: transparent;
   font-weight: 600;
+  box-shadow: 0 8px 26px -10px color-mix(in srgb, var(--accent) 70%, transparent);
 }
 
 .btn--primary:hover {
-  background: #7db2ff;
-  border-color: #7db2ff;
+  --btn-bg: linear-gradient(180deg, #8fbcff, #6aa6ff);
+  box-shadow: 0 12px 34px -8px color-mix(in srgb, var(--accent) 78%, transparent);
 }
 
 .btn .arrow {
@@ -270,15 +319,34 @@ ol {
    ============================================================ */
 
 .panel {
+  position: relative;
   background: var(--surface);
   border: 1px solid var(--border);
   border-radius: var(--radius);
+  background-image: var(--surface-grad);
+  box-shadow: var(--shadow-md);
 }
 
 .panel--glass {
   background: var(--surface-glass);
+  background-image: var(--surface-grad);
   backdrop-filter: blur(10px);
   -webkit-backdrop-filter: blur(10px);
+  box-shadow: var(--shadow-sm);
+}
+
+/* Shared hover for interactive cards — lift, accent edge, soft glow.
+   Any card can opt in with the `.lift` class. */
+.lift {
+  transition: transform 0.25s var(--ease), border-color 0.25s var(--ease),
+    box-shadow 0.25s var(--ease), background 0.25s var(--ease);
+}
+.lift:hover,
+.lift:focus-visible,
+.lift:focus-within {
+  transform: translateY(-4px);
+  border-color: var(--accent-line);
+  box-shadow: var(--shadow-lg);
 }
 
 /* ============================================================
@@ -378,6 +446,176 @@ ol {
   animation: soft-pulse 2.6s var(--ease) infinite;
 }
 
+/* ------------------------------------------------------------
+   Scroll progress — a hairline accent bar under the nav that
+   tracks how far down the page you are.
+   ------------------------------------------------------------ */
+
+.scroll-progress {
+  position: fixed;
+  left: 0;
+  right: 0;
+  top: 4.25rem;
+  height: 2px;
+  z-index: 99;
+  pointer-events: none;
+  background: transparent;
+}
+.scroll-progress span {
+  display: block;
+  height: 100%;
+  width: 100%;
+  transform: scaleX(0);
+  transform-origin: left center;
+  background: linear-gradient(
+    90deg,
+    var(--accent),
+    color-mix(in srgb, var(--accent) 55%, #8f6dff)
+  );
+  box-shadow: 0 0 10px color-mix(in srgb, var(--accent) 60%, transparent);
+  transition: transform 0.1s linear;
+}
+
+/* ------------------------------------------------------------
+   Signal flow — a bright blip that runs along 1px connector
+   lines (pipelines, the architecture diagram). Gated on
+   `.flow-active`, which an observer toggles only while the
+   block is on screen, so nothing animates off-screen.
+   ------------------------------------------------------------ */
+
+@keyframes flow-y {
+  0% {
+    opacity: 0;
+    top: -8px;
+  }
+  12%,
+  85% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+    top: 100%;
+  }
+}
+
+@keyframes flow-x {
+  0% {
+    opacity: 0;
+    left: -8px;
+  }
+  12%,
+  85% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+    left: 100%;
+  }
+}
+
+/* ------------------------------------------------------------
+   Section reveal accents
+   ------------------------------------------------------------ */
+
+/* Heading underline that draws in when a section scrolls into view. */
+.sh {
+  position: relative;
+}
+.sh::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: calc(-1 * clamp(1rem, 2.5vw, 1.75rem));
+  height: 1px;
+  background: linear-gradient(
+    90deg,
+    var(--accent-line),
+    transparent 70%
+  );
+  transform: scaleX(0);
+  transform-origin: left center;
+  transition: transform 0.85s var(--ease) 0.1s;
+}
+.sh--center::after {
+  transform-origin: center;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    var(--accent-line),
+    transparent
+  );
+}
+.sh.is-visible::after {
+  transform: scaleX(1);
+}
+
+/* A short highlight that sweeps across the top edge of a banded
+   section the first time it enters the viewport. Kept clip-free
+   (no overflow:hidden) so sticky children keep working; the
+   global body `overflow-x: hidden` absorbs the horizontal travel. */
+.section.band {
+  position: relative;
+}
+.section.band::before {
+  content: '';
+  position: absolute;
+  top: -1px;
+  left: -35%;
+  width: min(35%, 340px);
+  height: 2px;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    var(--accent),
+    transparent
+  );
+  opacity: 0;
+  pointer-events: none;
+}
+.section.band.is-lit::before {
+  animation: band-sweep 1.6s var(--ease) forwards;
+}
+@keyframes band-sweep {
+  0% {
+    opacity: 0;
+    left: -35%;
+  }
+  15%,
+  80% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+    left: 100%;
+  }
+}
+
+/* ------------------------------------------------------------
+   Underline sweep — footer / nav links
+   ------------------------------------------------------------ */
+
+.link-sweep {
+  position: relative;
+}
+.link-sweep::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: -2px;
+  height: 1px;
+  background: currentColor;
+  transform: scaleX(0);
+  transform-origin: right center;
+  transition: transform 0.3s var(--ease);
+}
+.link-sweep:hover::after,
+.link-sweep:focus-visible::after {
+  transform: scaleX(1);
+  transform-origin: left center;
+}
+
 /* ============================================================
    Reduced motion
    ============================================================ */
@@ -408,6 +646,25 @@ ol {
 
   .grid-bg {
     animation: none;
+    transform: none !important;
+  }
+
+  .sh::after {
+    transform: scaleX(1);
+    transition: none;
+  }
+
+  .section.band.is-lit::before {
+    animation: none;
+    opacity: 0;
+  }
+
+  .scroll-progress {
+    display: none;
+  }
+
+  .link-sweep::after {
+    display: none;
   }
 }
 

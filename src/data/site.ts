@@ -21,8 +21,8 @@ export const site = {
      Replace the email below with the real address before launch.
      Do not add social accounts unless they are real.
      ---------------------------------------------------------- */
-  email: 'REPLACE_WITH_YOUR_EMAIL@example.com',
-  emailIsPlaceholder: true,
+  email: 'farhansaif013@gmail.com',
+  emailIsPlaceholder: false,
 
   /** Production URL — keep in sync with `site` + `base` in astro.config.mjs. */
   url: 'https://king05-coder.github.io/Portfolio.Farhan',

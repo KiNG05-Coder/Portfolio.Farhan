@@ -33,6 +33,7 @@ const norm = steps.map((s) =>
   class:list={['pipe', `pipe--${variant}`, { 'pipe--compact': compact }]}
   aria-label={label}
   data-reveal
+  data-flow
 >
   {
     norm.map((step, i) => (
@@ -176,6 +177,25 @@ const norm = steps.map((s) =>
     opacity: 1;
   }
 
+  /* Travelling signal blip — only while the pipeline is on screen. */
+  .pipe__connector::after {
+    content: '';
+    position: absolute;
+    left: 50%;
+    top: -8px;
+    width: 3px;
+    height: 8px;
+    margin-left: -1.5px;
+    border-radius: 2px;
+    background: var(--accent);
+    box-shadow: 0 0 7px 1px color-mix(in srgb, var(--accent) 70%, transparent);
+    opacity: 0;
+  }
+  .pipe.flow-active.is-visible .pipe__connector::after {
+    animation: flow-y 2.8s var(--ease) infinite;
+    animation-delay: calc(var(--i) * 0.42s + 0.6s);
+  }
+
   .pipe__step--branch .pipe__node {
     border-style: dashed;
   }
@@ -193,6 +213,9 @@ const norm = steps.map((s) =>
     .pipe__arrow {
       opacity: 1;
       transition: none;
+    }
+    .pipe__connector::after {
+      display: none;
     }
   }
 </style>

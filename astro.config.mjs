@@ -24,4 +24,10 @@ export default defineConfig({
   build: {
     inlineStylesheets: 'auto',
   },
+  // Astro's dev-only toolbar (bottom-centre pill during `npm run dev`).
+  // Hidden for now — flip back to `enabled: true` or delete this block
+  // to restore it. It never ships to the production build either way.
+  devToolbar: {
+    enabled: false,
+  },
 });

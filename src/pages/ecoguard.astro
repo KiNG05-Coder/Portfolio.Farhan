@@ -1,7 +1,10 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro';
 import SectionHeading from '../components/SectionHeading.astro';
+import ParticleField from '../components/ParticleField.astro';
 import Placeholder from '../components/Placeholder.astro';
+import RiverixScene from '../components/RiverixScene.astro';
+import SkyCleanseScene from '../components/SkyCleanseScene.astro';
 import Pipeline from '../components/Pipeline.astro';
 import StatStrip from '../components/StatStrip.astro';
 import StatusBadge from '../components/StatusBadge.astro';
@@ -31,11 +34,12 @@ const sections = [
 >
   {/* ---------------- HERO ---------------- */}
   <section class="eg-hero">
-    <span class="grid-bg" aria-hidden="true"></span>
+    <span class="grid-bg" aria-hidden="true" data-parallax="0.16"></span>
+    <ParticleField />
     <div class="container eg-hero__inner">
       <div class="eg-hero__text">
         <p class="eyebrow" data-reveal>Environmental Robotics Project</p>
-        <h1 class="eg-hero__title" data-reveal>{eg.hero.title}</h1>
+        <h1 class="eg-hero__title" data-reveal data-decode>{eg.hero.title}</h1>
         <p class="eg-hero__sub mono" data-reveal>{eg.hero.subtitle}</p>
         <p class="eg-hero__lede" data-reveal>{eg.hero.lede}</p>
 
@@ -128,13 +132,7 @@ const sections = [
 
       <div class="two-col">
         <div class="stack" data-reveal>
-          <Placeholder
-            src="/assets/ecoguard/riverix.jpg"
-            alt="Placeholder for a photo of the Riverix water surface robot — replace with your own image."
-            ratio="4 / 3"
-            label="RIVERIX IMAGE — REPLACE WITH YOUR IMAGE"
-            hint="public/assets/ecoguard/riverix.jpg"
-          />
+          <RiverixScene />
           <div class="spec">
             <span class="spec__label mono">Operating modes</span>
             <ul class="chips">
@@ -186,13 +184,7 @@ const sections = [
 
       <div class="two-col">
         <div class="stack" data-reveal>
-          <Placeholder
-            src="/assets/ecoguard/sky-cleanse.jpg"
-            alt="Placeholder for a photo of the Sky-Cleanse environmental drone — replace with your own image."
-            ratio="4 / 3"
-            label="SKY-CLEANSE IMAGE — REPLACE WITH YOUR IMAGE"
-            hint="public/assets/ecoguard/sky-cleanse.jpg"
-          />
+          <SkyCleanseScene />
           <div class="spec">
             <span class="spec__label mono">Capabilities</span>
             <ul class="chips">

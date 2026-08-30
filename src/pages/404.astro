@@ -1,13 +1,16 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro';
+import ParticleField from '../components/ParticleField.astro';
 import { link } from '../lib/link';
 ---
 
 <BaseLayout title="Page not found — Farhan Saif" path="/404">
   <section class="section nf">
+    <span class="grid-bg" aria-hidden="true"></span>
+    <ParticleField area={22000} />
     <div class="container">
       <p class="eyebrow" data-reveal>Error 404</p>
-      <h1 class="nf__title" data-reveal>This page doesn't exist</h1>
+      <h1 class="nf__title" data-reveal data-decode>This page doesn't exist</h1>
       <p class="nf__lead text-muted" data-reveal>
         The link may be out of date, or the page may have moved.
       </p>
@@ -21,9 +24,15 @@ import { link } from '../lib/link';
 
 <style>
   .nf {
+    position: relative;
     min-height: 60vh;
     display: grid;
     align-content: center;
+    overflow: hidden;
+  }
+  .nf .container {
+    position: relative;
+    z-index: 1;
   }
   .nf__title {
     font-size: clamp(2rem, 6vw, 3.25rem);

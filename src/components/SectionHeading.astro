@@ -21,7 +21,7 @@ const Tag = as;
 <style>
   .sh {
     display: grid;
-    gap: 1rem;
+    gap: 0.9rem;
     margin-bottom: clamp(2rem, 5vw, 3.5rem);
   }
   .sh--center {
@@ -31,7 +31,21 @@ const Tag = as;
     max-width: 42rem;
   }
   .sh__title {
-    font-size: clamp(1.65rem, 4vw, 2.5rem);
+    font-size: clamp(1.8rem, 4.4vw, 2.75rem);
+    letter-spacing: -0.025em;
+    color: var(--text);
+  }
+  @supports (background-clip: text) or (-webkit-background-clip: text) {
+    .sh__title {
+      background: linear-gradient(
+        180deg,
+        var(--text),
+        color-mix(in srgb, var(--text) 72%, var(--text-muted))
+      );
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+    }
   }
   .sh__lead {
     font-size: clamp(1rem, 2.2vw, 1.15rem);

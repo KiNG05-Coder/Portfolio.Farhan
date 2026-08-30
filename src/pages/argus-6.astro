@@ -1,6 +1,7 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro';
 import SectionHeading from '../components/SectionHeading.astro';
+import ParticleField from '../components/ParticleField.astro';
 import Placeholder from '../components/Placeholder.astro';
 import Pipeline from '../components/Pipeline.astro';
 import ArchitectureDiagram from '../components/ArchitectureDiagram.astro';
@@ -43,11 +44,12 @@ const structuralStats = [
 >
   {/* ---------------- HERO ---------------- */}
   <section class="a6-hero">
-    <span class="grid-bg" aria-hidden="true"></span>
+    <span class="grid-bg" aria-hidden="true" data-parallax="0.16"></span>
+    <ParticleField />
     <div class="container a6-hero__inner">
       <div class="a6-hero__text">
         <p class="eyebrow" data-reveal>Flagship Project</p>
-        <h1 class="a6-hero__title" data-reveal>ARGUS-6</h1>
+        <h1 class="a6-hero__title" data-reveal data-decode>ARGUS-6</h1>
         <p class="a6-hero__sub mono" data-reveal>
           Autonomous Robotics for Human Rescue &amp; Environmental Conservation
         </p>

@@ -83,10 +83,21 @@ const { project, featured = false } = Astro.props;
     border: 1px solid var(--border);
     border-radius: var(--radius);
     background: var(--surface);
-    transition: border-color 0.25s var(--ease);
+    background-image: var(--surface-grad);
+    box-shadow: var(--shadow-md);
+    transition: border-color 0.25s var(--ease), box-shadow 0.25s var(--ease),
+      transform 0.25s var(--ease);
   }
-  .pc:hover {
+  .pc:not(.pc--featured):hover,
+  .pc:not(.pc--featured):focus-within {
+    border-color: var(--accent-line);
+    box-shadow: var(--shadow-lg);
+    transform: translateY(-4px);
+  }
+  .pc--featured:hover,
+  .pc--featured:focus-within {
     border-color: var(--border-strong);
+    box-shadow: var(--shadow-lg);
   }
   .pc--featured {
     padding: clamp(1.25rem, 3vw, 2rem);
