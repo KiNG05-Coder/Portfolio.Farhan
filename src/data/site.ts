@@ -24,8 +24,8 @@ export const site = {
   email: 'farhansaif013@gmail.com',
   emailIsPlaceholder: false,
 
-  /** Production URL — keep in sync with `site` + `base` in astro.config.mjs. */
-  url: 'https://king05-coder.github.io/Portfolio.Farhan',
+  /** Production URL — keep in sync with `site` in astro.config.mjs. */
+  url: 'https://farhansaif.dev',
 } as const;
 
 export const nav = [

@@ -1,4 +1,4 @@
 User-agent: *
 Allow: /
 
-Sitemap: https://king05-coder.github.io/Portfolio.Farhan/sitemap-index.xml
+Sitemap: https://farhansaif.dev/sitemap-index.xml

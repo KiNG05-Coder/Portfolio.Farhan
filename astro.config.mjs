@@ -4,22 +4,17 @@ import mdx from '@astrojs/mdx';
 import sitemap from '@astrojs/sitemap';
 
 /* ------------------------------------------------------------------
-   Configured for GitHub Pages on the repo:
-     https://github.com/KiNG05-Coder/Portfolio.Farhan
+   Deployed to GitHub Pages (repo: KiNG05-Coder/Portfolio.Farhan) on the
+   custom domain https://farhansaif.dev — see public/CNAME.
 
-   Live URL will be:
-     https://king05-coder.github.io/Portfolio.Farhan/
-
-   `base` MUST match the repo name for a GitHub *project* site, or the
-   CSS / JS / links will 404. If you later:
-     • rename the repo            -> change `base` to '/new-name'
-     • add a custom domain        -> set base: '/'  (or delete the line)
-     • switch to Vercel / Netlify -> set base: '/'  (or delete the line)
-   `site` only affects canonical URLs, Open Graph tags and the sitemap.
+   Because the site is served from the domain root, there is NO `base`
+   path. If you ever move OFF the custom domain back to the project URL
+   (king05-coder.github.io/Portfolio.Farhan/), re-add:
+       base: '/Portfolio.Farhan',
+   `site` sets canonical URLs, Open Graph tags and the sitemap.
    ------------------------------------------------------------------ */
 export default defineConfig({
-  site: 'https://king05-coder.github.io',
-  base: '/Portfolio.Farhan',
+  site: 'https://farhansaif.dev',
   integrations: [mdx(), sitemap()],
   build: {
     inlineStylesheets: 'auto',
