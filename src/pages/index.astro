@@ -48,7 +48,7 @@ const highlightCaps = capabilities.filter((c) => c.status === 'working').slice(0
           eager
         />
         <div class="hero__chip panel panel--glass mono">
-          <span class="hero__chip-dot" aria-hidden="true"></span>
+          <span class="hero__chip-dot pulse-dot" aria-hidden="true"></span>
           Currently building: ARGUS-6
         </div>
       </div>
@@ -116,7 +116,7 @@ const highlightCaps = capabilities.filter((c) => c.status === 'working').slice(0
         title="Recognised work"
         lead="Awards earned for the EcoGuard environmental robotics project."
       />
-      <div class="ap__grid">
+      <div class="ap__grid stagger">
         {achievements.map((a) => <AchievementCard achievement={a} />)}
       </div>
       <a class="btn ap__more" href={link('/portfolio#achievements')} data-reveal>

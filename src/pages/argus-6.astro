@@ -126,7 +126,7 @@ const structuralStats = [
         title="What works, and what doesn't yet"
         lead="Each capability carries a status. Working means it runs on the robot today; planned means it is designed but not implemented."
       />
-      <div class="cap-grid">
+      <div class="cap-grid stagger">
         {capabilities.map((c) => <CapabilityCard capability={c} />)}
       </div>
       <Callout variant="caution" title="Status honesty">
@@ -158,12 +158,14 @@ const structuralStats = [
           { label: 'Respond', note: 'Act on the mission: collect an object, mark a location, continue.' },
         ]}
       />
-      <Callout variant="caution">
-        <p>
-          Fully autonomous exploration has not been field-proven on ARGUS-6. This
-          describes the intended behaviour, not a demonstrated result.
-        </p>
-      </Callout>
+      <div class="explore__caveat">
+        <Callout variant="caution">
+          <p>
+            Fully autonomous exploration has not been field-proven on ARGUS-6. This
+            describes the intended behaviour, not a demonstrated result.
+          </p>
+        </Callout>
+      </div>
     </div>
   </section>
 
@@ -518,7 +520,7 @@ const structuralStats = [
         Slots for Farhan to add test videos, benchmark measurements, photos and
         logs as they are produced.
       </p>
-      <div class="evidence__grid">
+      <div class="evidence__grid stagger">
         {
           evidenceSlots.map((slot) => (
             <div class="evidence__slot panel" data-reveal>
@@ -683,6 +685,11 @@ const structuralStats = [
   .prose--wide {
     max-width: none;
     margin-top: 2rem;
+  }
+
+  /* Extra breathing room between the exploration loop and its caveat. */
+  .explore__caveat {
+    margin-top: clamp(2.5rem, 6vw, 4rem);
   }
   .locomotion__status {
     font-size: 0.78rem;

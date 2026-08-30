@@ -61,7 +61,7 @@ const piModules = ['ros', 'ai', 'nav'];
 const megaModules = ['ik', 'gait', 'safety'];
 ---
 
-<div class="arch" data-arch>
+<div class="arch" data-arch data-reveal>
   <div class="arch__diagram">
     <!-- Root -->
     <div class="arch__root">
@@ -236,6 +236,59 @@ const megaModules = ['ik', 'gait', 'safety'];
     background: var(--border-strong);
   }
 
+  /* ---- Reveal choreography ---- */
+  .arch .node {
+    opacity: 0;
+    transform: translateY(8px);
+    transition: opacity 0.45s var(--ease), transform 0.45s var(--ease),
+      border-color 0.2s var(--ease), background 0.2s var(--ease);
+  }
+  .arch.is-visible .node {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  .arch.is-visible .node--controller {
+    transition-delay: 110ms;
+  }
+  .arch.is-visible .arch__modules .node:nth-child(1) {
+    transition-delay: 180ms;
+  }
+  .arch.is-visible .arch__modules .node:nth-child(2) {
+    transition-delay: 240ms;
+  }
+  .arch.is-visible .arch__modules .node:nth-child(3) {
+    transition-delay: 300ms;
+  }
+  .arch .node:hover,
+  .arch .node:focus-visible,
+  .arch .node.is-active {
+    transition-delay: 0s;
+  }
+
+  .arch__spine,
+  .arch__drop {
+    transform: scaleY(0);
+    transform-origin: top center;
+    transition: transform 0.4s var(--ease);
+  }
+  .arch.is-visible .arch__spine {
+    transform: scaleY(1);
+    transition-delay: 80ms;
+  }
+  .arch.is-visible .arch__drop {
+    transform: scaleY(1);
+    transition-delay: 160ms;
+  }
+  .arch__serial span {
+    transform: scaleX(0);
+    transform-origin: center;
+    transition: transform 0.5s var(--ease);
+  }
+  .arch.is-visible .arch__serial span {
+    transform: scaleX(1);
+    transition-delay: 340ms;
+  }
+
   .arch__cols {
     display: grid;
     gap: 1.5rem;
@@ -315,6 +368,17 @@ const megaModules = ['ik', 'gait', 'safety'];
   @media (max-width: 939px) {
     .arch__detail {
       position: static;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .arch .node,
+    .arch__spine,
+    .arch__drop,
+    .arch__serial span {
+      opacity: 1;
+      transform: none;
+      transition: none;
     }
   }
 </style>

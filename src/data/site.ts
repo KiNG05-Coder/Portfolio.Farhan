@@ -10,11 +10,11 @@ export const site = {
   /** Used in <title> and metadata across the site. */
   metaTitle: 'Farhan Saif — Robotics and AI Enthusiast',
   metaDescription:
-    'Farhan Saif is a Bangladeshi high school student building robotics that solves real-world problems, including the ARGUS-6 autonomous rescue and conservation robot.',
+    'Farhan Saif is a Class 9 student at Dhaka Residential Model College, Bangladesh, building robotics that solves real-world problems, including the ARGUS-6 autonomous rescue and conservation robot.',
 
   /** Short personal introduction, shown on the home hero. */
   intro:
-    'I’m a Bangladeshi high school student interested in robotics that solves real-world problems.',
+    'I’m a Class 9 student at Dhaka Residential Model College, interested in robotics that solves real-world problems.',
 
   /* ----------------------------------------------------------
      CONTACT

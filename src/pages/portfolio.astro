@@ -15,7 +15,7 @@ import { link } from '../lib/link';
 
 <BaseLayout
   title="Portfolio — Farhan Saif"
-  description="About Farhan Saif — a Bangladeshi high school student who builds and tests real robotics projects, with skills in programming, electronics and robot development."
+  description="About Farhan Saif — a Class 9 student at Dhaka Residential Model College, Bangladesh, who builds and tests real robotics projects, with skills in programming, electronics and robot development."
   path="/portfolio"
 >
   <PageHeader
@@ -31,6 +31,11 @@ import { link } from '../lib/link';
         <SectionHeading eyebrow="About" title="A student who builds" />
         <div class="prose" data-reveal>
           <p>{site.intro}</p>
+          <p>
+            I&rsquo;m in Class 9 at Dhaka Residential Model College, and I spend
+            most of my time outside class building robots and working on
+            electronics projects.
+          </p>
           <p>
             Most of what I know comes from making things — wiring circuits,
             soldering, writing robot software and testing until it works. I like
@@ -58,6 +63,10 @@ import { link } from '../lib/link';
           <div>
             <dt class="mono">Based in</dt>
             <dd>Bangladesh</dd>
+          </div>
+          <div>
+            <dt class="mono">School</dt>
+            <dd>Dhaka Residential Model College (Class 9)</dd>
           </div>
           <div>
             <dt class="mono">Focus</dt>
@@ -108,7 +117,7 @@ import { link } from '../lib/link';
         title="Confirmed achievements"
         lead="Only awards that have actually been received. Certificate images can be added when available."
       />
-      <div class="achievements__grid">
+      <div class="achievements__grid stagger">
         {achievements.map((a) => <AchievementCard achievement={a} />)}
       </div>
       <p class="achievements__note mono" data-reveal>

@@ -9,7 +9,7 @@ const { capability } = Astro.props;
 const { name, status, statusLabel, summary, details } = capability;
 ---
 
-<article class="cap panel" data-reveal tabindex="0">
+<article class="cap panel" data-reveal data-tilt tabindex="0">
   <header class="cap__head">
     <h3 class="cap__name mono">{name}</h3>
     <StatusBadge status={status} label={statusLabel} size="sm" />

@@ -151,6 +151,10 @@ const norm = steps.map((s) =>
     width: 1px;
     margin-inline: auto;
     background: var(--border-strong);
+    transform: scaleY(0);
+    transform-origin: top center;
+    transition: transform 0.4s var(--ease);
+    transition-delay: calc(var(--i) * 60ms + 140ms);
   }
   .pipe__arrow {
     position: relative;
@@ -159,6 +163,17 @@ const norm = steps.map((s) =>
     background: var(--bg);
     padding: 0.1rem;
     line-height: 1;
+    opacity: 0;
+    transition: opacity 0.3s var(--ease);
+    transition-delay: calc(var(--i) * 60ms + 300ms);
+  }
+  [data-reveal].is-visible .pipe__connector::before,
+  .is-visible .pipe__connector::before {
+    transform: scaleY(1);
+  }
+  [data-reveal].is-visible .pipe__arrow,
+  .is-visible .pipe__arrow {
+    opacity: 1;
   }
 
   .pipe__step--branch .pipe__node {
@@ -169,6 +184,14 @@ const norm = steps.map((s) =>
     .pipe__step {
       opacity: 1;
       transform: none;
+      transition: none;
+    }
+    .pipe__connector::before {
+      transform: none;
+      transition: none;
+    }
+    .pipe__arrow {
+      opacity: 1;
       transition: none;
     }
   }

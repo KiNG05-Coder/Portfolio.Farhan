@@ -71,6 +71,14 @@ const tone =
     background: var(--status-dev);
     box-shadow: 0 0 0 3px var(--status-dev-bg);
   }
+  .badge--dev.badge--md .badge__dot {
+    animation: soft-pulse 2.8s var(--ease) infinite;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .badge--dev.badge--md .badge__dot {
+      animation: none;
+    }
+  }
   .badge--planned {
     background: var(--status-planned-bg);
     border-color: var(--border-strong);

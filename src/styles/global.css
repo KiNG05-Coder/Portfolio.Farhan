@@ -297,6 +297,87 @@ ol {
   transform: none;
 }
 
+/* ------------------------------------------------------------
+   Staggered reveal — add `.stagger` to a container whose direct
+   children carry [data-reveal]; each child eases in after the
+   one before it. Falls back cleanly without JS.
+   ------------------------------------------------------------ */
+
+.stagger > [data-reveal] {
+  transition-delay: 0ms;
+}
+.stagger > [data-reveal]:nth-child(2) {
+  transition-delay: 70ms;
+}
+.stagger > [data-reveal]:nth-child(3) {
+  transition-delay: 140ms;
+}
+.stagger > [data-reveal]:nth-child(4) {
+  transition-delay: 210ms;
+}
+.stagger > [data-reveal]:nth-child(5) {
+  transition-delay: 280ms;
+}
+.stagger > [data-reveal]:nth-child(6) {
+  transition-delay: 350ms;
+}
+.stagger > [data-reveal]:nth-child(7) {
+  transition-delay: 420ms;
+}
+.stagger > [data-reveal]:nth-child(8) {
+  transition-delay: 490ms;
+}
+.stagger > [data-reveal]:nth-child(n + 9) {
+  transition-delay: 560ms;
+}
+
+/* ------------------------------------------------------------
+   Eyebrow rule — the short leading dash draws itself in when its
+   reveal container becomes visible.
+   ------------------------------------------------------------ */
+
+.eyebrow::before {
+  transform-origin: left center;
+  transition: transform 0.55s var(--ease) 0.12s;
+}
+[data-reveal]:not(.is-visible) .eyebrow::before,
+.eyebrow[data-reveal]:not(.is-visible)::before {
+  transform: scaleX(0);
+}
+
+/* ------------------------------------------------------------
+   Ambient motion
+   ------------------------------------------------------------ */
+
+@keyframes grid-drift {
+  from {
+    background-position: 0 0, 0 0;
+  }
+  to {
+    background-position: 56px 56px, 56px 56px;
+  }
+}
+
+.grid-bg {
+  animation: grid-drift 44s linear infinite;
+}
+
+@keyframes soft-pulse {
+  0%,
+  100% {
+    opacity: 1;
+    box-shadow: 0 0 0 0 var(--pulse-ring, rgba(217, 164, 65, 0.35));
+  }
+  50% {
+    opacity: 0.6;
+    box-shadow: 0 0 0 4px transparent;
+  }
+}
+
+.pulse-dot {
+  animation: soft-pulse 2.6s var(--ease) infinite;
+}
+
 /* ============================================================
    Reduced motion
    ============================================================ */
@@ -318,6 +399,15 @@ ol {
   [data-reveal] {
     opacity: 1;
     transform: none;
+  }
+
+  .eyebrow::before {
+    transform: none !important;
+    transition: none;
+  }
+
+  .grid-bg {
+    animation: none;
   }
 }
 
