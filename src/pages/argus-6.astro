@@ -31,8 +31,8 @@ const sections = [
 
 const structuralStats = [
   { value: '6', label: 'Legs' },
-  { value: '2', label: 'DOF per leg' },
-  { value: '12', label: 'Leg joints total' },
+  { value: '3', label: 'DOF per leg' },
+  { value: '18', label: 'Servos' },
   { value: '2', label: 'Controllers' },
 ];
 ---
@@ -199,24 +199,24 @@ const structuralStats = [
     <div class="container">
       <SectionHeading
         eyebrow="Locomotion"
-        title="Six legs, twelve joints"
-        lead="ARGUS-6 walks on six legs, each with two degrees of freedom. Movement is produced by a chain that turns a target foot position into servo commands."
+        title="Six legs, eighteen servos"
+        lead="ARGUS-6 walks on six legs, each with three degrees of freedom. Movement is produced by a chain that turns a target foot position into servo commands."
       />
       <div class="two-col two-col--wide-left">
         <Pipeline
           label="Locomotion pipeline"
           variant="stack"
           steps={[
-            { label: 'Inverse kinematics', note: 'Turn a desired foot position into the joint angles for that leg.', status: 'working' },
+            { label: 'Inverse kinematics', note: 'Turn a desired foot position into three joint angles for that leg.', status: 'working' },
             { label: 'Gait generation', note: 'Coordinate all six legs into a walking or turning pattern.', status: 'working' },
             { label: 'Motion control', note: 'Sequence the leg movements over time.', status: 'working' },
-            { label: 'Servo control', note: 'Drive each joint servo to its commanded angle.', status: 'working' },
+            { label: 'Servo control', note: 'Drive each servo to its commanded angle.', status: 'working' },
           ]}
         />
         <div class="prose" data-reveal>
           <p>
-            Each of the six legs has two joints, giving twelve controlled
-            joints in total. The inverse kinematics solver works out the angles
+            Each of the six legs has three joints, giving eighteen servos in
+            total. The inverse kinematics solver works out the angles
             needed to place a foot where the gait generator wants it.
           </p>
           <p>

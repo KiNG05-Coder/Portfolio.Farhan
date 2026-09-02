@@ -26,7 +26,7 @@ export const testStages: TestStage[] = [
   {
     name: 'Inverse kinematics',
     status: 'working',
-    note: 'Per-leg 2-DOF IK solver.',
+    note: 'Per-leg 3-DOF IK solver.',
   },
   {
     name: 'Gait',

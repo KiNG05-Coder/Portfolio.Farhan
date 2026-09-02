@@ -9,8 +9,8 @@ Snapshot so work can resume cleanly in a new session.
 - EcoGuard page built from the skycleanse.vercel.app content, re-themed. Hero
   titled "EcoGuard"; Riverix + Sky-Cleanse kept as the two sub-systems.
 - "Explore EcoGuard" button in the home hero.
-- ARGUS-6 locomotion changed from 3-DOF to **2-DOF** (6 legs × 2 = 12 joints)
-  everywhere, including the docs and the stat strip.
+- ARGUS-6 locomotion is **3-DOF** per leg (6 legs × 3 = 18 servos) everywhere,
+  including the docs and the stat strip.
 - Skills → "Robotics & Electronics" now includes **ESP32** and **3D modelling**.
 - **Deployed on Vercel**, auto-deploys from `main`:
   https://farhansaifportfolio.vercel.app — `site` in astro.config.mjs points

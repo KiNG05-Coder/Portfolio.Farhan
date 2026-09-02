@@ -16,7 +16,7 @@ and driving the servos.
 - **Inverse kinematics** — converting target foot positions into joint angles.
 - **Gait generation** — producing standing, walking and turning patterns.
 - **Motion control** — sequencing leg movements over time.
-- **Servo control** — driving each of the twelve leg joints.
+- **Servo control** — driving each of the eighteen servos.
 - **Low-level safety** — watchdog behaviour and safe stopping.
 
 ## Why firmware, not Linux

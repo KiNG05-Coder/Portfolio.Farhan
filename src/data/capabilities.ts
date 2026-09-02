@@ -23,7 +23,7 @@ export const capabilities: Capability[] = [
     summary:
       'Six-legged walking driven by inverse kinematics and a gait generator running on the real-time controller.',
     details: [
-      'Two degrees of freedom per leg.',
+      'Three degrees of freedom per leg.',
       'Standing, walking and turning.',
       'Variable movement handled on the Arduino Mega so timing does not depend on Linux scheduling.',
     ],

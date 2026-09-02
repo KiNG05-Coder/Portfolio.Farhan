@@ -31,7 +31,7 @@ or planning a route.
 
 ## Real-time side (Arduino Mega)
 
-- **Inverse kinematics** — per-leg 2-DOF solver.
+- **Inverse kinematics** — per-leg 3-DOF solver.
 - **Gait** — coordinates the six legs.
 - **Safety** — command validation, watchdogs and safe stopping at the low level.
 

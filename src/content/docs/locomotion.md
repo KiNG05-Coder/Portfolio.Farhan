@@ -6,17 +6,17 @@ summary: Six-legged walking — inverse kinematics, gait generation and servo co
 
 ## Leg layout
 
-ARGUS-6 walks on **six legs**, each with **two degrees of freedom**, for
-twelve controlled joints in total.
+ARGUS-6 walks on **six legs**, each with **three degrees of freedom**, for
+eighteen servos in total.
 
 ## The pipeline
 
-1. **Inverse kinematics** — turn a desired foot position into the joint angles
+1. **Inverse kinematics** — turn a desired foot position into three joint angles
    for that leg.
 2. **Gait generation** — coordinate all six legs into a walking or turning
    pattern.
 3. **Motion control** — sequence the leg movements over time.
-4. **Servo control** — drive each joint servo to its commanded angle.
+4. **Servo control** — drive each servo to its commanded angle.
 
 ## What is supported
 
