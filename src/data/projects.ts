@@ -39,7 +39,7 @@ export const projects: Project[] = [
       'ROS 2',
       'Python',
       'C++',
-      'YOLO (planned)',
+      'YOLO26n (planned)',
     ],
     image: '/assets/argus-6/argus-6-card.jpg',
     imageAlt:

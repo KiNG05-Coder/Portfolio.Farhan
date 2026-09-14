@@ -8,52 +8,65 @@
 
 const NODES: Record<
   string,
-  { title: string; kind: 'root' | 'controller' | 'module'; desc: string }
+  {
+    title: string;
+    kind: 'root' | 'controller' | 'module';
+    desc: string;
+    status?: 'working' | 'planned';
+  }
 > = {
   'argus-6': {
     title: 'ARGUS-6',
     kind: 'root',
-    desc: 'The complete robot. Responsibilities are split between a Linux computer for high-level work and a microcontroller for real-time motion.',
+    desc: 'The complete robot. Today, the built hexapod runs entirely on the ESP8266. A Raspberry Pi for high-level autonomy is designed but not yet integrated — see Prototype Status above.',
   },
   pi: {
     title: 'Raspberry Pi',
     kind: 'controller',
-    desc: 'High-level computer. Handles decisions, perception and autonomy. Runs Linux and ROS 2.',
+    status: 'planned',
+    desc: 'PLANNED — not yet implemented. Intended high-level computer for decisions, perception and autonomy, running Linux and ROS 2.',
   },
   mega: {
     title: 'ESP8266',
     kind: 'controller',
-    desc: 'Real-time controller. Handles motion and low-level control where precise timing matters.',
+    status: 'working',
+    desc: 'WORKING TODAY. Real-time controller. Handles motion and low-level control where precise timing matters — the part of ARGUS-6 that is built and running now.',
   },
   ros: {
     title: 'ROS 2',
     kind: 'module',
-    desc: 'Robotics middleware used for modular software, communication between components and integration.',
+    status: 'planned',
+    desc: 'PLANNED. Robotics middleware intended for modular software, communication between components and integration on the Raspberry Pi.',
   },
   ai: {
     title: 'AI',
     kind: 'module',
-    desc: 'Planned lightweight perception (YOLO) for detecting people, trash and other configurable objects.',
+    status: 'planned',
+    desc: 'PLANNED. Lightweight perception (YOLO26n) for detecting people, trash and other configurable objects. Not yet trained or deployed on the robot.',
   },
   nav: {
     title: 'Navigation',
     kind: 'module',
-    desc: 'Planned localization, waypoint navigation, exploration and obstacle-aware movement.',
+    status: 'planned',
+    desc: 'PLANNED. Localization (GPS + IMU), waypoint navigation, exploration and obstacle-aware movement.',
   },
   ik: {
     title: 'Inverse kinematics',
     kind: 'module',
-    desc: 'Converts a desired foot position into the joint angles for each leg.',
+    status: 'working',
+    desc: 'WORKING TODAY. Converts a desired foot position into the joint angles for each leg.',
   },
   gait: {
     title: 'Gait',
     kind: 'module',
-    desc: 'Coordinates the six legs to produce standing, walking and turning.',
+    status: 'working',
+    desc: 'WORKING TODAY. Coordinates the six legs to produce standing, walking and turning.',
   },
   safety: {
     title: 'Safety',
     kind: 'module',
-    desc: 'Low-level safety handling: command validation, watchdogs and safe stopping.',
+    status: 'working',
+    desc: 'WORKING TODAY at the low level: command validation and safe stopping on the ESP8266. Mission-wide safety tied to the Pi is planned.',
   },
 };
 
@@ -83,22 +96,24 @@ const megaModules = ['ik', 'gait', 'safety'];
         ).map(([id, tag, mods]) => (
           <div class="arch__col">
             <button
-              class="node node--controller"
+              class:list={['node', 'node--controller', `node--${NODES[id].status}`]}
               data-node={id}
               aria-describedby="arch-detail"
             >
               <span class="node__title mono">{NODES[id].title}</span>
               <span class="node__tag mono">{tag}</span>
+              <span class="node__status mono">{NODES[id].status}</span>
             </button>
             <span class="arch__drop" aria-hidden="true"></span>
             <div class="arch__modules">
               {mods.map((m) => (
                 <button
-                  class="node node--module"
+                  class:list={['node', 'node--module', `node--${NODES[m].status}`]}
                   data-node={m}
                   aria-describedby="arch-detail"
                 >
                   <span class="node__title mono">{NODES[m].title}</span>
+                  <span class="node__status mono">{NODES[m].status}</span>
                 </button>
               ))}
             </div>
@@ -221,6 +236,25 @@ const megaModules = ['ik', 'gait', 'safety'];
     letter-spacing: 0.16em;
     text-transform: uppercase;
     color: var(--text-dim);
+  }
+  .node__status {
+    justify-self: center;
+    margin-top: 0.15rem;
+    font-size: 0.55rem;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    padding: 0.1rem 0.5rem;
+    border-radius: 999px;
+    border: 1px solid var(--border-strong);
+    color: var(--text-dim);
+  }
+  .node--working .node__status {
+    color: var(--status-working);
+    border-color: color-mix(in srgb, var(--status-working) 45%, transparent);
+  }
+  .node--planned .node__status {
+    color: var(--text-dim);
+    border-style: dashed;
   }
   .node--root {
     padding-inline: 1.6rem;

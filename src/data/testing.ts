@@ -46,7 +46,7 @@ export const testStages: TestStage[] = [
   {
     name: 'AI',
     status: 'planned',
-    note: 'Lightweight YOLO perception on the Pi.',
+    note: 'YOLO26n perception on the Pi.',
   },
   {
     name: 'Navigation',
@@ -65,41 +65,7 @@ export const testStages: TestStage[] = [
   },
 ];
 
-/* ----------------------------------------------------------
-   Slots for evidence Farhan can add later.
-   Replace `asset` paths or embed URLs; empty slots render
-   as labelled placeholders.
-   ---------------------------------------------------------- */
-export type EvidenceSlot = {
-  title: string;
-  kind: 'video' | 'photo' | 'log' | 'benchmark';
-  note: string;
-};
-
-export const evidenceSlots: EvidenceSlot[] = [
-  {
-    title: 'Locomotion test video',
-    kind: 'video',
-    note: 'Add a clip of ARGUS-6 walking and turning.',
-  },
-  {
-    title: 'Arm & gripper test video',
-    kind: 'video',
-    note: 'Add a clip of a pick-and-place / trash collection attempt.',
-  },
-  {
-    title: 'YOLO benchmark on the actual Pi',
-    kind: 'benchmark',
-    note: 'Add measured inference numbers once benchmarked on the Raspberry Pi 4.',
-  },
-  {
-    title: 'Bench / build photos',
-    kind: 'photo',
-    note: 'Add photos of wiring, assembly and the test setup.',
-  },
-  {
-    title: 'Run logs',
-    kind: 'log',
-    note: 'Add representative logs from a test session.',
-  },
-];
+/* Photo/video evidence slots live in `media.ts` and render in the
+   page's dedicated Evidence section. Non-visual evidence (benchmark
+   numbers, run logs) has no recorded data yet and is intentionally
+   not listed here until it exists. */

@@ -1,0 +1,160 @@
+---
+import type { StatusItem } from '../data/prototype';
+
+export interface Props {
+  implemented: StatusItem[];
+  planned: StatusItem[];
+}
+const { implemented, planned } = Astro.props;
+---
+
+<div class="proto-grid">
+  <div class="proto-col proto-col--done" data-reveal data-tilt tabindex="0">
+    <header class="proto-col__head">
+      <span class="proto-col__mark" aria-hidden="true">✓</span>
+      <div>
+        <span class="proto-col__eyebrow mono">Working today</span>
+        <h3 class="proto-col__title">Implemented</h3>
+      </div>
+    </header>
+    <ul class="proto-list">
+      {implemented.map((item) => (
+        <li>
+          <span class="proto-list__mark proto-list__mark--done" aria-hidden="true">✓</span>
+          <div>
+            <span class="proto-list__name">{item.name}</span>
+            <span class="proto-list__note">{item.note}</span>
+          </div>
+        </li>
+      ))}
+    </ul>
+  </div>
+
+  <div class="proto-col proto-col--planned" data-reveal data-tilt tabindex="0">
+    <header class="proto-col__head">
+      <span class="proto-col__mark" aria-hidden="true">◌</span>
+      <div>
+        <span class="proto-col__eyebrow mono">Next phase</span>
+        <h3 class="proto-col__title">Planned / In development</h3>
+      </div>
+    </header>
+    <ul class="proto-list">
+      {planned.map((item) => (
+        <li>
+          <span class="proto-list__mark proto-list__mark--planned" aria-hidden="true">◌</span>
+          <div>
+            <span class="proto-list__name">{item.name}</span>
+            <span class="proto-list__note">{item.note}</span>
+          </div>
+        </li>
+      ))}
+    </ul>
+  </div>
+</div>
+
+<style>
+  .proto-grid {
+    display: grid;
+    gap: 1.5rem;
+  }
+  @media (min-width: 860px) {
+    .proto-grid {
+      grid-template-columns: 1fr 1fr;
+      align-items: start;
+    }
+  }
+
+  .proto-col {
+    padding: clamp(1.5rem, 3vw, 2rem);
+    border-radius: var(--radius);
+    background: var(--surface);
+    border: 1px solid var(--border);
+    display: grid;
+    gap: 1.5rem;
+    transition: border-color 0.25s var(--ease), transform 0.25s var(--ease);
+  }
+  .proto-col--done {
+    border-color: color-mix(in srgb, var(--status-working) 45%, var(--border));
+    background: color-mix(in srgb, var(--status-working) 6%, var(--surface));
+  }
+  .proto-col--planned {
+    border-style: dashed;
+    border-color: var(--border-strong);
+  }
+  .proto-col:hover,
+  .proto-col:focus-visible {
+    transform: translateY(-2px);
+  }
+
+  .proto-col__head {
+    display: flex;
+    align-items: center;
+    gap: 0.9rem;
+  }
+  .proto-col__mark {
+    display: grid;
+    place-items: center;
+    width: 2.5rem;
+    height: 2.5rem;
+    border-radius: 999px;
+    font-size: 1.2rem;
+    flex: none;
+  }
+  .proto-col--done .proto-col__mark {
+    color: var(--status-working);
+    background: color-mix(in srgb, var(--status-working) 16%, transparent);
+    border: 1px solid color-mix(in srgb, var(--status-working) 45%, transparent);
+  }
+  .proto-col--planned .proto-col__mark {
+    color: var(--text-dim);
+    background: var(--bg-elev);
+    border: 1px solid var(--border-strong);
+  }
+  .proto-col__eyebrow {
+    display: block;
+    font-size: 0.62rem;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--text-dim);
+  }
+  .proto-col__title {
+    font-size: 1.2rem;
+    margin-top: 0.2rem;
+  }
+
+  .proto-list {
+    display: grid;
+    gap: 0.75rem;
+  }
+  .proto-list li {
+    display: flex;
+    align-items: start;
+    gap: 0.75rem;
+  }
+  .proto-list__mark {
+    flex: none;
+    font-size: 0.85rem;
+    line-height: 1.6;
+    width: 1.1rem;
+    text-align: center;
+  }
+  .proto-list__mark--done {
+    color: var(--status-working);
+  }
+  .proto-list__mark--planned {
+    color: var(--text-dim);
+  }
+  .proto-list__name {
+    display: block;
+    font-family: var(--font-mono);
+    font-size: 0.85rem;
+    letter-spacing: 0.02em;
+    color: var(--text);
+  }
+  .proto-list__note {
+    display: block;
+    font-size: 0.82rem;
+    color: var(--text-dim);
+    margin-top: 0.15rem;
+  }
+</style>

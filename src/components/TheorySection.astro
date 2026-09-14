@@ -1,0 +1,224 @@
+---
+import type { TheoryCategory } from '../data/theory';
+
+export interface Props {
+  categories: TheoryCategory[];
+}
+const { categories } = Astro.props;
+---
+
+<div class="theory" data-theory data-reveal>
+  <div class="theory__tabs" role="tablist" aria-label="Concept category">
+    {categories.map((c, i) => (
+      <button
+        type="button"
+        class:list={['theory__tab', 'mono', { 'is-active': i === 0 }]}
+        role="tab"
+        aria-selected={i === 0 ? 'true' : 'false'}
+        data-theory-tab={c.id}
+      >
+        {c.name}
+        <span class="theory__tab-count">{c.items.length}</span>
+      </button>
+    ))}
+  </div>
+
+  {categories.map((c, i) => (
+    <div class="theory__panel" data-theory-panel={c.id} hidden={i !== 0}>
+      <p class="theory__blurb text-muted">{c.blurb}</p>
+      <div class="theory__items">
+        {c.items.map((item) => (
+          <details class="theory-item">
+            <summary>
+              <span class="theory-item__term">{item.term}</span>
+              <span class="theory-item__icon" aria-hidden="true"></span>
+            </summary>
+            <div class="theory-item__body">
+              <div class="theory-item__row">
+                <span class="theory-item__label mono">What it is</span>
+                <p>{item.what}</p>
+              </div>
+              <div class="theory-item__row">
+                <span class="theory-item__label mono">Why it matters</span>
+                <p>{item.why}</p>
+              </div>
+              <div class="theory-item__row">
+                <span class="theory-item__label mono">On ARGUS-6</span>
+                <p>{item.how}</p>
+              </div>
+              {item.equation && (
+                <div class="theory-item__equation mono">{item.equation}</div>
+              )}
+            </div>
+          </details>
+        ))}
+      </div>
+    </div>
+  ))}
+</div>
+
+<script>
+  const initTheory = () => {
+    document.querySelectorAll<HTMLElement>('[data-theory]').forEach((root) => {
+      if (root.dataset.ready === 'true') return;
+      root.dataset.ready = 'true';
+
+      const tabs = [...root.querySelectorAll<HTMLButtonElement>('[data-theory-tab]')];
+      const panels = [...root.querySelectorAll<HTMLElement>('[data-theory-panel]')];
+
+      tabs.forEach((tab) => {
+        tab.addEventListener('click', () => {
+          const id = tab.dataset.theoryTab;
+          tabs.forEach((t) => {
+            const active = t === tab;
+            t.classList.toggle('is-active', active);
+            t.setAttribute('aria-selected', String(active));
+          });
+          panels.forEach((p) => {
+            p.hidden = p.dataset.theoryPanel !== id;
+          });
+        });
+      });
+    });
+  };
+
+  initTheory();
+  document.addEventListener('astro:page-load', initTheory);
+</script>
+
+<style>
+  .theory__tabs {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem;
+    margin-bottom: clamp(1.5rem, 4vw, 2.5rem);
+  }
+  .theory__tab {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.55rem 0.9rem;
+    font-size: 0.72rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    border: 1px solid var(--border);
+    border-radius: 999px;
+    background: var(--surface);
+    transition: color 0.2s var(--ease), border-color 0.2s var(--ease), background 0.2s var(--ease);
+  }
+  .theory__tab:hover {
+    color: var(--text);
+    border-color: var(--accent-line);
+  }
+  .theory__tab.is-active {
+    color: var(--accent);
+    border-color: var(--accent-line);
+    background: var(--accent-soft);
+  }
+  .theory__tab-count {
+    font-size: 0.62rem;
+    color: var(--text-dim);
+    padding: 0.05rem 0.4rem;
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.06);
+  }
+  .theory__tab.is-active .theory__tab-count {
+    color: var(--accent);
+  }
+
+  .theory__blurb {
+    font-size: 0.92rem;
+    margin-bottom: 1.5rem;
+    max-width: 60ch;
+  }
+
+  .theory__items {
+    display: grid;
+    gap: 0.75rem;
+  }
+
+  .theory-item {
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    background: var(--surface);
+    overflow: hidden;
+  }
+  .theory-item summary {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    padding: 1rem 1.2rem;
+    cursor: pointer;
+    list-style: none;
+  }
+  .theory-item summary::-webkit-details-marker {
+    display: none;
+  }
+  .theory-item__term {
+    font-weight: 600;
+    font-size: 0.95rem;
+  }
+  .theory-item__icon {
+    position: relative;
+    width: 12px;
+    height: 12px;
+    flex: none;
+  }
+  .theory-item__icon::before,
+  .theory-item__icon::after {
+    content: '';
+    position: absolute;
+    background: var(--accent);
+    transition: transform 0.25s var(--ease), opacity 0.25s var(--ease);
+  }
+  .theory-item__icon::before {
+    top: 50%;
+    left: 0;
+    width: 100%;
+    height: 1.5px;
+    transform: translateY(-50%);
+  }
+  .theory-item__icon::after {
+    left: 50%;
+    top: 0;
+    height: 100%;
+    width: 1.5px;
+    transform: translateX(-50%);
+  }
+  .theory-item[open] .theory-item__icon::after {
+    opacity: 0;
+    transform: translateX(-50%) rotate(90deg);
+  }
+
+  .theory-item__body {
+    padding: 0 1.2rem 1.25rem;
+    display: grid;
+    gap: 0.9rem;
+    max-width: 68ch;
+  }
+  .theory-item__row {
+    display: grid;
+    gap: 0.3rem;
+  }
+  .theory-item__label {
+    font-size: 0.62rem;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--text-dim);
+  }
+  .theory-item__row p {
+    font-size: 0.9rem;
+    color: var(--text-muted);
+  }
+  .theory-item__equation {
+    font-size: 0.8rem;
+    color: var(--accent);
+    padding: 0.6rem 0.8rem;
+    border: 1px solid var(--accent-line);
+    border-radius: 6px;
+    background: var(--accent-soft);
+    width: fit-content;
+  }
+</style>
