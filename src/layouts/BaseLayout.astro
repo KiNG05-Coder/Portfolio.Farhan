@@ -171,6 +171,107 @@ const fullTitle = title === site.metaTitle ? title : `${title}`;
     </script>
 
     <script>
+      // Horizontal scroll/drag for [.scroll-x] strips (in-page TOC bars
+      // and similar). Vertical wheel input maps to horizontal scroll, and
+      // mouse/pen pointers can click-and-drag; touch keeps native scroll
+      // untouched since it already scrolls the strip directly.
+      const initScrollX = () => {
+        const coarse = window.matchMedia('(pointer: coarse)').matches;
+
+        document.querySelectorAll<HTMLElement>('.scroll-x').forEach((el) => {
+          if (el.dataset.scrollxBound === 'true') return;
+          el.dataset.scrollxBound = 'true';
+
+          el.addEventListener(
+            'wheel',
+            (e: WheelEvent) => {
+              if (Math.abs(e.deltaY) <= Math.abs(e.deltaX)) return;
+              if (el.scrollWidth <= el.clientWidth) return;
+              const atStart = el.scrollLeft <= 0 && e.deltaY < 0;
+              const atEnd =
+                el.scrollLeft + el.clientWidth >= el.scrollWidth - 1 &&
+                e.deltaY > 0;
+              if (atStart || atEnd) return;
+              e.preventDefault();
+              el.scrollLeft += e.deltaY;
+            },
+            { passive: false }
+          );
+
+          if (coarse) return; // touch already drags the strip natively
+
+          el.dataset.dragReady = 'true';
+          const THRESHOLD = 6; // px of movement before a click becomes a drag
+          let pending = false; // pointer is down, not yet decided click vs drag
+          let dragging = false; // past the threshold — actively dragging
+          let moved = false;
+          let pointerId = -1;
+          let startX = 0;
+          let startScroll = 0;
+
+          el.addEventListener('pointerdown', (e: PointerEvent) => {
+            if (e.button !== 0 || el.scrollWidth <= el.clientWidth) return;
+            pending = true;
+            dragging = false;
+            moved = false;
+            pointerId = e.pointerId;
+            startX = e.clientX;
+            startScroll = el.scrollLeft;
+            // Capture is deferred until real dragging starts (see
+            // pointermove) — capturing on every pointerdown would
+            // retarget the eventual mouseup/click to `el` and silently
+            // break normal clicks on the links inside the strip.
+          });
+          el.addEventListener('pointermove', (e: PointerEvent) => {
+            if (!pending) return;
+            const dx = e.clientX - startX;
+            if (!dragging) {
+              if (Math.abs(dx) <= THRESHOLD) return;
+              dragging = true;
+              moved = true;
+              el.classList.add('is-dragging');
+              try {
+                el.setPointerCapture(pointerId);
+              } catch {}
+            }
+            el.scrollLeft = startScroll - dx;
+          });
+          const endDrag = () => {
+            pending = false;
+            dragging = false;
+            el.classList.remove('is-dragging');
+            // The browser's own trailing click (if any) fires
+            // synchronously right after this and still needs to see
+            // `moved` to suppress itself — clear it just after that,
+            // so it never leaks into a later, unrelated click.
+            window.setTimeout(() => {
+              moved = false;
+            }, 0);
+          };
+          el.addEventListener('pointerup', endDrag);
+          el.addEventListener('pointercancel', endDrag);
+          // Suppress the click a real drag ends on, so links inside the
+          // strip aren't accidentally activated when the pointer settles
+          // back over one. A plain click never sets `moved`, so it is
+          // untouched here.
+          el.addEventListener(
+            'click',
+            (e: MouseEvent) => {
+              if (!moved) return;
+              e.preventDefault();
+              e.stopPropagation();
+              moved = false;
+            },
+            true
+          );
+        });
+      };
+
+      initScrollX();
+      document.addEventListener('astro:page-load', initScrollX);
+    </script>
+
+    <script>
       // ---- Scroll progress bar ----
       // ClientRouter swaps <body>, so re-resolve the bar each time.
       let bar = document.querySelector<HTMLElement>('[data-scroll-progress]');

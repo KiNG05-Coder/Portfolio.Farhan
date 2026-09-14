@@ -683,3 +683,13 @@ ol {
   scrollbar-width: thin;
   scrollbar-color: var(--border-strong) transparent;
 }
+/* Mouse/pen pointers get a grab cursor once drag-to-scroll is bound (see
+   BaseLayout's initScrollX script); touch keeps native scrolling. */
+.scroll-x[data-drag-ready] {
+  cursor: grab;
+}
+.scroll-x[data-drag-ready].is-dragging {
+  cursor: grabbing;
+  scroll-snap-type: none;
+  user-select: none;
+}
