@@ -1,12 +1,12 @@
 ---
 title: Firmware
 order: 3
-summary: The real-time control firmware on the Arduino Mega.
+summary: The real-time control firmware on the ESP8266.
 ---
 
 ## Role
 
-The Arduino Mega runs the real-time firmware. It owns everything that has to
+The ESP8266 runs the real-time firmware. It owns everything that has to
 happen on a predictable schedule: reading commands, running the motion pipeline
 and driving the servos.
 

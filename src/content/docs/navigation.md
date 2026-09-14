@@ -12,7 +12,7 @@ summary: Planned localization, waypoint navigation and obstacle-aware movement.
    while staying aware of obstacles.
 3. **Path / mission** — follow a planned path or a sequence of waypoints.
 4. **Movement intent** — express the next move as a direction and speed.
-5. **Low-level controller** — the Arduino Mega turns movement intent into gait
+5. **Low-level controller** — the ESP8266 turns movement intent into gait
    and leg motion.
 
 ## Planned features

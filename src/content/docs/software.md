@@ -17,7 +17,7 @@ perception, navigation and mission logic independent of each other.
 - **Perception** — planned YOLO-based object detection (see *AI & Perception*).
 - **Navigation** — planned localization and path following (see *Navigation*).
 - **Serial bridge** — translating high-level movement intent into messages for
-  the Arduino Mega (see *Communication*).
+  the ESP8266 (see *Communication*).
 
 ## Languages
 

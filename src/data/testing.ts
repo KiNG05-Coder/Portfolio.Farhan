@@ -16,12 +16,12 @@ export const testStages: TestStage[] = [
   {
     name: 'Communication',
     status: 'working',
-    note: 'Serial link between the Raspberry Pi and the Arduino Mega.',
+    note: 'Serial link between the Raspberry Pi and the ESP8266.',
   },
   {
     name: 'Low-level control',
     status: 'working',
-    note: 'Servo control and real-time loop on the Mega.',
+    note: 'Servo control and real-time loop on the ESP8266.',
   },
   {
     name: 'Inverse kinematics',

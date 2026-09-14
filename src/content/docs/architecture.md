@@ -10,7 +10,7 @@ ARGUS-6 is built around two processors with different jobs.
 
 - **Raspberry Pi 4** — the high-level computer. It runs Linux and ROS 2 and is
   responsible for decisions, perception and autonomy.
-- **Arduino Mega** — the real-time controller. It handles motion and low-level
+- **ESP8266** — the real-time controller. It handles motion and low-level
   control, where consistent timing matters more than raw compute.
 
 The two are connected by a custom serial link.
@@ -20,7 +20,7 @@ The two are connected by a custom serial link.
 A general-purpose Linux computer is well suited to perception and planning, but
 its scheduler is not designed for precise, uninterrupted timing. A
 microcontroller is. Keeping gait, inverse kinematics and servo timing on the
-Mega means the robot keeps moving smoothly even when the Pi is busy running AI
+ESP8266 means the robot keeps moving smoothly even when the Pi is busy running AI
 or planning a route.
 
 ## High-level side (Raspberry Pi)
@@ -29,7 +29,7 @@ or planning a route.
 - **AI / perception** — planned lightweight YOLO object detection.
 - **Navigation** — planned localization, waypoint following and exploration.
 
-## Real-time side (Arduino Mega)
+## Real-time side (ESP8266)
 
 - **Inverse kinematics** — per-leg 3-DOF solver.
 - **Gait** — coordinates the six legs.

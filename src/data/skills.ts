@@ -23,6 +23,7 @@ export const skillGroups: SkillGroup[] = [
     items: [
       'Robot programming',
       'ESP32',
+      'ESP8266',
       'Raspberry Pi',
       'Arduino',
       'Circuit making',

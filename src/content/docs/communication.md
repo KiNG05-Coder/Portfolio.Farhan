@@ -1,19 +1,19 @@
 ---
 title: Communication
 order: 4
-summary: The custom serial protocol between the Raspberry Pi and the Arduino Mega.
+summary: The custom serial protocol between the Raspberry Pi and the ESP8266.
 ---
 
 ## Custom serial bridge
 
-The Raspberry Pi and the Arduino Mega communicate over a **custom serial
-protocol**. The Mega is not a micro-ROS target, so instead of extending ROS 2
+The Raspberry Pi and the ESP8266 communicate over a **custom serial
+protocol**. The ESP8266 is not a micro-ROS target, so instead of extending ROS 2
 onto the microcontroller, a dedicated serial bridge runs on the Pi and
 translates between the two worlds.
 
 ## What crosses the link
 
-- **Down to the Mega** — movement intent (direction and speed), arm and gripper
+- **Down to the ESP8266** — movement intent (direction and speed), arm and gripper
   commands, mode changes and safe-stop requests.
 - **Up to the Pi** — status, acknowledgements and any low-level warnings.
 
@@ -22,7 +22,7 @@ translates between the two worlds.
 - **Simple to parse** on a microcontroller.
 - **Validated** — malformed or unexpected messages are rejected rather than
   acted on.
-- **Fail-safe** — if the Mega stops receiving valid commands, it stops the robot
+- **Fail-safe** — if the ESP8266 stops receiving valid commands, it stops the robot
   safely rather than continuing the last command indefinitely.
 
 ## Status

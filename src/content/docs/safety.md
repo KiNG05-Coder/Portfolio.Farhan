@@ -11,7 +11,7 @@ summary: Layered authority from the operator down to low-level control.
    are sane and that components are alive.
 3. **High-level supervision** — the Raspberry Pi supervises the mission and can
    command a safe stop.
-4. **Low-level control** — the Arduino Mega executes motion and halts safely if
+4. **Low-level control** — the ESP8266 executes motion and halts safely if
    it stops receiving valid commands.
 
 ## Key ideas

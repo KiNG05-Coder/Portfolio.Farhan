@@ -27,7 +27,7 @@ eighteen servos in total.
 
 ## Where it runs
 
-The whole pipeline runs on the Arduino Mega so that timing does not depend on
+The whole pipeline runs on the ESP8266 so that timing does not depend on
 the Linux scheduler on the Pi.
 
 ## Status
