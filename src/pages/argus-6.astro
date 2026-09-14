@@ -9,9 +9,11 @@ import CapabilityCard from '../components/CapabilityCard.astro';
 import StatusBadge from '../components/StatusBadge.astro';
 import StatStrip from '../components/StatStrip.astro';
 import Callout from '../components/Callout.astro';
+import ConceptCard from '../components/ConceptCard.astro';
 import { capabilities } from '../data/capabilities';
 import { decisions } from '../data/decisions';
 import { testStages, evidenceSlots } from '../data/testing';
+import { concepts } from '../data/concepts';
 import { link } from '../lib/link';
 
 const sections = [
@@ -25,6 +27,7 @@ const sections = [
   ['ai', 'AI & Perception'],
   ['navigation', 'Navigation & Exploration'],
   ['missions', 'Mission System'],
+  ['concepts', 'Concepts & Resources'],
   ['decisions', 'Engineering Decisions'],
   ['testing', 'Testing & Development'],
 ];
@@ -39,7 +42,7 @@ const structuralStats = [
 
 <BaseLayout
   title="ARGUS-6 — Autonomous Robotics | Farhan Saif"
-  description="ARGUS-6 is an autonomous six-legged robot for human rescue and environmental conservation, built by Farhan Saif. High-level autonomy runs on a Raspberry Pi; real-time motion runs on an Arduino Mega."
+  description="ARGUS-6 is an autonomous six-legged robot for human rescue and environmental conservation, built by Farhan Saif. High-level autonomy runs on a Raspberry Pi; real-time motion runs on an ESP8266."
   path="/argus-6"
 >
   {/* ---------------- HERO ---------------- */}
@@ -177,7 +180,7 @@ const structuralStats = [
       <SectionHeading
         eyebrow="System Architecture"
         title="Two brains, one robot"
-        lead="The Raspberry Pi handles high-level decisions, perception and autonomy. The Arduino Mega handles real-time motion and low-level control. Select any block to read what it does."
+        lead="The Raspberry Pi handles high-level decisions, perception and autonomy. The ESP8266 handles real-time motion and low-level control. Select any block to read what it does."
       />
       <ArchitectureDiagram />
       <div class="prose prose--wide" data-reveal>
@@ -185,7 +188,7 @@ const structuralStats = [
           Splitting the system this way keeps motion predictable. A general
           purpose Linux computer is excellent for perception and planning but is
           not built for precise, uninterrupted timing. A microcontroller is. By
-          keeping gait, inverse kinematics and servo timing on the Mega, the
+          keeping gait, inverse kinematics and servo timing on the ESP8266, the
           robot keeps walking smoothly even when the Pi is busy running AI or
           planning a route. The two sides exchange messages over a custom serial
           protocol.
@@ -223,7 +226,7 @@ const structuralStats = [
             The gait generator combines the legs into stable patterns for
             <strong> standing</strong>, <strong>walking</strong> and
             <strong> turning</strong>, and supports variable movement rather than
-            a single fixed step. All of this runs on the Arduino Mega so the
+            a single fixed step. All of this runs on the ESP8266 so the
             timing does not depend on the Linux scheduler.
           </p>
           <p class="mono locomotion__status">
@@ -294,7 +297,7 @@ const structuralStats = [
             { label: 'Operator', note: 'A person retains ultimate authority and can stop the robot.' },
             { label: 'System safety', note: 'Command validation and watchdogs check that instructions are sane and that components are alive.' },
             { label: 'High-level supervision', note: 'The Pi supervises the mission and can command a safe stop.' },
-            { label: 'Low-level control', note: 'The Mega executes motion and halts safely if it stops receiving valid commands.' },
+            { label: 'Low-level control', note: 'The ESP8266 executes motion and halts safely if it stops receiving valid commands.' },
           ]}
         />
         <div class="prose" data-reveal>
@@ -402,7 +405,7 @@ const structuralStats = [
             { label: 'Navigation', note: 'Decide how to get from here to the goal while staying aware of obstacles.' },
             { label: 'Path / mission', note: 'Follow a planned path or a sequence of waypoints.' },
             { label: 'Movement intent', note: 'Express the next move as a direction and speed.' },
-            { label: 'Low-level controller', note: 'The Mega turns movement intent into gait and leg motion.' },
+            { label: 'Low-level controller', note: 'The ESP8266 turns movement intent into gait and leg motion.' },
           ]}
         />
         <div class="prose" data-reveal>
@@ -465,6 +468,20 @@ const structuralStats = [
             </p>
           </Callout>
         </div>
+      </div>
+    </div>
+  </section>
+
+  {/* ---------------- CONCEPTS & RESOURCES ---------------- */}
+  <section class="section band" id="concepts">
+    <div class="container">
+      <SectionHeading
+        eyebrow="Concepts & Resources"
+        title="The techniques and tools behind ARGUS-6"
+        lead="A glossary of the robotics concepts and tools referenced throughout this page — what each one means, and where it's used on the robot."
+      />
+      <div class="concept-grid stagger">
+        {concepts.map((c) => <ConceptCard concept={c} />)}
       </div>
     </div>
   </section>
@@ -711,6 +728,21 @@ const structuralStats = [
   }
   @media (min-width: 1000px) {
     .cap-grid {
+      grid-template-columns: repeat(3, 1fr);
+    }
+  }
+
+  .concept-grid {
+    display: grid;
+    gap: 1.25rem;
+  }
+  @media (min-width: 640px) {
+    .concept-grid {
+      grid-template-columns: repeat(2, 1fr);
+    }
+  }
+  @media (min-width: 1000px) {
+    .concept-grid {
       grid-template-columns: repeat(3, 1fr);
     }
   }

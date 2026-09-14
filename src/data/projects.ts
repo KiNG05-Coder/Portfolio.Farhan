@@ -35,7 +35,7 @@ export const projects: Project[] = [
     achievements: [],
     technologies: [
       'Raspberry Pi 4',
-      'Arduino Mega',
+      'ESP8266',
       'ROS 2',
       'Python',
       'C++',

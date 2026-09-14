@@ -25,7 +25,7 @@ export const capabilities: Capability[] = [
     details: [
       'Three degrees of freedom per leg.',
       'Standing, walking and turning.',
-      'Variable movement handled on the Arduino Mega so timing does not depend on Linux scheduling.',
+      'Variable movement handled on the ESP8266 so timing does not depend on Linux scheduling.',
     ],
   },
   {
