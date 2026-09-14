@@ -30,8 +30,12 @@ const {
 
 const abs = path.join(process.cwd(), 'public', src.replace(/^\//, ''));
 const exists = fs.existsSync(abs);
+const isVideo = /\.(mp4|webm|mov)$/i.test(src);
 
-const autoLabel = label ?? 'IMAGE PLACEHOLDER — REPLACE WITH YOUR ORIGINAL';
+const autoLabel =
+  label ?? (isVideo
+    ? 'VIDEO PLACEHOLDER — REPLACE WITH YOUR CLIP'
+    : 'IMAGE PLACEHOLDER — REPLACE WITH YOUR ORIGINAL');
 ---
 
 <figure
@@ -40,7 +44,9 @@ const autoLabel = label ?? 'IMAGE PLACEHOLDER — REPLACE WITH YOUR ORIGINAL';
   data-reveal
 >
   {
-    exists ? (
+    exists && isVideo ? (
+      <video src={link(src)} controls preload="metadata" aria-label={alt} />
+    ) : exists ? (
       <img
         src={link(src)}
         alt={alt}
@@ -69,7 +75,8 @@ const autoLabel = label ?? 'IMAGE PLACEHOLDER — REPLACE WITH YOUR ORIGINAL';
     background: var(--surface);
     border: 1px solid var(--border);
   }
-  .asset img {
+  .asset img,
+  .asset video {
     width: 100%;
     height: 100%;
     object-fit: cover;

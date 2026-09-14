@@ -9,14 +9,21 @@ import CapabilityCard from '../components/CapabilityCard.astro';
 import StatusBadge from '../components/StatusBadge.astro';
 import StatStrip from '../components/StatStrip.astro';
 import Callout from '../components/Callout.astro';
-import ConceptCard from '../components/ConceptCard.astro';
+import PrototypeStatus from '../components/PrototypeStatus.astro';
+import Roadmap from '../components/Roadmap.astro';
+import TheorySection from '../components/TheorySection.astro';
 import { capabilities } from '../data/capabilities';
 import { decisions } from '../data/decisions';
-import { testStages, evidenceSlots } from '../data/testing';
-import { concepts } from '../data/concepts';
+import { testStages } from '../data/testing';
+import { implemented, planned } from '../data/prototype';
+import { roadmap } from '../data/roadmap';
+import { theoryCategories } from '../data/theory';
+import { mediaSlots } from '../data/media';
 import { link } from '../lib/link';
 
 const sections = [
+  ['status', 'Prototype Status'],
+  ['evidence', 'Evidence'],
   ['mission', 'The Mission'],
   ['capabilities', 'Capabilities'],
   ['explore', 'Explore'],
@@ -27,7 +34,8 @@ const sections = [
   ['ai', 'AI & Perception'],
   ['navigation', 'Navigation & Exploration'],
   ['missions', 'Mission System'],
-  ['concepts', 'Concepts & Resources'],
+  ['roadmap', 'Roadmap'],
+  ['theory', 'Concepts & Theory'],
   ['decisions', 'Engineering Decisions'],
   ['testing', 'Testing & Development'],
 ];
@@ -41,8 +49,8 @@ const structuralStats = [
 ---
 
 <BaseLayout
-  title="ARGUS-6 — Autonomous Robotics | Farhan Saif"
-  description="ARGUS-6 is an autonomous six-legged robot for human rescue and environmental conservation, built by Farhan Saif. High-level autonomy runs on a Raspberry Pi; real-time motion runs on an ESP8266."
+  title="ARGUS-6 — Working Hexapod Prototype | Farhan Saif"
+  description="ARGUS-6 is a working six-legged robot prototype built by Farhan Saif, aimed at human rescue and environmental conservation. Its ESP8266-driven locomotion, arm and gripper work today; a Raspberry Pi autonomy stack (ROS 2, YOLO26n perception, navigation) is designed and planned as the next phase."
   path="/argus-6"
 >
   {/* ---------------- HERO ---------------- */}
@@ -54,14 +62,16 @@ const structuralStats = [
         <p class="eyebrow" data-reveal>Flagship Project</p>
         <h1 class="a6-hero__title" data-reveal data-decode>ARGUS-6</h1>
         <p class="a6-hero__sub mono" data-reveal>
-          Autonomous Robotics for Human Rescue &amp; Environmental Conservation
+          A Working Hexapod Prototype, Built Toward Autonomous Rescue &amp; Environmental Conservation
         </p>
         <p class="a6-hero__desc" data-reveal>
-          A robot capable of assisting in human rescue and environmental
-          conservation.
+          A six-legged robot that walks, reaches and grips today — built and
+          controlled by its own ESP8266 firmware — with a Raspberry Pi
+          autonomy stack designed as the next development phase.
         </p>
         <div class="a6-hero__meta" data-reveal>
-          <StatusBadge status="in-development" label="In development — evolving project" />
+          <StatusBadge status="working" label="Physical prototype — working" />
+          <StatusBadge status="planned" label="Autonomy — planned" />
           <span class="mono a6-hero__by">A project by Farhan Saif</span>
         </div>
       </div>
@@ -89,6 +99,43 @@ const structuralStats = [
       </ul>
     </div>
   </nav>
+
+  {/* ---------------- PROTOTYPE STATUS ---------------- */}
+  <section class="section status-section" id="status">
+    <div class="container">
+      <SectionHeading
+        eyebrow="Prototype Status"
+        title="A working robot, with a planned brain"
+        lead="ARGUS-6 is already a functioning physical robot. Everything below the fold on this page builds on that fact — the autonomous Raspberry Pi system is the next development phase, not a claim about today."
+      />
+      <PrototypeStatus implemented={implemented} planned={planned} />
+    </div>
+  </section>
+
+  {/* ---------------- EVIDENCE / MEDIA ---------------- */}
+  <section class="section band" id="evidence">
+    <div class="container">
+      <SectionHeading
+        eyebrow="Evidence"
+        title="The physical prototype"
+        lead="Real media of ARGUS-6 as built. Slots without a file yet show exactly what should be added and where."
+      />
+      <div class="media-grid stagger">
+        {mediaSlots.map((slot) => (
+          <figure class="media-slot" data-reveal>
+            <Placeholder
+              src={slot.src}
+              alt={`${slot.title} — ${slot.hint}`}
+              ratio={slot.ratio}
+              label={`${slot.kind.toUpperCase()} — ${slot.title.toUpperCase()}`}
+              hint={slot.hint}
+            />
+            <figcaption class="media-slot__caption mono">{slot.title}</figcaption>
+          </figure>
+        ))}
+      </div>
+    </div>
+  </section>
 
   {/* ---------------- MISSION ---------------- */}
   <section class="section" id="mission">
@@ -179,9 +226,46 @@ const structuralStats = [
     <div class="container">
       <SectionHeading
         eyebrow="System Architecture"
-        title="Two brains, one robot"
-        lead="The Raspberry Pi handles high-level decisions, perception and autonomy. The ESP8266 handles real-time motion and low-level control. Select any block to read what it does."
+        title="One brain built, one brain planned"
+        lead="The ESP8266 real-time controller is built and running the physical robot today. A Raspberry Pi for high-level decisions, perception and autonomy is designed but not yet integrated. Select any block below to read what it does."
       />
+
+      <div class="arch-split">
+        <div class="arch-split__col" data-reveal>
+          <span class="arch-split__label mono arch-split__label--current">Current Prototype</span>
+          <Pipeline
+            label="Current prototype data flow"
+            compact
+            steps={[
+              { label: 'ESP8266', note: 'Real-time control firmware.', status: 'working' },
+              { label: 'Servo / control system', note: 'PWM servo control, IK and gait.', status: 'working' },
+              { label: 'Hexapod + arm', note: 'Six legs and the robotic arm move.', status: 'working' },
+            ]}
+          />
+        </div>
+        <div class="arch-split__col" data-reveal>
+          <span class="arch-split__label mono arch-split__label--planned">Planned Autonomous Architecture</span>
+          <Pipeline
+            label="Planned autonomous architecture"
+            variant="stack"
+            compact
+            steps={[
+              { label: 'USB camera', status: 'planned' },
+              { label: 'YOLO26n', status: 'planned' },
+              { label: 'Perception', status: 'planned' },
+              { label: 'Target Manager', status: 'planned' },
+              { label: 'Navigation', status: 'planned' },
+              { label: 'Mission Manager', status: 'planned' },
+              { label: 'ROS 2', status: 'planned' },
+              { label: 'Raspberry Pi', status: 'planned' },
+              { label: 'Serial', status: 'planned' },
+              { label: 'ESP8266', note: 'Existing robot control system.', status: 'working' },
+              { label: 'Servos / Arm', status: 'working' },
+            ]}
+          />
+        </div>
+      </div>
+
       <ArchitectureDiagram />
       <div class="prose prose--wide" data-reveal>
         <p>
@@ -189,11 +273,24 @@ const structuralStats = [
           purpose Linux computer is excellent for perception and planning but is
           not built for precise, uninterrupted timing. A microcontroller is. By
           keeping gait, inverse kinematics and servo timing on the ESP8266, the
-          robot keeps walking smoothly even when the Pi is busy running AI or
-          planning a route. The two sides exchange messages over a custom serial
-          protocol.
+          robot keeps walking smoothly regardless of what the Pi side is doing —
+          today because there is no Pi side yet, and later because the split is
+          designed to keep it that way once there is.
         </p>
       </div>
+
+      <Callout title="Two runtime modes, not three">
+        <p>
+          The finished system is designed around exactly two runtime modes:
+          <strong> MANUAL</strong> (a human operator commands the robot
+          directly) and <strong>AUTONOMOUS</strong> (the Raspberry Pi's
+          perception, navigation and mission logic command it). There is no
+          blended "assist" mode — control authority belongs to one source at a
+          time. A future dashboard is planned to expose mode selection and
+          robot control as a later integration feature, once the Pi side
+          exists to connect it to.
+        </p>
+      </Callout>
     </div>
   </section>
 
@@ -327,8 +424,8 @@ const structuralStats = [
     <div class="container">
       <SectionHeading
         eyebrow="AI & Perception"
-        title="Lightweight YOLO on a Raspberry Pi"
-        lead="ARGUS-6's planned perception system is built around a lightweight YOLO object detector chosen to run on Raspberry Pi 4 hardware."
+        title="YOLO26n on a Raspberry Pi"
+        lead="ARGUS-6's planned perception system is built around YOLO26n, a lightweight object detector chosen to run on Raspberry Pi 4 hardware."
       />
 
       <div class="ai-status" data-reveal>
@@ -343,36 +440,34 @@ const structuralStats = [
           steps={[
             { label: 'Camera', note: 'A camera on the robot provides a live view.' },
             { label: 'Frame capture', note: 'Individual frames are pulled from the stream.' },
-            { label: 'YOLO object detection', note: 'A lightweight YOLO model scans each frame.' },
-            { label: 'Bounding boxes', note: 'Detected objects are returned as boxes.' },
-            { label: 'Class + confidence', note: 'Each box has a label and a confidence score.' },
-            { label: 'Tracking / interpretation', note: 'Detections are followed over time and interpreted.' },
-            { label: 'Mission decision', note: 'The result informs what the robot does next.' },
+            { label: 'YOLO26n detection', note: 'Runs on each frame, returning bounding boxes with a class and confidence score.' },
+            { label: 'Tracking / Target Manager', note: 'Detections are followed across frames; a target is selected and locked.' },
+            { label: 'Navigation / Mission Manager', note: 'The locked target informs approach, alignment and the current mission state.' },
           ]}
         />
 
         <div class="prose" data-reveal>
           <p>
-            The planned detector is <strong>YOLOv8n</strong>, or another
-            lightweight YOLO model depending on benchmarking. Target classes are
+            The planned detector is <strong>YOLO26n</strong>, the smallest
+            ("nano") variant of the YOLO26 model family. Target classes are
             configurable and may include <strong>humans</strong>,
             <strong> trash</strong>, <strong>cans</strong> and other environmental
             objects.
           </p>
           <p>
             The Raspberry Pi 4 has a CPU only — no GPU or accelerator — so
-            inference speed is limited. The intended deployment uses
-            <strong> YOLOv8n</strong>, an <strong>NCNN</strong> build of the model
-            and a <strong>reduced input resolution</strong> to keep it usable.
+            inference speed is limited. YOLO26n was chosen specifically for its
+            small compute and memory footprint, paired with a
+            <strong> reduced input resolution</strong> to keep it usable.
             CPU-only inference is expected to run at low frame rates and needs to
             be benchmarked on the actual Pi.
           </p>
 
           <Callout variant="caution" title="No measured FPS yet">
             <p>
-              No frame-rate number is published here because none has been
-              measured on ARGUS-6. Benchmarks will be added once the model runs
-              on the real hardware.
+              No frame-rate, accuracy or benchmark number is published here
+              because none has been measured on ARGUS-6. Numbers will be added
+              once the model runs on the real hardware, not before.
             </p>
           </Callout>
 
@@ -381,6 +476,15 @@ const structuralStats = [
               Object detection produces guesses with confidence scores, not
               certainties. ARGUS-6 treats perception as an input to decisions,
               not as infallible truth.
+            </p>
+          </Callout>
+
+          <Callout title="Human detection is a safety event">
+            <p>
+              A person detection is planned to route separately from waste
+              targets: <strong>YOLO26n → Incident Listener → dashboard alert</strong>,
+              staying visible until the operator dismisses it. It is never
+              treated as something to approach or collect.
             </p>
           </Callout>
         </div>
@@ -420,6 +524,15 @@ const structuralStats = [
             <p>
               ARGUS-6 does not claim centimetre-level positioning, and navigation
               capabilities that have not been tested are marked as planned.
+            </p>
+          </Callout>
+          <Callout title="Lighting automation">
+            <p>
+              Also planned for the Pi side: an ambient light sensor driving an
+              automatic flashlight for low-light conditions —
+              <strong> light sensor → Raspberry Pi → lighting controller →
+              MOSFET driver → flashlight</strong>, with on/off thresholds and
+              state exposed on the future dashboard. Not implemented yet.
             </p>
           </Callout>
         </div>
@@ -472,17 +585,27 @@ const structuralStats = [
     </div>
   </section>
 
-  {/* ---------------- CONCEPTS & RESOURCES ---------------- */}
-  <section class="section band" id="concepts">
+  {/* ---------------- DEVELOPMENT ROADMAP ---------------- */}
+  <section class="section" id="roadmap">
     <div class="container">
       <SectionHeading
-        eyebrow="Concepts & Resources"
-        title="The techniques and tools behind ARGUS-6"
-        lead="A glossary of the robotics concepts and tools referenced throughout this page — what each one means, and where it's used on the robot."
+        eyebrow="Development Roadmap"
+        title="From working robot to autonomous system"
+        lead="How ARGUS-6 evolves from the hexapod that already works into the planned autonomous system. Phase 1 is complete; Phases 2 and 3 are ordered future work, not finished capabilities."
       />
-      <div class="concept-grid stagger">
-        {concepts.map((c) => <ConceptCard concept={c} />)}
-      </div>
+      <Roadmap phases={roadmap} />
+    </div>
+  </section>
+
+  {/* ---------------- CONCEPTS & THEORY ---------------- */}
+  <section class="section band" id="theory">
+    <div class="container">
+      <SectionHeading
+        eyebrow="Concepts & Theory"
+        title="The engineering behind ARGUS-6"
+        lead="Robotics, physics, computer vision and software concepts that explain why ARGUS-6 is built the way it is — organized by category, with what's implemented and what's planned kept explicit in each one."
+      />
+      <TheorySection categories={theoryCategories} />
     </div>
   </section>
 
@@ -534,22 +657,10 @@ const structuralStats = [
         }
       </ol>
 
-      <h3 class="evidence__title mono" data-reveal>Evidence — to be added</h3>
       <p class="evidence__intro text-muted" data-reveal>
-        Slots for Farhan to add test videos, benchmark measurements, photos and
-        logs as they are produced.
+        Photo and video evidence of the physical prototype is in the
+        <a href="#evidence">Evidence section</a> near the top of this page.
       </p>
-      <div class="evidence__grid stagger">
-        {
-          evidenceSlots.map((slot) => (
-            <div class="evidence__slot panel" data-reveal>
-              <span class="evidence__kind mono">{slot.kind}</span>
-              <h4 class="evidence__slot-title">{slot.title}</h4>
-              <p class="evidence__slot-note text-muted">{slot.note}</p>
-            </div>
-          ))
-        }
-      </div>
     </div>
   </section>
 
@@ -716,6 +827,64 @@ const structuralStats = [
     letter-spacing: 0.04em;
   }
 
+  /* Current vs planned architecture split */
+  .arch-split {
+    display: grid;
+    gap: 2rem;
+    margin-bottom: clamp(2.5rem, 6vw, 4rem);
+  }
+  @media (min-width: 900px) {
+    .arch-split {
+      grid-template-columns: 1fr 1.2fr;
+      align-items: start;
+    }
+  }
+  .arch-split__label {
+    display: inline-block;
+    margin-bottom: 1.25rem;
+    font-size: 0.66rem;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    padding: 0.35rem 0.75rem;
+    border-radius: 999px;
+    border: 1px solid var(--border-strong);
+  }
+  .arch-split__label--current {
+    color: var(--status-working);
+    border-color: color-mix(in srgb, var(--status-working) 45%, transparent);
+    background: color-mix(in srgb, var(--status-working) 8%, transparent);
+  }
+  .arch-split__label--planned {
+    color: var(--text-dim);
+    border-style: dashed;
+  }
+
+  /* Evidence / media grid */
+  .media-grid {
+    display: grid;
+    gap: 1.25rem;
+  }
+  @media (min-width: 640px) {
+    .media-grid {
+      grid-template-columns: repeat(2, 1fr);
+    }
+  }
+  @media (min-width: 1000px) {
+    .media-grid {
+      grid-template-columns: repeat(3, 1fr);
+    }
+  }
+  .media-slot {
+    display: grid;
+    gap: 0.6rem;
+  }
+  .media-slot__caption {
+    font-size: 0.72rem;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--text-muted);
+  }
+
   .cap-grid {
     display: grid;
     gap: 1.25rem;
@@ -728,21 +897,6 @@ const structuralStats = [
   }
   @media (min-width: 1000px) {
     .cap-grid {
-      grid-template-columns: repeat(3, 1fr);
-    }
-  }
-
-  .concept-grid {
-    display: grid;
-    gap: 1.25rem;
-  }
-  @media (min-width: 640px) {
-    .concept-grid {
-      grid-template-columns: repeat(2, 1fr);
-    }
-  }
-  @media (min-width: 1000px) {
-    .concept-grid {
       grid-template-columns: repeat(3, 1fr);
     }
   }
@@ -891,47 +1045,13 @@ const structuralStats = [
     color: var(--text-dim);
   }
 
-  .evidence__title {
-    font-size: 1.1rem;
-    margin-bottom: 0.5rem;
-  }
   .evidence__intro {
     font-size: 0.9rem;
-    margin-bottom: 1.5rem;
+    margin-top: 1.5rem;
     max-width: 52ch;
   }
-  .evidence__grid {
-    display: grid;
-    gap: 1rem;
-  }
-  @media (min-width: 640px) {
-    .evidence__grid {
-      grid-template-columns: repeat(2, 1fr);
-    }
-  }
-  @media (min-width: 1000px) {
-    .evidence__grid {
-      grid-template-columns: repeat(3, 1fr);
-    }
-  }
-  .evidence__slot {
-    padding: 1.2rem;
-    display: grid;
-    gap: 0.5rem;
-    border-style: dashed;
-    border-color: var(--border-strong);
-  }
-  .evidence__kind {
-    font-size: 0.62rem;
-    letter-spacing: 0.16em;
-    text-transform: uppercase;
+  .evidence__intro a {
     color: var(--accent);
-  }
-  .evidence__slot-title {
-    font-size: 0.95rem;
-  }
-  .evidence__slot-note {
-    font-size: 0.82rem;
   }
 
   .a6-docs-cta__panel {
