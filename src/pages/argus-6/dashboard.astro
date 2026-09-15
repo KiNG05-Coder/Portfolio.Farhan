@@ -32,10 +32,9 @@ const missionSequence = [
   ['stop', 'STOP'],
   ['grab', 'GRAB'],
   ['verify', 'VERIFY'],
-  ['arm_default', 'ARM DEFAULT'],
-  ['return_to_bin', 'RETURN TO BIN'],
-  ['align_bin', 'ALIGN BIN'],
   ['deposit', 'DEPOSIT'],
+  ['arm_default', 'ARM DEFAULT'],
+  ['return_to_base', 'RETURN TO BASE'],
   ['complete', 'COMPLETE'],
 ];
 
@@ -140,12 +139,22 @@ const plannedSystem = [
     </section>
 
     {/* ---------------- ON-PAGE NAV ---------------- */}
-    <nav class="a6d-toc" aria-label="Dashboard sections">
+    <nav class="a6d-toc" aria-label="Dashboard sections" data-toc>
       <div class="container">
         <span class="a6d-toc__label mono">Sections</span>
-        <ul class="scroll-x">
+        <ul class="scroll-x" data-toc-list>
           {sections.map(([id, label]) => <li><a href={`#${id}`} class="mono">{label}</a></li>)}
         </ul>
+        <button
+          type="button"
+          class="a6d-toc__toggle"
+          data-toc-toggle
+          aria-expanded="true"
+          aria-label="Collapse section navigation"
+          title="Collapse section navigation"
+        >
+          <span class="a6d-toc__toggle-icon" aria-hidden="true">▾</span>
+        </button>
       </div>
     </nav>
 
@@ -259,7 +268,7 @@ const plannedSystem = [
 
               <g transform="translate(60,210)">
                 <rect x="-9" y="-9" width="18" height="18" rx="3" fill="#171b22" stroke="#5b9dff" stroke-width="1.5" />
-                <text x="15" y="4" class="a6d-map__label" fill="#9aa2ad">BIN</text>
+                <text x="15" y="4" class="a6d-map__label" fill="#9aa2ad">BASE</text>
               </g>
 
               <g data-map-robot transform="translate(60,210) rotate(-35)">
@@ -269,7 +278,7 @@ const plannedSystem = [
             <ul class="a6d-map-legend">
               <li><span class="a6d-legend-swatch" style="background:#5b9dff"></span>ARGUS-6</li>
               <li><span class="a6d-legend-swatch a6d-legend-swatch--ring" style="border-color:#3fb950"></span>Locked target</li>
-              <li><span class="a6d-legend-swatch a6d-legend-swatch--square"></span>Collection bin</li>
+              <li><span class="a6d-legend-swatch a6d-legend-swatch--square"></span>Base (on-board bin travels with the robot)</li>
               <li><span class="a6d-legend-swatch a6d-legend-swatch--dash"></span>Mission boundary</li>
             </ul>
           </div>
@@ -391,7 +400,7 @@ const plannedSystem = [
         <div class="a6d-complete-banner panel" data-complete-banner hidden>
           <div>
             <span class="a6d-complete-banner__tag mono">MISSION COMPLETE</span>
-            <p>Target 04 collected and deposited. This was a simulated run — no physical robot moved.</p>
+            <p>Target 04 collected, stowed in the on-board bin, and ARGUS-6 returned to base. This was a simulated run — no physical robot moved.</p>
           </div>
           <div class="a6d-complete-banner__actions">
             <button type="button" class="btn btn--primary" data-run-again>Run Again</button>
@@ -692,12 +701,12 @@ const plannedSystem = [
 <script>
   type StateId =
     | 'idle' | 'detect' | 'target_lock' | 'approach' | 'align' | 'stop'
-    | 'grab' | 'verify' | 'arm_default' | 'return_to_bin' | 'align_bin'
-    | 'deposit' | 'complete' | 'emergency_stop';
+    | 'grab' | 'verify' | 'deposit' | 'arm_default' | 'return_to_base'
+    | 'complete' | 'emergency_stop';
 
   const SEQUENCE: StateId[] = [
     'idle', 'detect', 'target_lock', 'approach', 'align', 'stop', 'grab',
-    'verify', 'arm_default', 'return_to_bin', 'align_bin', 'deposit', 'complete',
+    'verify', 'deposit', 'arm_default', 'return_to_base', 'complete',
   ];
 
   // Box geometry per phase — left/top/width/height as percentages of the
@@ -891,13 +900,34 @@ const plannedSystem = [
       autonomyNode: 'mission_manager',
       authorityNode: 'mission_manager',
     },
+    // The bin is mounted on the robot itself, not a separate stop on the
+    // map — so depositing happens right where the target was collected,
+    // before the robot ever starts heading back.
+    deposit: {
+      label: 'DEPOSIT',
+      missionLabel: 'Depositing into on-board bin',
+      log: ['ARM · Depositing into on-board bin', 'ARM · Gripper opened'],
+      fps: 26,
+      targetSummary: 'TARGET 04 · DEPOSITED',
+      targetLockStatus: 'DEPOSITED',
+      showTargetDetail: true,
+      decisionTrace: 'locked',
+      mapRobot: { x: 320, y: 50, rot: 40 },
+      mapRoute: 'out',
+      mapTargetLocked: true,
+      twinArm: 'reach-bin',
+      twinGripper: 'open',
+      twinMovement: 'ARM ACTIVE',
+      autonomyNode: 'mission_manager',
+      authorityNode: 'mission_manager',
+    },
     arm_default: {
       label: 'ARM DEFAULT',
       missionLabel: 'Arm returning to default',
       log: ['ARM · Arm returned to default'],
       fps: 26,
-      targetSummary: 'TARGET 04 · COLLECTED',
-      targetLockStatus: 'COLLECTED',
+      targetSummary: 'TARGET 04 · DEPOSITED',
+      targetLockStatus: 'DEPOSITED',
       showTargetDetail: true,
       decisionTrace: 'locked',
       mapRobot: { x: 320, y: 50, rot: 40 },
@@ -909,12 +939,12 @@ const plannedSystem = [
       autonomyNode: 'ik_gait',
       authorityNode: 'esp8266',
     },
-    return_to_bin: {
-      label: 'RETURN TO BIN',
-      missionLabel: 'Returning to bin',
-      log: ['NAV · Returning to bin'],
+    return_to_base: {
+      label: 'RETURN TO BASE',
+      missionLabel: 'Returning to base',
+      log: ['NAV · Returning to base'],
       fps: 27,
-      targetSummary: 'TARGET 04 · COLLECTED',
+      targetSummary: 'TARGET 04 · DEPOSITED',
       targetLockStatus: 'RETURNING',
       showTargetDetail: true,
       decisionTrace: 'locked',
@@ -927,43 +957,6 @@ const plannedSystem = [
       twinMovement: 'FORWARD',
       autonomyNode: 'navigation',
       authorityNode: 'navigation',
-    },
-    align_bin: {
-      label: 'ALIGN BIN',
-      missionLabel: 'Aligning with bin',
-      log: ['NAV · Aligned with bin'],
-      fps: 27,
-      targetSummary: 'TARGET 04 · COLLECTED',
-      targetLockStatus: 'AT BIN',
-      showTargetDetail: true,
-      decisionTrace: 'locked',
-      mapRobot: { x: 60, y: 210, rot: -145 },
-      mapRoute: 'back',
-      mapTargetLocked: true,
-      twinArm: 'default',
-      twinGripper: 'closed',
-      twinMovement: 'STOPPED',
-      autonomyNode: 'navigation',
-      authorityNode: 'navigation',
-    },
-    deposit: {
-      label: 'DEPOSIT',
-      missionLabel: 'Depositing collected item',
-      log: ['ARM · Deposit sequence started', 'ARM · Gripper opened'],
-      cameraComplete: false,
-      fps: 26,
-      targetSummary: 'TARGET 04 · DEPOSITED',
-      targetLockStatus: 'DEPOSITED',
-      showTargetDetail: true,
-      decisionTrace: 'locked',
-      mapRobot: { x: 60, y: 210, rot: -145 },
-      mapRoute: 'back',
-      mapTargetLocked: true,
-      twinArm: 'reach-bin',
-      twinGripper: 'open',
-      twinMovement: 'ARM ACTIVE',
-      autonomyNode: 'mission_manager',
-      authorityNode: 'mission_manager',
     },
     complete: {
       label: 'COMPLETE',
@@ -1012,8 +1005,8 @@ const plannedSystem = [
     { state: 'stop', narration: 'Motion stops before the arm engages.', seconds: 3 },
     { state: 'grab', narration: 'The arm reaches out and the gripper closes on the target.', seconds: 5 },
     { state: 'verify', narration: 'The mission system records the collection as verified — a simulated status, not a physical sensor.', seconds: 4 },
-    { state: 'return_to_bin', narration: 'ARGUS-6 returns along its route toward the on-board bin.', seconds: 7 },
-    { state: 'deposit', narration: 'The arm deposits the item and the gripper opens.', seconds: 5 },
+    { state: 'deposit', narration: 'The bin is mounted on ARGUS-6 itself, so the arm deposits the item right there and the gripper opens.', seconds: 5 },
+    { state: 'return_to_base', narration: 'With the item stowed on board, ARGUS-6 returns along its route to base.', seconds: 7 },
     { state: 'complete', narration: 'Mission complete.', seconds: 4 },
     { state: 'complete', narration: 'This entire run was a simulation: perception, navigation and mission management are planned, built on top of ESP8266 locomotion that already works.', seconds: 7, scrollTo: '#autonomy' },
   ];
@@ -1024,6 +1017,25 @@ const plannedSystem = [
       root.dataset.bound = 'true';
 
       const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+      // ---- collapsible on-page section nav ----
+      const TOC_STORAGE_KEY = 'a6d-toc-collapsed';
+      const toc = document.querySelector<HTMLElement>('[data-toc]');
+      const tocToggle = toc?.querySelector<HTMLButtonElement>('[data-toc-toggle]');
+      const setTocCollapsed = (collapsed: boolean) => {
+        if (!toc || !tocToggle) return;
+        toc.dataset.collapsed = String(collapsed);
+        tocToggle.setAttribute('aria-expanded', String(!collapsed));
+        tocToggle.setAttribute('aria-label', collapsed ? 'Expand section navigation' : 'Collapse section navigation');
+        tocToggle.title = collapsed ? 'Expand section navigation' : 'Collapse section navigation';
+        try { window.localStorage.setItem(TOC_STORAGE_KEY, String(collapsed)); } catch {}
+      };
+      if (toc && tocToggle) {
+        let storedCollapsed = false;
+        try { storedCollapsed = window.localStorage.getItem(TOC_STORAGE_KEY) === 'true'; } catch {}
+        setTocCollapsed(storedCollapsed);
+        tocToggle.addEventListener('click', () => setTocCollapsed(toc.dataset.collapsed !== 'true'));
+      }
 
       // ---- synthetic demo clock ----
       let clockSeconds = 18 * 3600 + 42 * 60;
@@ -1502,6 +1514,20 @@ const plannedSystem = [
   @media (max-width: 620px) { .a6d-toc__label { display: none; } }
   .a6d-toc ul { display: flex; gap: 0.25rem; padding-block: 0.5rem; white-space: nowrap; min-width: 0; flex: 1; -webkit-overflow-scrolling: touch; }
   .a6d-toc a { display: inline-block; padding: 0.4rem 0.7rem; font-size: 0.68rem; letter-spacing: 0.08em; text-transform: uppercase; color: var(--text-muted); border-radius: 5px; transition: color 0.2s var(--ease), background 0.2s var(--ease); }
+  .a6d-toc__toggle {
+    flex: none;
+    display: grid; place-items: center;
+    width: 1.8rem; height: 1.8rem;
+    border: 1px solid var(--border-strong); border-radius: 6px;
+    color: var(--text-muted);
+    transition: color 0.2s var(--ease), border-color 0.2s var(--ease);
+  }
+  .a6d-toc__toggle:hover { color: var(--accent); border-color: var(--accent-line); }
+  .a6d-toc__toggle-icon { display: inline-block; font-size: 0.7rem; transition: transform 0.25s var(--ease); }
+  .a6d-toc[data-collapsed="true"] .a6d-toc__toggle-icon { transform: rotate(180deg); }
+  .a6d-toc[data-collapsed="true"] .a6d-toc__label,
+  .a6d-toc[data-collapsed="true"] ul { display: none; }
+  .a6d-toc[data-collapsed="true"] .container { padding-block: 0.3rem; }
   .a6d-toc a:hover { color: var(--text); background: rgba(255, 255, 255, 0.04); }
 
   .a6d-section { padding-block: clamp(2.75rem, 6vw, 5rem); }
