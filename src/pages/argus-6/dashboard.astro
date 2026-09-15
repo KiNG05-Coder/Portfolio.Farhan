@@ -32,9 +32,10 @@ const missionSequence = [
   ['stop', 'STOP'],
   ['grab', 'GRAB'],
   ['verify', 'VERIFY'],
-  ['deposit', 'DEPOSIT'],
   ['arm_default', 'ARM DEFAULT'],
-  ['return_to_base', 'RETURN TO BASE'],
+  ['return_to_bin', 'RETURN TO BIN'],
+  ['align_bin', 'ALIGN BIN'],
+  ['deposit', 'DEPOSIT'],
   ['complete', 'COMPLETE'],
 ];
 
@@ -184,29 +185,66 @@ const plannedSystem = [
 
           <div class="a6d-demo-actions">
             <button type="button" class="btn btn--primary a6d-run-btn" data-run-demo>▶ Run Autonomous Demo</button>
-            <button type="button" class="btn a6d-wice-btn" data-run-wice>WICE Demo Mode</button>
+            <button type="button" class="btn a6d-wice-btn" data-run-wice>Guided WICE Presentation</button>
           </div>
 
           <button type="button" class="a6d-stop-btn mono" data-stop-btn>STOP</button>
         </div>
 
-        {/* ---- WICE narration / progress strip (hidden unless WICE mode running) ---- */}
-        <div class="a6d-wice-strip panel" data-wice-strip hidden>
-          <span class="a6d-wice-strip__label mono">WICE DEMO</span>
-          <p class="a6d-wice-strip__narration" data-wice-narration>—</p>
-          <span class="a6d-wice-strip__progress mono" data-wice-progress>0 / 0 SEC</span>
-          <div class="a6d-wice-strip__controls">
-            <button type="button" class="a6d-wice-ctrl" data-wice-pause>Pause</button>
-            <button type="button" class="a6d-wice-ctrl" data-wice-skip>Skip</button>
-            <button type="button" class="a6d-wice-ctrl" data-wice-restart>Restart</button>
+        {/* ---- Guided WICE Presentation control bar (hidden unless presentation mode is active) ----
+             This is a dashboard playback/presentation mode only — it does not add a third robot
+             operating mode. The robot stays MANUAL / AUTONOMOUS; this bar just steps a presenter
+             through the same centralized mission state used everywhere else on the page. */}
+        <div class="a6d-wice-bar panel" data-wice-bar hidden>
+          <div class="a6d-wice-bar__top">
+            <span class="a6d-wice-bar__label mono">WICE PRESENTATION MODE</span>
+            <span class="a6d-wice-bar__guided mono"><span class="a6d-wice-bar__dot" aria-hidden="true"></span>GUIDED</span>
+            <button type="button" class="a6d-wice-ctrl a6d-wice-ctrl--notes" data-wice-notes-toggle aria-expanded="false">Presenter Notes</button>
           </div>
+
+          <div class="a6d-wice-bar__controls">
+            <button type="button" class="a6d-wice-ctrl" data-wice-prev>← Previous</button>
+            <button type="button" class="a6d-wice-ctrl" data-wice-play>▶ Play</button>
+            <button type="button" class="a6d-wice-ctrl" data-wice-pause>Pause</button>
+            <button type="button" class="a6d-wice-ctrl a6d-wice-ctrl--primary" data-wice-next>Next Stage →</button>
+            <span class="a6d-wice-bar__spacer" aria-hidden="true"></span>
+            <button type="button" class="a6d-wice-ctrl" data-wice-restart>Restart</button>
+            <button type="button" class="a6d-wice-ctrl" data-wice-exit>Exit WICE Mode</button>
+          </div>
+
+          <p class="a6d-wice-bar__stage mono">
+            Stage <span data-wice-stage-num>1</span> of <span data-wice-stage-total>14</span>
+            <span class="a6d-wice-bar__stage-title" data-wice-stage-title>OVERVIEW</span>
+          </p>
+
+          <div class="a6d-wice-notes" data-wice-notes hidden>
+            <span class="a6d-wice-notes__label mono">Presenter Notes</span>
+            <p class="a6d-wice-notes__text" data-wice-notes-text>—</p>
+            <button type="button" class="a6d-wice-ctrl" data-wice-notes-hide>Hide Notes</button>
+          </div>
+        </div>
+
+        {/* ---- Guided WICE Presentation — stage information panel ---- */}
+        <div class="a6d-wice-info panel" data-wice-info hidden>
+          <span class="a6d-wice-info__eyebrow mono">WICE PRESENTATION</span>
+          <p class="a6d-wice-info__stage mono">STAGE <span data-wice-info-num>1</span> / <span data-wice-info-total>14</span></p>
+          <h3 class="a6d-wice-info__title" data-wice-info-title>OVERVIEW</h3>
+          <div class="a6d-wice-info__row">
+            <span class="a6d-wice-info__key mono">Current State</span>
+            <p data-wice-info-current>—</p>
+          </div>
+          <div class="a6d-wice-info__row">
+            <span class="a6d-wice-info__key mono">Key Concept</span>
+            <p data-wice-info-concept>—</p>
+          </div>
+          <button type="button" class="btn btn--primary a6d-wice-info__next" data-wice-info-next>Next Stage →</button>
         </div>
 
         <p class="a6d-microcaveat mono">All panels below are driven by one simulated mission state — nothing here reads from live hardware.</p>
 
         {/* ---- Camera + Map ---- */}
         <div class="a6d-grid-2 a6d-grid-2--camera">
-          <div class="a6d-camera panel" id="camera">
+          <div class="a6d-camera panel" id="camera" data-emphasis-group="perception">
             <div class="a6d-camera__viewport">
               <span class="a6d-camera__scanlines" aria-hidden="true"></span>
               <span class="a6d-camera__vignette" aria-hidden="true"></span>
@@ -238,7 +276,7 @@ const plannedSystem = [
             </div>
           </div>
 
-          <div class="a6d-map panel" id="map">
+          <div class="a6d-map panel" id="map" data-emphasis-group="navigation">
             <span class="a6d-demo-chip a6d-map__tag">SIM · LIVE MAP</span>
             <svg viewBox="0 0 400 260" class="a6d-map__svg" role="img" aria-label="Simulated map of ARGUS-6's position, route, targets and mission boundary">
               <defs>
@@ -268,7 +306,7 @@ const plannedSystem = [
 
               <g transform="translate(60,210)">
                 <rect x="-9" y="-9" width="18" height="18" rx="3" fill="#171b22" stroke="#5b9dff" stroke-width="1.5" />
-                <text x="15" y="4" class="a6d-map__label" fill="#9aa2ad">BASE</text>
+                <text x="15" y="4" class="a6d-map__label" fill="#9aa2ad">BIN</text>
               </g>
 
               <g data-map-robot transform="translate(60,210) rotate(-35)">
@@ -278,7 +316,7 @@ const plannedSystem = [
             <ul class="a6d-map-legend">
               <li><span class="a6d-legend-swatch" style="background:#5b9dff"></span>ARGUS-6</li>
               <li><span class="a6d-legend-swatch a6d-legend-swatch--ring" style="border-color:#3fb950"></span>Locked target</li>
-              <li><span class="a6d-legend-swatch a6d-legend-swatch--square"></span>Base (on-board bin travels with the robot)</li>
+              <li><span class="a6d-legend-swatch a6d-legend-swatch--square"></span>Onboard bin (deposit point once the robot returns)</li>
               <li><span class="a6d-legend-swatch a6d-legend-swatch--dash"></span>Mission boundary</li>
             </ul>
           </div>
@@ -286,12 +324,23 @@ const plannedSystem = [
 
         {/* ---- Target/Decision + Digital Twin ---- */}
         <div class="a6d-grid-2">
-          <div class="panel a6d-target-panel" id="target">
+          <div class="panel a6d-target-panel" id="target" data-emphasis-group="targeting">
             <div class="a6d-target-panel__head">
               <h3 class="a6d-panel-title mono">Target Manager</h3>
               <span class="a6d-demo-chip">SIM</span>
             </div>
             <p class="a6d-target-status mono" data-target-summary>SEARCHING FOR TARGET</p>
+
+            <div class="a6d-target-candidates" data-target-candidates hidden>
+              <p class="a6d-panel-subtitle mono">Target Candidates</p>
+              <ul class="a6d-candidate-list" data-candidate-list>
+                <li data-candidate="t01"><span class="mono">ID 01</span><span>CAN</span><span class="mono">82%</span></li>
+                <li data-candidate="t02"><span class="mono">ID 02</span><span>CONTAINER</span><span class="mono">85%</span></li>
+                <li data-candidate="t03"><span class="mono">ID 03</span><span>CAN</span><span class="mono">79%</span></li>
+                <li data-candidate="t04"><span class="mono">ID 04</span><span>PLASTIC BOTTLE</span><span class="mono">91%</span></li>
+              </ul>
+            </div>
+
             <dl class="a6d-metric-grid a6d-metric-grid--wide" data-target-detail hidden>
               <div><dt class="mono">Candidates</dt><dd class="mono">4</dd></div>
               <div><dt class="mono">Confidence</dt><dd class="mono">91%</dd></div>
@@ -305,7 +354,7 @@ const plannedSystem = [
             </dl>
           </div>
 
-          <div class="panel a6d-twin-panel" id="twin">
+          <div class="panel a6d-twin-panel" id="twin" data-emphasis-group="navigation collection">
             <div class="a6d-twin-panel__head">
               <h3 class="a6d-panel-title mono">ARGUS-6 Digital Twin</h3>
               <span class="a6d-demo-chip">SIM</span>
@@ -350,7 +399,7 @@ const plannedSystem = [
         </div>
 
         {/* ---- Mission timeline ---- */}
-        <div class="panel a6d-timeline-panel" id="mission">
+        <div class="panel a6d-timeline-panel" id="mission" data-emphasis-group="collection">
           <div class="a6d-timeline-panel__head">
             <h3 class="a6d-panel-title mono">Autonomous Mission</h3>
             <span class="a6d-mission-label mono" data-mission-label>Idle — awaiting demo start</span>
@@ -405,7 +454,7 @@ const plannedSystem = [
         <div class="a6d-complete-banner panel" data-complete-banner hidden>
           <div>
             <span class="a6d-complete-banner__tag mono">MISSION COMPLETE</span>
-            <p>Target 04 collected, stowed in the on-board bin, and ARGUS-6 returned to base. This was a simulated run — no physical robot moved.</p>
+            <p>Target 04 collected and deposited in the onboard bin. This was a simulated run — no physical robot moved.</p>
           </div>
           <div class="a6d-complete-banner__actions">
             <button type="button" class="btn btn--primary" data-run-again>Run Again</button>
@@ -479,7 +528,7 @@ const plannedSystem = [
     </section>
 
     {/* ---------------- AUTONOMY STACK ---------------- */}
-    <section class="section a6d-section" id="autonomy">
+    <section class="section a6d-section" id="autonomy" data-emphasis-group="architecture">
       <div class="container">
         <SectionHeading
           eyebrow="System Design"
@@ -710,12 +759,12 @@ const plannedSystem = [
 <script>
   type StateId =
     | 'idle' | 'detect' | 'target_lock' | 'approach' | 'align' | 'stop'
-    | 'grab' | 'verify' | 'deposit' | 'arm_default' | 'return_to_base'
-    | 'complete' | 'emergency_stop';
+    | 'grab' | 'verify' | 'arm_default' | 'return_to_bin' | 'align_bin'
+    | 'deposit' | 'complete' | 'emergency_stop';
 
   const SEQUENCE: StateId[] = [
     'idle', 'detect', 'target_lock', 'approach', 'align', 'stop', 'grab',
-    'verify', 'deposit', 'arm_default', 'return_to_base', 'complete',
+    'verify', 'arm_default', 'return_to_bin', 'align_bin', 'deposit', 'complete',
   ];
 
   // Box geometry per phase — left/top/width/height as percentages of the
@@ -738,7 +787,7 @@ const plannedSystem = [
     targetSummary: string;
     targetLockStatus?: string;
     showTargetDetail?: boolean;
-    decisionTrace?: 'idle' | 'analyzing' | 'locked';
+    decisionTrace?: 'idle' | 'analyzing' | 'waiting' | 'locked';
     mapRobot?: { x: number; y: number; rot: number };
     mapRoute?: 'none' | 'out' | 'back' | 'both';
     mapTargetLocked?: boolean;
@@ -746,7 +795,7 @@ const plannedSystem = [
     twinArm?: 'default' | 'reach-target' | 'reach-bin';
     twinGripper?: 'open' | 'closed';
     twinMovement?: string;
-    autonomyNode?: string | null;
+    autonomyNode?: string | string[] | null;
     authorityNode?: string | null;
     lightingOn?: boolean;
   }
@@ -769,7 +818,7 @@ const plannedSystem = [
     detect: {
       label: 'DETECT',
       missionLabel: 'Scanning for targets',
-      log: ['AI · 4 trash objects detected'],
+      log: ['AI · YOLO26n — 4 candidate objects detected'],
       boxes: {
         t01: { pos: 'fixed', fixedStyle: { left: 10, top: 60, width: 10, height: 15 } },
         t02: { pos: 'fixed', fixedStyle: { left: 55, top: 58, width: 12, height: 16 } },
@@ -778,14 +827,14 @@ const plannedSystem = [
         person: { pos: 'fixed', fixedStyle: { left: 78, top: 15, width: 16, height: 55 } },
       },
       fps: 28,
-      targetSummary: 'SEARCHING FOR TARGET',
-      decisionTrace: 'analyzing',
+      targetSummary: 'ANALYZING CANDIDATES',
+      decisionTrace: 'waiting',
       mapRobot: { x: 60, y: 210, rot: -35 },
       mapRoute: 'none',
       twinArm: 'default',
       twinGripper: 'open',
       twinMovement: 'IDLE',
-      autonomyNode: 'yolo',
+      autonomyNode: ['yolo', 'perception'],
       authorityNode: 'perception',
     },
     target_lock: {
@@ -893,7 +942,7 @@ const plannedSystem = [
     verify: {
       label: 'VERIFY',
       missionLabel: 'Collection verified',
-      log: ['MISSION · Collection verified'],
+      log: ['MISSION · Collection verified — object acquired'],
       boxes: { t04: { pos: 'near', highlighted: true, status: 'VERIFIED ✓' } },
       fps: 26,
       targetSummary: 'TARGET 04 · COLLECTED',
@@ -909,34 +958,19 @@ const plannedSystem = [
       autonomyNode: 'mission_manager',
       authorityNode: 'mission_manager',
     },
-    // The bin is mounted on the robot itself, not a separate stop on the
-    // map — so depositing happens right where the target was collected,
-    // before the robot ever starts heading back.
-    deposit: {
-      label: 'DEPOSIT',
-      missionLabel: 'Depositing into on-board bin',
-      log: ['ARM · Depositing into on-board bin', 'ARM · Gripper opened'],
-      fps: 26,
-      targetSummary: 'TARGET 04 · DEPOSITED',
-      targetLockStatus: 'DEPOSITED',
-      showTargetDetail: true,
-      decisionTrace: 'locked',
-      mapRobot: { x: 320, y: 50, rot: 40 },
-      mapRoute: 'out',
-      mapTargetLocked: true,
-      twinArm: 'reach-bin',
-      twinGripper: 'open',
-      twinMovement: 'ARM ACTIVE',
-      autonomyNode: 'mission_manager',
-      authorityNode: 'mission_manager',
-    },
+    // The onboard bin travels with the robot, but the deposit maneuver is
+    // reserved for a stable, stopped stance rather than out on the terrain
+    // where the target was collected — so the arm first stows to default
+    // (still gripping the object) and the robot walks itself back before
+    // the arm swings the object into the bin.
     arm_default: {
       label: 'ARM DEFAULT',
-      missionLabel: 'Arm returning to default',
-      log: ['ARM · Arm returned to default'],
+      missionLabel: 'Arm returning to default pose',
+      log: ['ARM · Arm → default pose'],
+      boxes: { t04: { pos: 'near', highlighted: true, status: 'SECURED' } },
       fps: 26,
-      targetSummary: 'TARGET 04 · DEPOSITED',
-      targetLockStatus: 'DEPOSITED',
+      targetSummary: 'TARGET 04 · SECURED',
+      targetLockStatus: 'SECURED',
       showTargetDetail: true,
       decisionTrace: 'locked',
       mapRobot: { x: 320, y: 50, rot: 40 },
@@ -948,12 +982,12 @@ const plannedSystem = [
       autonomyNode: 'ik_gait',
       authorityNode: 'esp8266',
     },
-    return_to_base: {
-      label: 'RETURN TO BASE',
-      missionLabel: 'Returning to base',
-      log: ['NAV · Returning to base'],
+    return_to_bin: {
+      label: 'RETURN TO BIN',
+      missionLabel: 'Returning to onboard bin',
+      log: ['NAV · Returning to onboard bin'],
       fps: 27,
-      targetSummary: 'TARGET 04 · DEPOSITED',
+      targetSummary: 'TARGET 04 · SECURED',
       targetLockStatus: 'RETURNING',
       showTargetDetail: true,
       decisionTrace: 'locked',
@@ -966,6 +1000,42 @@ const plannedSystem = [
       twinMovement: 'FORWARD',
       autonomyNode: 'navigation',
       authorityNode: 'navigation',
+    },
+    align_bin: {
+      label: 'ALIGN BIN',
+      missionLabel: 'Aligning with onboard bin',
+      log: ['NAV · Aligning with onboard bin'],
+      fps: 27,
+      targetSummary: 'TARGET 04 · SECURED',
+      targetLockStatus: 'ALIGNING',
+      showTargetDetail: true,
+      decisionTrace: 'locked',
+      mapRobot: { x: 60, y: 210, rot: -145 },
+      mapRoute: 'back',
+      mapTargetLocked: true,
+      twinArm: 'default',
+      twinGripper: 'closed',
+      twinMovement: 'STOPPING',
+      autonomyNode: 'navigation',
+      authorityNode: 'navigation',
+    },
+    deposit: {
+      label: 'DEPOSIT',
+      missionLabel: 'Depositing into onboard bin',
+      log: ['ARM · Deposit sequence started', 'ARM · Object released into onboard bin'],
+      fps: 26,
+      targetSummary: 'TARGET 04 · DEPOSITED',
+      targetLockStatus: 'DEPOSITED',
+      showTargetDetail: true,
+      decisionTrace: 'locked',
+      mapRobot: { x: 60, y: 210, rot: -145 },
+      mapRoute: 'both',
+      mapTargetLocked: false,
+      twinArm: 'reach-bin',
+      twinGripper: 'open',
+      twinMovement: 'ARM ACTIVE',
+      autonomyNode: 'mission_manager',
+      authorityNode: 'mission_manager',
     },
     complete: {
       label: 'COMPLETE',
@@ -999,26 +1069,139 @@ const plannedSystem = [
     },
   };
 
-  // WICE presentation beats. Most reuse a mission state (driving the full
-  // panel update); a few are narration-only "beats" layered on top of the
-  // current state to cover beats the mission sequence doesn't have a
-  // dedicated visual for (prototype status, architecture explanation).
-  const WICE_SEQUENCE: { state: StateId; narration: string; seconds: number; scrollTo?: string }[] = [
-    { state: 'idle', narration: 'ARGUS-6 — a six-legged platform for environmental cleanup and rescue.', seconds: 6 },
-    { state: 'idle', narration: 'The physical prototype walks, reaches and grips today on its own ESP8266 firmware.', seconds: 5 },
-    { state: 'detect', narration: 'AI perception (planned): YOLO26n scans the camera feed for trash and people.', seconds: 6 },
-    { state: 'detect', narration: 'A person in view raises an incident alert — independent of what ARGUS-6 is collecting.', seconds: 6 },
-    { state: 'target_lock', narration: 'The Target Manager picks one candidate and locks it, so it will not switch targets mid-approach.', seconds: 6 },
-    { state: 'approach', narration: 'Planned navigation drives the robot toward the locked target.', seconds: 8 },
-    { state: 'align', narration: 'The robot aligns itself so the target is centred for collection.', seconds: 5 },
-    { state: 'stop', narration: 'Motion stops before the arm engages.', seconds: 3 },
-    { state: 'grab', narration: 'The arm reaches out and the gripper closes on the target.', seconds: 5 },
-    { state: 'verify', narration: 'The mission system records the collection as verified — a simulated status, not a physical sensor.', seconds: 4 },
-    { state: 'deposit', narration: 'The bin is mounted on ARGUS-6 itself, so the arm deposits the item right there and the gripper opens.', seconds: 5 },
-    { state: 'return_to_base', narration: 'With the item stowed on board, ARGUS-6 returns along its route to base.', seconds: 7 },
-    { state: 'complete', narration: 'Mission complete.', seconds: 4 },
-    { state: 'complete', narration: 'This entire run was a simulation: perception, navigation and mission management are planned, built on top of ESP8266 locomotion that already works.', seconds: 7, scrollTo: '#autonomy' },
+  // Guided WICE Presentation Mode — a dashboard playback/presentation mode,
+  // NOT a third robot operating mode. The robot stays MANUAL / AUTONOMOUS;
+  // this is a presenter-controlled walk through the same centralized
+  // mission state (STATE_META / applyState) used everywhere else on this
+  // page. Each stage maps to one mission state plus the narrative copy the
+  // presenter needs — no separate simulation is created per panel.
+  interface PresentationStage {
+    id: string;
+    state: StateId;
+    title: string;
+    currentStateText: string;
+    keyConcept: string;
+    presenterNote: string;
+    emphasis: string[] | null;
+    logLines: string[];
+  }
+
+  const PRESENTATION_STAGES: PresentationStage[] = [
+    {
+      id: 'overview', state: 'idle', title: 'OVERVIEW',
+      currentStateText: 'System idle — introducing ARGUS-6.',
+      keyConcept: 'A six-legged platform built for environmental cleanup on difficult terrain.',
+      presenterNote: 'Introduce ARGUS-6, the six-legged robotic platform designed for environmental cleanup and operation on difficult terrain.',
+      emphasis: null,
+      logLines: ['SYSTEM · Guided WICE presentation started'],
+    },
+    {
+      id: 'perception', state: 'detect', title: 'PERCEPTION',
+      currentStateText: 'Camera scanning the scene — YOLO26n detecting candidate objects.',
+      keyConcept: 'Detection is the input. It is not yet a decision.',
+      presenterNote: 'The camera provides the visual input. YOLO26n identifies objects in the scene, but detection alone does not decide what the robot should collect.',
+      emphasis: ['perception', 'targeting', 'architecture'],
+      logLines: ['AI · YOLO26n — 4 candidate objects detected'],
+    },
+    {
+      id: 'person-alert', state: 'detect', title: 'PERSON INCIDENT ALERT',
+      currentStateText: 'Independent person-detection incident raised.',
+      keyConcept: 'Incident alerts run independently of the collection pipeline.',
+      presenterNote: 'The perception system also identifies people independently from the waste-target pipeline. This is treated as an incident alert rather than a collection target.',
+      emphasis: ['perception', 'targeting', 'architecture'],
+      logLines: ['AI · Person detected — incident alert raised'],
+    },
+    {
+      id: 'target-selection', state: 'target_lock', title: 'TARGET SELECTION',
+      currentStateText: 'Evaluating candidate waste objects.',
+      keyConcept: 'Detection ≠ Decision.',
+      presenterNote: 'ARGUS-6 does not simply drive toward the first object YOLO detects. The Target Manager evaluates candidates and selects one target, then locks it so the robot doesn’t constantly switch between objects.',
+      emphasis: ['targeting'],
+      logLines: ['TARGET · Target 04 selected', 'TARGET · Target 04 locked'],
+    },
+    {
+      id: 'approach', state: 'approach', title: 'APPROACH',
+      currentStateText: 'Navigation driving the robot toward the locked target.',
+      keyConcept: 'A locked target lets navigation commit to one approach path.',
+      presenterNote: 'Once the target is locked, the navigation system generates movement intent to approach it.',
+      emphasis: ['navigation'],
+      logLines: ['NAV · Approaching target'],
+    },
+    {
+      id: 'align', state: 'align', title: 'ALIGN',
+      currentStateText: 'Fine positioning correction before manipulation.',
+      keyConcept: 'Alignment happens before the arm ever engages.',
+      presenterNote: 'Before using the arm, the robot needs to position itself correctly relative to the object.',
+      emphasis: ['navigation'],
+      logLines: ['NAV · Alignment achieved'],
+    },
+    {
+      id: 'stop', state: 'stop', title: 'STOP',
+      currentStateText: 'All motion halted — ready for collection.',
+      keyConcept: 'Locomotion and manipulation never compete for control.',
+      presenterNote: 'The robot stops before manipulation so locomotion and arm movement are not competing for control.',
+      emphasis: ['navigation', 'collection'],
+      logLines: ['CONTROL · Robot stopped — ready for collection'],
+    },
+    {
+      id: 'grab', state: 'grab', title: 'GRAB',
+      currentStateText: 'Arm reaching out, gripper closing on the target.',
+      keyConcept: 'Control now hands off from locomotion to manipulation.',
+      presenterNote: 'The mission manager now transitions from locomotion to manipulation. The robotic arm positions the gripper and performs the pickup.',
+      emphasis: ['collection'],
+      logLines: ['ARM · Pickup sequence started', 'ARM · Gripper closed'],
+    },
+    {
+      id: 'verify', state: 'verify', title: 'VERIFY',
+      currentStateText: 'Collection verification — a logical mission step.',
+      keyConcept: 'Simulated verification, not a claim about a physical sensor.',
+      presenterNote: 'The mission includes a verification stage before continuing. In the current concept simulation, this represents the logical verification step rather than a claim about a dedicated physical sensor.',
+      emphasis: ['collection'],
+      logLines: ['MISSION · Collection verified — object acquired'],
+    },
+    {
+      id: 'arm-default', state: 'arm_default', title: 'ARM DEFAULT',
+      currentStateText: 'Arm returning to its safe travel pose.',
+      keyConcept: 'A safe travel configuration before locomotion resumes.',
+      presenterNote: 'The arm returns to its default travel configuration before the robot resumes locomotion.',
+      emphasis: ['collection'],
+      logLines: ['ARM · Arm → default pose'],
+    },
+    {
+      id: 'return-to-bin', state: 'return_to_bin', title: 'RETURN TO BIN',
+      currentStateText: 'Navigating back with the collected object secured.',
+      keyConcept: 'The collection cycle continues until the object is deposited.',
+      presenterNote: 'After collection, the robot returns to the configured collection location.',
+      emphasis: ['navigation'],
+      logLines: ['NAV · Returning to onboard bin'],
+    },
+    {
+      id: 'align-bin', state: 'align_bin', title: 'ALIGN BIN',
+      currentStateText: 'Aligning with the onboard bin for deposit.',
+      keyConcept: 'The same align-before-manipulate principle as the initial pickup.',
+      presenterNote: 'The robot positions itself before performing the deposit.',
+      emphasis: ['navigation'],
+      logLines: ['NAV · Aligning with onboard bin'],
+    },
+    {
+      id: 'deposit', state: 'deposit', title: 'DEPOSIT',
+      currentStateText: 'Depositing the collected object into the onboard bin.',
+      keyConcept: 'Completes the collection cycle.',
+      presenterNote: 'The arm deposits the collected waste, completing the collection cycle.',
+      emphasis: ['collection'],
+      logLines: ['ARM · Deposit sequence started', 'ARM · Object released into onboard bin'],
+    },
+    {
+      id: 'complete', state: 'complete', title: 'COMPLETE',
+      currentStateText: 'Mission complete — full loop demonstrated.',
+      keyConcept: 'Perception → decision → navigation → manipulation → return, one system.',
+      presenterNote: 'This demonstrates the complete planned autonomous collection loop, from perception through target selection, navigation, manipulation and return.',
+      emphasis: null,
+      logLines: ['MISSION · Mission complete'],
+    },
   ];
+
+  const PERSON_ALERT_STAGE_INDEX = PRESENTATION_STAGES.findIndex((s) => s.id === 'person-alert');
 
   const initDashboard = () => {
     document.querySelectorAll<HTMLElement>('[data-argus-dashboard]').forEach((root) => {
@@ -1163,6 +1346,8 @@ const plannedSystem = [
             `;
           } else if (s.decisionTrace === 'analyzing') {
             decisionTraceEl.innerHTML = `<div class="a6d-decision-trace__idle">ANALYZING CANDIDATES…</div>`;
+          } else if (s.decisionTrace === 'waiting') {
+            decisionTraceEl.innerHTML = `<div class="a6d-decision-trace__idle">WAITING FOR TARGET SELECTION</div>`;
           } else {
             decisionTraceEl.innerHTML = `<div class="a6d-decision-trace__idle">Awaiting perception input.</div>`;
           }
@@ -1188,8 +1373,14 @@ const plannedSystem = [
         if (missionLabelEl) missionLabelEl.textContent = s.missionLabel;
         stateItems.forEach((el) => el.classList.toggle('is-current', el.dataset.stateId === id));
 
-        // autonomy stack
-        autonomyNodes.forEach((el) => el.classList.toggle('is-active', el.dataset.autonomyNode === s.autonomyNode));
+        // autonomy stack — a state may highlight more than one node at once
+        // (e.g. detect → YOLO26n and Perception together)
+        autonomyNodes.forEach((el) => {
+          const active = Array.isArray(s.autonomyNode)
+            ? s.autonomyNode.includes(el.dataset.autonomyNode ?? '')
+            : el.dataset.autonomyNode === s.autonomyNode;
+          el.classList.toggle('is-active', active);
+        });
 
         // control authority
         authorityNodes.forEach((el) => el.classList.toggle('is-active', el.dataset.authorityNode === s.authorityNode));
@@ -1276,35 +1467,56 @@ const plannedSystem = [
         logEvent('OPERATOR · Person alert dismissed');
       });
 
-      // ---- demo engine (shared by manual advance, auto demo, WICE demo, replay) ----
+      // ---- demo engine (shared by manual advance, auto demo, guided presentation, replay) ----
       let demoTimer: number | undefined;
-      let wiceTimer: number | undefined;
       let isRunning = false;
-      let isWiceRunning = false;
-      let isWicePaused = false;
-      let wiceIndex = 0;
-      let wiceBeatStart = 0;
-      let wiceBeatRemaining = 0;
-      let wiceElapsedTotal = 0;
-      let wiceProgressRaf: number | undefined;
 
       const runBtn = root.querySelector<HTMLButtonElement>('[data-run-demo]');
       const wiceBtn = root.querySelector<HTMLButtonElement>('[data-run-wice]');
-      const wiceStrip = root.querySelector<HTMLElement>('[data-wice-strip]');
-      const wiceNarration = root.querySelector<HTMLElement>('[data-wice-narration]');
-      const wiceProgress = root.querySelector<HTMLElement>('[data-wice-progress]');
-      const winePauseBtn = root.querySelector<HTMLButtonElement>('[data-wice-pause]');
+
+      // Guided WICE Presentation DOM refs. This is a dashboard playback mode
+      // layered on top of the same mission state — not a robot mode.
+      const wiceBar = root.querySelector<HTMLElement>('[data-wice-bar]');
+      const wiceInfo = root.querySelector<HTMLElement>('[data-wice-info]');
+      const wiceStageNumEl = root.querySelector<HTMLElement>('[data-wice-stage-num]');
+      const wiceStageTitleEl = root.querySelector<HTMLElement>('[data-wice-stage-title]');
+      const wiceInfoNumEl = root.querySelector<HTMLElement>('[data-wice-info-num]');
+      const wiceInfoTitleEl = root.querySelector<HTMLElement>('[data-wice-info-title]');
+      const wiceInfoCurrentEl = root.querySelector<HTMLElement>('[data-wice-info-current]');
+      const wiceInfoConceptEl = root.querySelector<HTMLElement>('[data-wice-info-concept]');
+      const wiceInfoNextBtn = root.querySelector<HTMLButtonElement>('[data-wice-info-next]');
+      const wicePrevBtn = root.querySelector<HTMLButtonElement>('[data-wice-prev]');
+      const wicePlayBtn = root.querySelector<HTMLButtonElement>('[data-wice-play]');
+      const wicePauseBtn = root.querySelector<HTMLButtonElement>('[data-wice-pause]');
+      const wiceNextBtn = root.querySelector<HTMLButtonElement>('[data-wice-next]');
+      const wiceRestartBtn = root.querySelector<HTMLButtonElement>('[data-wice-restart]');
+      const wiceExitBtn = root.querySelector<HTMLButtonElement>('[data-wice-exit]');
+      const wiceNotesToggleBtn = root.querySelector<HTMLButtonElement>('[data-wice-notes-toggle]');
+      const wiceNotesHideBtn = root.querySelector<HTMLButtonElement>('[data-wice-notes-hide]');
+      const wiceNotesPanel = root.querySelector<HTMLElement>('[data-wice-notes]');
+      const wiceNotesTextEl = root.querySelector<HTMLElement>('[data-wice-notes-text]');
+      const targetCandidatesEl = root.querySelector<HTMLElement>('[data-target-candidates]');
+      const candidateRows = Array.from(root.querySelectorAll<HTMLElement>('[data-candidate]'));
+      const emphasisEls = Array.from(root.querySelectorAll<HTMLElement>('[data-emphasis-group]'));
+
+      let wiceActive = false;
+      let wiceStageIndex = 0;
+      type PresentationPlayback = 'ready' | 'playing_stage' | 'paused' | 'transitioning' | 'completed';
+      let wicePlayback: PresentationPlayback = 'ready';
+      let wiceCancelIntro: (() => void) | null = null;
+      let wiceEstopLatched = false;
+      const totalStages = PRESENTATION_STAGES.length;
 
       const clearTimers = () => {
         if (demoTimer) { window.clearTimeout(demoTimer); demoTimer = undefined; }
-        if (wiceTimer) { window.clearTimeout(wiceTimer); wiceTimer = undefined; }
-        if (wiceProgressRaf) { window.cancelAnimationFrame(wiceProgressRaf); wiceProgressRaf = undefined; }
+        wiceCancelIntro?.();
+        wiceCancelIntro = null;
       };
 
       const setRunning = (running: boolean) => {
         isRunning = running;
-        runBtn?.toggleAttribute('disabled', running);
-        wiceBtn?.toggleAttribute('disabled', running);
+        runBtn?.toggleAttribute('disabled', running || wiceActive);
+        wiceBtn?.toggleAttribute('disabled', running || wiceActive);
       };
 
       const enableReplay = () => {
@@ -1314,6 +1526,7 @@ const plannedSystem = [
 
       const runSequence = (onDone?: () => void) => {
         clearTimers();
+        exitPresentation({ silent: true });
         setRunning(true);
         alertDismissedThisRun = false;
         hidePersonAlert();
@@ -1340,86 +1553,301 @@ const plannedSystem = [
       root.querySelector<HTMLButtonElement>('[data-run-again]')?.addEventListener('click', () => runSequence());
       root.querySelector<HTMLButtonElement>('[data-replay-run]')?.addEventListener('click', () => runSequence());
 
-      // ---- WICE demo mode ----
-      const updateWiceProgress = () => {
-        const total = WICE_SEQUENCE.reduce((sum, b) => sum + b.seconds, 0);
-        const liveSinceStart = isWiceRunning && !isWicePaused ? performance.now() - wiceBeatStart : 0;
-        const elapsed = Math.min(total, Math.round((wiceElapsedTotal + liveSinceStart) / 1000));
-        if (wiceProgress) wiceProgress.textContent = `${elapsed} / ${total} SEC`;
-        if (isWiceRunning && !isWicePaused) wiceProgressRaf = window.requestAnimationFrame(updateWiceProgress);
+      // ---- Guided WICE Presentation controller ----
+      // ARGUS-6 Mission State Machine → WICE Presentation Controller →
+      // Camera / Map / Target / Digital Twin (+ Event Log). The controller
+      // never simulates a panel on its own — it only calls applyState()
+      // (the one source of truth already used by the fast demo and replay)
+      // and layers narration/timing on top.
+
+      const runBeats = (beats: { delay: number; run: () => void }[], onDone: () => void): (() => void) => {
+        let cancelled = false;
+        let timer: number | undefined;
+        const step = (i: number) => {
+          if (cancelled) return;
+          if (i >= beats.length) { onDone(); return; }
+          beats[i].run();
+          timer = window.setTimeout(() => step(i + 1), beats[i].delay);
+        };
+        step(0);
+        return () => { cancelled = true; if (timer) window.clearTimeout(timer); };
       };
 
-      const playWiceBeat = (index: number) => {
-        if (index >= WICE_SEQUENCE.length) {
-          isWiceRunning = false;
-          setRunning(false);
-          enableReplay();
-          if (wiceStrip) wiceStrip.hidden = true;
-          return;
-        }
-        wiceIndex = index;
-        const beat = WICE_SEQUENCE[index];
-        applyState(beat.state);
-        STATE_META[beat.state].log?.forEach((m) => logEvent(m));
-        if (wiceNarration) wiceNarration.textContent = beat.narration;
-        if (beat.state === 'detect' && index === 2) window.setTimeout(showPersonAlert, 400);
-        if (beat.scrollTo) {
-          const target = document.querySelector(beat.scrollTo);
-          target?.scrollIntoView({ behavior: reduceMotion ? 'auto' : 'smooth', block: 'center' });
-        }
-        wiceBeatStart = performance.now();
-        wiceBeatRemaining = beat.seconds * 1000;
-        wiceTimer = window.setTimeout(() => {
-          wiceElapsedTotal += wiceBeatRemaining;
-          playWiceBeat(index + 1);
-        }, wiceBeatRemaining);
+      const applyEmphasis = (groups: string[] | null) => {
+        emphasisEls.forEach((el) => {
+          const own = (el.dataset.emphasisGroup ?? '').split(' ').filter(Boolean);
+          if (!wiceActive || !groups || groups.length === 0) {
+            el.classList.remove('is-emphasis-dim', 'is-emphasis-active');
+            return;
+          }
+          const match = own.some((g) => groups.includes(g));
+          el.classList.toggle('is-emphasis-active', match);
+          el.classList.toggle('is-emphasis-dim', !match);
+        });
       };
 
-      const startWiceDemo = () => {
+      // Deterministic, index-derived timestamps (not the live demo clock) so
+      // Previous/Next always reproduce the exact same log for a given stage.
+      const presentationLogTime = (i: number) => {
+        const totalSeconds = 18 * 3600 + 42 * 60 + i * 3 + (i % 3) * 2;
+        const h = String(Math.floor(totalSeconds / 3600) % 24).padStart(2, '0');
+        const m = String(Math.floor(totalSeconds / 60) % 60).padStart(2, '0');
+        const s = String(totalSeconds % 60).padStart(2, '0');
+        return `${h}:${m}:${s}`;
+      };
+
+      // The event log is a pure function of "which stages have been reached
+      // so far" — recomputed on every stage change, forward or backward, so
+      // Previous restores it exactly rather than trying to undo prepends.
+      const renderPresentationLog = (index: number) => {
+        if (!logList) return;
+        const lines: string[] = [];
+        for (let i = 0; i <= index; i++) PRESENTATION_STAGES[i].logLines.forEach((l) => lines.push(l));
+        logList.innerHTML = lines
+          .map((msg, i) => `<li><span class="a6d-log__time mono">${presentationLogTime(i)}</span><span class="a6d-log__msg">${msg}</span></li>`)
+          .reverse()
+          .join('');
+        logSeeded = true;
+      };
+
+      // Resets the small bits of transient UI a stage's intro beats may have
+      // overridden (candidate list, decision-trace visibility) back to the
+      // baseline applyState() already established for the new stage.
+      const settleStage = () => {
+        if (targetCandidatesEl) targetCandidatesEl.hidden = true;
+        if (decisionTraceEl) decisionTraceEl.style.visibility = 'visible';
+        candidateRows.forEach((el) => el.classList.remove('is-selected'));
+      };
+
+      const updatePersonAlertForIndex = (index: number) => {
+        if (index >= PERSON_ALERT_STAGE_INDEX && !alertDismissedThisRun) {
+          showPersonAlert();
+        } else if (index < PERSON_ALERT_STAGE_INDEX) {
+          hidePersonAlert();
+        }
+      };
+
+      const revealBox = (el: HTMLElement | null) => {
+        if (!el) return;
+        el.hidden = false;
+        el.classList.remove('is-revealing');
+        void el.offsetWidth;
+        el.classList.add('is-revealing');
+      };
+
+      // Per-stage intro beats. Most stages just need to hold PLAYING_STAGE
+      // long enough for the existing CSS transitions (bbox/map/twin, all
+      // already driven by applyState) to settle — only a handful need a
+      // hand-authored sequence beyond a single tween (staggered detections,
+      // the candidate → decision → lock reveal, the arm/gripper sequences).
+      const getStageBeats = (stage: PresentationStage): { delay: number; run: () => void }[] => {
+        switch (stage.id) {
+          case 'perception':
+            return [
+              { delay: 0, run: () => (['t01', 't02', 't03', 't04'] as const).forEach((k) => { const el = boxes[k]; if (el) el.hidden = true; }) },
+              { delay: 260, run: () => revealBox(boxes.t01) },
+              { delay: 420, run: () => revealBox(boxes.t02) },
+              { delay: 420, run: () => revealBox(boxes.t03) },
+              { delay: 480, run: () => revealBox(boxes.t04) },
+              { delay: 420, run: () => {} },
+            ];
+          case 'person-alert':
+            return [
+              { delay: 350, run: () => showPersonAlert() },
+              { delay: 550, run: () => {} },
+            ];
+          case 'target-selection':
+            return [
+              { delay: 0, run: () => {
+                  if (targetCandidatesEl) targetCandidatesEl.hidden = false;
+                  if (decisionTraceEl) decisionTraceEl.style.visibility = 'hidden';
+                  if (targetDetailEl) targetDetailEl.hidden = true;
+                  if (targetSummaryEl) targetSummaryEl.textContent = 'ANALYZING CANDIDATES';
+                } },
+              { delay: 900, run: () => {
+                  candidateRows.find((el) => el.dataset.candidate === 't04')?.classList.add('is-selected');
+                  if (targetSummaryEl) targetSummaryEl.textContent = 'TARGET 04 SELECTED';
+                } },
+              { delay: 900, run: () => {
+                  if (targetCandidatesEl) targetCandidatesEl.hidden = true;
+                  if (decisionTraceEl) decisionTraceEl.style.visibility = 'visible';
+                  if (targetDetailEl) targetDetailEl.hidden = false;
+                } },
+              { delay: 600, run: () => {
+                  if (targetSummaryEl) targetSummaryEl.textContent = 'TARGET 04 · LOCKED';
+                  if (targetLockStatusEl) targetLockStatusEl.textContent = 'LOCKED';
+                } },
+            ];
+          case 'approach':
+            return [{ delay: 4200, run: () => {} }];
+          case 'align': {
+            const base = STATE_META.align.mapRobot!;
+            return [
+              { delay: 0, run: () => mapRobot?.setAttribute('transform', `translate(${base.x},${base.y}) rotate(${base.rot + 6})`) },
+              { delay: 700, run: () => mapRobot?.setAttribute('transform', `translate(${base.x},${base.y}) rotate(${base.rot})`) },
+              { delay: 1100, run: () => {} },
+            ];
+          }
+          case 'stop':
+            return [{ delay: 700, run: () => {} }];
+          case 'grab':
+            return [
+              { delay: 0, run: () => { twinArmEl?.setAttribute('data-pose', 'default'); twinGripperEl?.setAttribute('data-state', 'open'); } },
+              { delay: 700, run: () => twinArmEl?.setAttribute('data-pose', 'reach-target') },
+              { delay: 700, run: () => { twinGripperEl?.setAttribute('data-state', 'closed'); if (t04Status) t04Status.textContent = 'COLLECTING'; } },
+              { delay: 600, run: () => { if (t04Status) t04Status.textContent = 'COLLECTED ✓'; } },
+            ];
+          case 'verify':
+            return [{ delay: 700, run: () => {} }];
+          case 'arm-default':
+            return [{ delay: 1100, run: () => {} }];
+          case 'return-to-bin':
+            return [{ delay: 3400, run: () => {} }];
+          case 'align-bin': {
+            const base = STATE_META.align_bin.mapRobot!;
+            return [
+              { delay: 0, run: () => mapRobot?.setAttribute('transform', `translate(${base.x},${base.y}) rotate(${base.rot - 6})`) },
+              { delay: 650, run: () => mapRobot?.setAttribute('transform', `translate(${base.x},${base.y}) rotate(${base.rot})`) },
+              { delay: 700, run: () => {} },
+            ];
+          }
+          case 'deposit':
+            return [
+              { delay: 0, run: () => { twinArmEl?.setAttribute('data-pose', 'default'); twinGripperEl?.setAttribute('data-state', 'closed'); } },
+              { delay: 700, run: () => twinArmEl?.setAttribute('data-pose', 'reach-bin') },
+              { delay: 600, run: () => twinGripperEl?.setAttribute('data-state', 'open') },
+              { delay: 600, run: () => twinArmEl?.setAttribute('data-pose', 'default') },
+            ];
+          default:
+            return [{ delay: 400, run: () => {} }];
+        }
+      };
+
+      const updateControlBarState = () => {
+        const playing = wicePlayback === 'playing_stage';
+        const atStart = wiceStageIndex === 0;
+        const atEnd = wiceStageIndex === totalStages - 1;
+        wicePrevBtn?.toggleAttribute('disabled', playing || atStart || wiceEstopLatched);
+        wicePlayBtn?.toggleAttribute('disabled', playing || wiceEstopLatched);
+        wicePauseBtn?.toggleAttribute('disabled', !playing || wiceEstopLatched);
+        wiceNextBtn?.toggleAttribute('disabled', playing || atEnd || wiceEstopLatched);
+        wiceInfoNextBtn?.toggleAttribute('disabled', playing || atEnd || wiceEstopLatched);
+      };
+
+      const renderStageChrome = () => {
+        const stage = PRESENTATION_STAGES[wiceStageIndex];
+        const num = String(wiceStageIndex + 1);
+        if (wiceStageNumEl) wiceStageNumEl.textContent = num;
+        if (wiceStageTitleEl) wiceStageTitleEl.textContent = stage.title;
+        if (wiceInfoNumEl) wiceInfoNumEl.textContent = num;
+        if (wiceInfoTitleEl) wiceInfoTitleEl.textContent = stage.title;
+        if (wiceInfoCurrentEl) wiceInfoCurrentEl.textContent = stage.currentStateText;
+        if (wiceInfoConceptEl) wiceInfoConceptEl.textContent = stage.keyConcept;
+        if (wiceNotesTextEl) wiceNotesTextEl.textContent = stage.presenterNote;
+        updateControlBarState();
+      };
+
+      // The single entry point for moving to any stage, forward or
+      // backward: it always re-derives the full simulated state from
+      // STATE_META via applyState(), so Previous restores camera, map,
+      // target, twin, mission state, decision trace, timeline and log
+      // exactly — not just the stage label.
+      const goToStage = (index: number, animate: boolean) => {
+        wiceCancelIntro?.();
+        wiceCancelIntro = null;
+        wiceStageIndex = Math.max(0, Math.min(totalStages - 1, index));
+        const stage = PRESENTATION_STAGES[wiceStageIndex];
+        applyState(stage.state);
+        applyEmphasis(stage.emphasis);
+        settleStage();
+        if (!animate || stage.id !== 'person-alert') updatePersonAlertForIndex(wiceStageIndex);
+        renderPresentationLog(wiceStageIndex);
+        renderStageChrome();
+
+        const finish = () => {
+          wiceCancelIntro = null;
+          wicePlayback = wiceStageIndex === totalStages - 1 ? 'completed' : 'paused';
+          updateControlBarState();
+        };
+
+        if (animate) {
+          wicePlayback = 'playing_stage';
+          updateControlBarState();
+          wiceCancelIntro = runBeats(getStageBeats(stage), finish);
+        } else {
+          finish();
+        }
+      };
+
+      const startPresentation = () => {
         clearTimers();
         setRunning(true);
-        isWiceRunning = true;
-        isWicePaused = false;
-        wiceElapsedTotal = 0;
+        wiceActive = true;
+        wiceEstopLatched = false;
         alertDismissedThisRun = false;
         hidePersonAlert();
-        if (wiceStrip) wiceStrip.hidden = false;
-        if (winePauseBtn) winePauseBtn.textContent = 'Pause';
-        logEvent('SYSTEM · WICE demo mode started');
-        updateWiceProgress();
-        playWiceBeat(0);
+        root.classList.add('is-wice-active');
+        if (wiceBar) wiceBar.hidden = false;
+        if (wiceInfo) wiceInfo.hidden = false;
+        goToStage(0, false);
       };
 
-      wiceBtn?.addEventListener('click', startWiceDemo);
-
-      winePauseBtn?.addEventListener('click', () => {
-        if (!isWiceRunning) return;
-        if (!isWicePaused) {
-          isWicePaused = true;
-          if (wiceTimer) { window.clearTimeout(wiceTimer); wiceTimer = undefined; }
-          const elapsedInBeat = performance.now() - wiceBeatStart;
-          wiceBeatRemaining -= elapsedInBeat;
-          wiceElapsedTotal += elapsedInBeat;
-          winePauseBtn.textContent = 'Resume';
-          updateWiceProgress();
-        } else {
-          isWicePaused = false;
-          wiceBeatStart = performance.now();
-          wiceTimer = window.setTimeout(() => {
-            wiceElapsedTotal += wiceBeatRemaining;
-            playWiceBeat(wiceIndex + 1);
-          }, Math.max(0, wiceBeatRemaining));
-          winePauseBtn.textContent = 'Pause';
-          updateWiceProgress();
+      function exitPresentation(opts?: { silent?: boolean }) {
+        wiceCancelIntro?.();
+        wiceCancelIntro = null;
+        if (!wiceActive) return;
+        wiceActive = false;
+        wiceEstopLatched = false;
+        root.classList.remove('is-wice-active');
+        if (wiceBar) wiceBar.hidden = true;
+        if (wiceInfo) wiceInfo.hidden = true;
+        if (wiceNotesPanel) wiceNotesPanel.hidden = true;
+        wiceNotesToggleBtn?.setAttribute('aria-expanded', 'false');
+        applyEmphasis(null);
+        if (targetCandidatesEl) targetCandidatesEl.hidden = true;
+        if (decisionTraceEl) decisionTraceEl.style.visibility = 'visible';
+        setRunning(false);
+        if (!opts?.silent) {
+          alertDismissedThisRun = false;
+          hidePersonAlert();
+          applyState('idle');
+          if (logList) logList.innerHTML = '<li><span class="a6d-log__time mono">—</span><span class="a6d-log__msg">System idle. Press Run Autonomous Demo to begin.</span></li>';
+          logSeeded = false;
         }
+      }
+
+      const restartPresentation = () => {
+        wiceCancelIntro?.();
+        wiceCancelIntro = null;
+        wiceEstopLatched = false;
+        alertDismissedThisRun = false;
+        hidePersonAlert();
+        goToStage(0, false);
+      };
+
+      wiceBtn?.addEventListener('click', startPresentation);
+      wicePrevBtn?.addEventListener('click', () => { if (wiceStageIndex > 0) goToStage(wiceStageIndex - 1, false); });
+      wiceNextBtn?.addEventListener('click', () => { if (wiceStageIndex < totalStages - 1) goToStage(wiceStageIndex + 1, true); });
+      wiceInfoNextBtn?.addEventListener('click', () => { if (wiceStageIndex < totalStages - 1) goToStage(wiceStageIndex + 1, true); });
+      wicePlayBtn?.addEventListener('click', () => { if (wicePlayback !== 'playing_stage') goToStage(wiceStageIndex, true); });
+      wicePauseBtn?.addEventListener('click', () => {
+        if (wicePlayback !== 'playing_stage') return;
+        wiceCancelIntro?.();
+        wiceCancelIntro = null;
+        wicePlayback = 'paused';
+        updateControlBarState();
       });
-      root.querySelector<HTMLButtonElement>('[data-wice-skip]')?.addEventListener('click', () => {
-        if (!isWiceRunning) return;
-        if (wiceTimer) { window.clearTimeout(wiceTimer); wiceTimer = undefined; }
-        wiceElapsedTotal += wiceBeatRemaining;
-        playWiceBeat(wiceIndex + 1);
+      wiceRestartBtn?.addEventListener('click', restartPresentation);
+      wiceExitBtn?.addEventListener('click', () => exitPresentation());
+      wiceNotesToggleBtn?.addEventListener('click', () => {
+        const show = wiceNotesPanel?.hidden ?? true;
+        if (wiceNotesPanel) wiceNotesPanel.hidden = !show;
+        wiceNotesToggleBtn.setAttribute('aria-expanded', String(show));
       });
-      root.querySelector<HTMLButtonElement>('[data-wice-restart]')?.addEventListener('click', () => startWiceDemo());
+      wiceNotesHideBtn?.addEventListener('click', () => {
+        if (wiceNotesPanel) wiceNotesPanel.hidden = true;
+        wiceNotesToggleBtn?.setAttribute('aria-expanded', 'false');
+      });
 
       // ---- STOP / RESET ----
       const freezeMapRobot = () => {
@@ -1434,13 +1862,15 @@ const plannedSystem = [
       };
 
       const stopSimulation = () => {
-        const wasIdle = !isRunning && !isWiceRunning && currentId === 'idle';
+        const wasIdle = !isRunning && !wiceActive && currentId === 'idle';
         clearTimers();
         freezeMapRobot();
         setRunning(false);
-        isWiceRunning = false;
-        isWicePaused = false;
-        if (wiceStrip) wiceStrip.hidden = true;
+        if (wiceActive) {
+          wiceEstopLatched = true;
+          wicePlayback = 'paused';
+          updateControlBarState();
+        }
         if (twin) twin.classList.remove('is-walking');
         applyState('emergency_stop');
         if (!wasIdle) logEvent('SAFETY · EMERGENCY STOP (demo) — all demo motion halted');
@@ -1448,11 +1878,9 @@ const plannedSystem = [
       root.querySelectorAll<HTMLButtonElement>('[data-stop-btn]').forEach((btn) => btn.addEventListener('click', stopSimulation));
 
       const resetDemo = () => {
+        exitPresentation({ silent: true });
         clearTimers();
         setRunning(false);
-        isWiceRunning = false;
-        isWicePaused = false;
-        if (wiceStrip) wiceStrip.hidden = true;
         alertDismissedThisRun = false;
         hidePersonAlert();
         applyState('idle');
@@ -1466,9 +1894,8 @@ const plannedSystem = [
         btn.addEventListener('click', () => {
           if (btn.disabled) return;
           clearTimers();
+          exitPresentation({ silent: true });
           setRunning(false);
-          isWiceRunning = false;
-          if (wiceStrip) wiceStrip.hidden = true;
           const id = btn.dataset.stateId as StateId;
           applyState(id);
         });
@@ -1656,19 +2083,81 @@ const plannedSystem = [
   .a6d-stop-btn:hover { background: color-mix(in srgb, var(--a6d-danger) 20%, transparent); }
   .a6d-stop-btn:active { transform: scale(0.97); }
 
-  /* ---------------- WICE strip ---------------- */
-  .a6d-wice-strip {
+  /* ---------------- Guided WICE Presentation control bar ---------------- */
+  .a6d-wice-bar {
     padding: 0.85rem 1.1rem;
-    display: grid; grid-template-columns: auto 1fr auto auto; align-items: center; gap: 0.9rem;
+    display: grid; gap: 0.6rem;
     border-left: 2px solid var(--accent);
   }
-  @media (max-width: 780px) { .a6d-wice-strip { grid-template-columns: 1fr; } }
-  .a6d-wice-strip__label { font-size: 0.62rem; letter-spacing: 0.14em; color: var(--accent); }
-  .a6d-wice-strip__narration { font-size: 0.86rem; color: var(--text-muted); margin: 0; }
-  .a6d-wice-strip__progress { font-size: 0.68rem; color: var(--text-dim); }
-  .a6d-wice-strip__controls { display: flex; gap: 0.4rem; }
-  .a6d-wice-ctrl { font-size: 0.62rem; letter-spacing: 0.06em; padding: 0.35rem 0.65rem; border: 1px solid var(--border-strong); border-radius: 6px; color: var(--text-muted); }
-  .a6d-wice-ctrl:hover { color: var(--accent); border-color: var(--accent-line); }
+  .a6d-wice-bar__top { display: flex; align-items: center; gap: 0.75rem; flex-wrap: wrap; }
+  .a6d-wice-bar__label { font-size: 0.68rem; letter-spacing: 0.12em; color: var(--text); font-weight: 600; }
+  .a6d-wice-bar__guided {
+    display: inline-flex; align-items: center; gap: 0.35rem;
+    font-size: 0.6rem; letter-spacing: 0.1em; color: var(--accent);
+  }
+  .a6d-wice-bar__dot { width: 6px; height: 6px; border-radius: 50%; background: var(--accent); box-shadow: 0 0 0 3px var(--accent-soft); }
+  .a6d-wice-bar__spacer { flex: 1; }
+  .a6d-wice-bar__controls { display: flex; align-items: center; gap: 0.4rem; flex-wrap: wrap; }
+  .a6d-wice-bar__stage { font-size: 0.7rem; color: var(--text-dim); letter-spacing: 0.03em; }
+  .a6d-wice-bar__stage-title { margin-left: 0.5rem; color: var(--accent); letter-spacing: 0.08em; }
+
+  .a6d-wice-ctrl {
+    font-size: 0.62rem; letter-spacing: 0.06em; padding: 0.4rem 0.75rem;
+    border: 1px solid var(--border-strong); border-radius: 6px; color: var(--text-muted);
+    transition: color 0.2s var(--ease), border-color 0.2s var(--ease), opacity 0.2s var(--ease);
+  }
+  .a6d-wice-ctrl:hover:not(:disabled) { color: var(--accent); border-color: var(--accent-line); }
+  .a6d-wice-ctrl:disabled { opacity: 0.4; pointer-events: none; }
+  .a6d-wice-ctrl--primary { color: var(--accent); border-color: var(--accent-line); background: var(--accent-soft); font-weight: 600; }
+  .a6d-wice-ctrl--notes[aria-expanded="true"] { color: var(--accent); border-color: var(--accent-line); }
+
+  .a6d-wice-notes {
+    padding: 0.75rem 0.9rem; border: 1px dashed var(--border-strong); border-radius: var(--radius-sm);
+    display: grid; gap: 0.4rem; justify-items: start;
+  }
+  .a6d-wice-notes__label { font-size: 0.58rem; letter-spacing: 0.12em; color: var(--text-dim); }
+  .a6d-wice-notes__text { font-size: 0.82rem; color: var(--text-muted); margin: 0; max-width: 62ch; }
+
+  /* ---------------- Guided WICE Presentation info panel ---------------- */
+  .a6d-wice-info { padding: 1rem 1.2rem; border-left: 2px solid var(--accent-line); display: grid; gap: 0.4rem; }
+  .a6d-wice-info__eyebrow { font-size: 0.58rem; letter-spacing: 0.14em; color: var(--text-dim); }
+  .a6d-wice-info__stage { font-size: 0.66rem; letter-spacing: 0.08em; color: var(--accent); }
+  .a6d-wice-info__title { font-size: 1.05rem; letter-spacing: 0.02em; margin: 0.1rem 0 0.4rem; }
+  .a6d-wice-info__row { display: grid; gap: 0.1rem; margin-top: 0.3rem; }
+  .a6d-wice-info__key { font-size: 0.56rem; letter-spacing: 0.1em; text-transform: uppercase; color: var(--text-dim); }
+  .a6d-wice-info__row p { margin: 0; font-size: 0.88rem; color: var(--text); }
+  .a6d-wice-info__next { margin-top: 0.6rem; justify-self: start; font-size: 0.68rem; padding: 0.55rem 0.9rem; }
+  .a6d-wice-info__next:disabled { opacity: 0.45; pointer-events: none; }
+
+  /* ---------------- Target candidates (Stage 4 reveal) ---------------- */
+  .a6d-target-candidates { margin: 0.75rem 0; }
+  .a6d-candidate-list { display: grid; gap: 0.3rem; }
+  .a6d-candidate-list li {
+    display: grid; grid-template-columns: auto 1fr auto; gap: 0.75rem; align-items: baseline;
+    padding: 0.45rem 0.65rem; border: 1px solid var(--border); border-radius: 6px;
+    font-size: 0.78rem; color: var(--text-muted);
+    transition: border-color 0.3s var(--ease), background 0.3s var(--ease), color 0.3s var(--ease);
+  }
+  .a6d-candidate-list li.is-selected { color: var(--accent); border-color: var(--accent-line); background: var(--accent-soft); font-weight: 600; }
+
+  /* ---------------- Guided presentation emphasis (subtle, not hiding) ---------------- */
+  .a6d[data-argus-dashboard] [data-emphasis-group] {
+    transition: opacity 0.3s var(--ease), filter 0.3s var(--ease);
+  }
+  .a6d.is-wice-active [data-emphasis-group].is-emphasis-dim { opacity: 0.5; filter: saturate(0.65); }
+  .a6d.is-wice-active [data-emphasis-group].is-emphasis-active { box-shadow: 0 0 0 1px var(--accent-line); border-radius: var(--radius-sm); }
+  /* The fast-demo completion / e-stop banners have their own dedicated
+     treatment inside the presentation control bar / info panel — avoid
+     showing both at once, since their buttons (Run Again / Reset) would
+     otherwise hijack the presenter out of guided mode. */
+  .a6d.is-wice-active .a6d-complete-banner,
+  .a6d.is-wice-active .a6d-estop-banner {
+    display: none !important;
+  }
+
+  /* Bounding boxes appearing during the Stage 2 perception reveal */
+  .a6d-bbox.is-revealing { animation: a6d-bbox-in 0.4s var(--ease); }
+  @keyframes a6d-bbox-in { from { opacity: 0; transform: scale(0.85); } to { opacity: 1; transform: scale(1); } }
 
   /* ---------------- Camera ---------------- */
   .a6d-camera { padding: 1rem; }
