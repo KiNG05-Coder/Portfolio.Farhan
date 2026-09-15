@@ -1240,6 +1240,7 @@ const plannedSystem = [
         alertPanel.hidden = false;
         requestAnimationFrame(() => alertPanel.classList.add('is-visible'));
         if (wasHidden && alertSound) {
+          alertSound.loop = true;
           alertSound.currentTime = 0;
           alertSound.play().catch(() => {});
         }
@@ -1248,6 +1249,10 @@ const plannedSystem = [
         if (!alertPanel) return;
         alertPanel.classList.remove('is-visible');
         window.setTimeout(() => { if (alertPanel) alertPanel.hidden = true; }, 350);
+        if (alertSound) {
+          alertSound.pause();
+          alertSound.currentTime = 0;
+        }
       };
       alertPanel?.querySelector<HTMLButtonElement>('[data-alert-dismiss]')?.addEventListener('click', () => {
         alertDismissedThisRun = true;
