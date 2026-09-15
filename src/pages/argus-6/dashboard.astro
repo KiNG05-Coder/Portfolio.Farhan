@@ -185,7 +185,7 @@ const plannedSystem = [
 
           <div class="a6d-demo-actions">
             <button type="button" class="btn btn--primary a6d-run-btn" data-run-demo>▶ Run Autonomous Demo</button>
-            <button type="button" class="btn a6d-wice-btn" data-run-wice>Guided WICE Presentation</button>
+            <button type="button" class="btn a6d-wice-btn" data-run-wice>WICE Demo Mode</button>
           </div>
 
           <button type="button" class="a6d-stop-btn mono" data-stop-btn>STOP</button>
@@ -197,19 +197,19 @@ const plannedSystem = [
              through the same centralized mission state used everywhere else on the page. */}
         <div class="a6d-wice-bar panel" data-wice-bar hidden>
           <div class="a6d-wice-bar__top">
-            <span class="a6d-wice-bar__label mono">WICE PRESENTATION MODE</span>
+            <span class="a6d-wice-bar__label mono">WICE DEMO</span>
             <span class="a6d-wice-bar__guided mono"><span class="a6d-wice-bar__dot" aria-hidden="true"></span>GUIDED</span>
             <button type="button" class="a6d-wice-ctrl a6d-wice-ctrl--notes" data-wice-notes-toggle aria-expanded="false">Presenter Notes</button>
           </div>
 
           <div class="a6d-wice-bar__controls">
-            <button type="button" class="a6d-wice-ctrl" data-wice-prev>← Previous</button>
-            <button type="button" class="a6d-wice-ctrl" data-wice-play>▶ Play</button>
-            <button type="button" class="a6d-wice-ctrl" data-wice-pause>Pause</button>
-            <button type="button" class="a6d-wice-ctrl a6d-wice-ctrl--primary" data-wice-next>Next Stage →</button>
+            <button type="button" class="a6d-wice-ctrl" data-wice-prev aria-label="Previous stage">← Previous Stage</button>
+            <button type="button" class="a6d-wice-ctrl" data-wice-play aria-label="Play current stage">▶ Play Stage</button>
+            <button type="button" class="a6d-wice-ctrl" data-wice-pause aria-label="Pause">⏸ Pause</button>
+            <button type="button" class="a6d-wice-ctrl a6d-wice-ctrl--primary" data-wice-next aria-label="Next stage">Next Stage →</button>
             <span class="a6d-wice-bar__spacer" aria-hidden="true"></span>
-            <button type="button" class="a6d-wice-ctrl" data-wice-restart>Restart</button>
-            <button type="button" class="a6d-wice-ctrl" data-wice-exit>Exit WICE Mode</button>
+            <button type="button" class="a6d-wice-ctrl" data-wice-restart aria-label="Restart presentation">↻ Restart</button>
+            <button type="button" class="a6d-wice-ctrl" data-wice-exit aria-label="Exit guided presentation">Exit WICE</button>
           </div>
 
           <p class="a6d-wice-bar__stage mono">
@@ -225,8 +225,8 @@ const plannedSystem = [
         </div>
 
         {/* ---- Guided WICE Presentation — stage information panel ---- */}
-        <div class="a6d-wice-info panel" data-wice-info hidden>
-          <span class="a6d-wice-info__eyebrow mono">WICE PRESENTATION</span>
+        <div class="a6d-wice-info panel" data-wice-info hidden aria-live="polite">
+          <span class="a6d-wice-info__eyebrow mono">WICE DEMO</span>
           <p class="a6d-wice-info__stage mono">STAGE <span data-wice-info-num>1</span> / <span data-wice-info-total>14</span></p>
           <h3 class="a6d-wice-info__title" data-wice-info-title>OVERVIEW</h3>
           <div class="a6d-wice-info__row">
@@ -402,7 +402,7 @@ const plannedSystem = [
         <div class="panel a6d-timeline-panel" id="mission" data-emphasis-group="collection">
           <div class="a6d-timeline-panel__head">
             <h3 class="a6d-panel-title mono">Autonomous Mission</h3>
-            <span class="a6d-mission-label mono" data-mission-label>Idle — awaiting demo start</span>
+            <span class="a6d-mission-label mono" data-mission-label>MISSION READY — awaiting demo start</span>
           </div>
           <ol class="a6d-state-machine scroll-x" data-mission-timeline>
             {missionSequence.map(([id, label], i) => (
@@ -422,7 +422,7 @@ const plannedSystem = [
               <span class="a6d-demo-chip">SIMULATED</span>
             </div>
             <ul class="a6d-log__list" data-event-log>
-              <li><span class="a6d-log__time mono">—</span><span class="a6d-log__msg">System idle. Press Run Autonomous Demo to begin.</span></li>
+              <li><span class="a6d-log__time mono">—</span><span class="a6d-log__msg">SYSTEM READY · Press Run Autonomous Demo to begin.</span></li>
             </ul>
           </div>
 
@@ -803,9 +803,9 @@ const plannedSystem = [
   const STATE_META: Record<StateId, StateMeta> = {
     idle: {
       label: 'IDLE',
-      missionLabel: 'Idle — awaiting demo start',
+      missionLabel: 'MISSION READY — awaiting demo start',
       cameraStandby: true,
-      targetSummary: 'SEARCHING FOR TARGET',
+      targetSummary: 'STANDBY',
       decisionTrace: 'idle',
       mapRobot: { x: 60, y: 210, rot: -35 },
       mapRoute: 'none',
@@ -818,7 +818,7 @@ const plannedSystem = [
     detect: {
       label: 'DETECT',
       missionLabel: 'Scanning for targets',
-      log: ['AI · YOLO26n — 4 candidate objects detected'],
+      log: ['AI · Perception initialized', 'AI · Candidate objects detected'],
       boxes: {
         t01: { pos: 'fixed', fixedStyle: { left: 10, top: 60, width: 10, height: 15 } },
         t02: { pos: 'fixed', fixedStyle: { left: 55, top: 58, width: 12, height: 16 } },
@@ -840,7 +840,7 @@ const plannedSystem = [
     target_lock: {
       label: 'TARGET LOCK',
       missionLabel: 'Target 04 selected',
-      log: ['TARGET · Target 04 selected', 'TARGET · Target 04 locked'],
+      log: ['TARGET · Target locked: PLASTIC_BOTTLE · ID 04'],
       boxes: {
         t01: { pos: 'fixed', fixedStyle: { left: 10, top: 60, width: 10, height: 15 } },
         t02: { pos: 'fixed', fixedStyle: { left: 55, top: 58, width: 12, height: 16 } },
@@ -865,7 +865,7 @@ const plannedSystem = [
     approach: {
       label: 'APPROACH',
       missionLabel: 'Approaching target',
-      log: ['NAV · Approaching target'],
+      log: ['NAV · Approach initiated'],
       boxes: { t04: { pos: 'mid', highlighted: true, status: 'APPROACHING' } },
       fps: 27,
       targetSummary: 'TARGET 04 · LOCKED',
@@ -885,7 +885,7 @@ const plannedSystem = [
     align: {
       label: 'ALIGN',
       missionLabel: 'Aligning collection position',
-      log: ['NAV · Alignment achieved'],
+      log: ['NAV · Alignment correction'],
       boxes: { t04: { pos: 'near', highlighted: true, status: 'ALIGNING' } },
       fps: 27,
       targetSummary: 'TARGET 04 · LOCKED',
@@ -923,7 +923,7 @@ const plannedSystem = [
     grab: {
       label: 'GRAB',
       missionLabel: 'Collecting target',
-      log: ['ARM · Pickup sequence started', 'ARM · Gripper closed'],
+      log: ['ARM · Grab sequence initiated', 'ARM · Gripper closed'],
       boxes: { t04: { pos: 'near', highlighted: true, status: 'COLLECTING' } },
       fps: 26,
       targetSummary: 'TARGET 04 · LOCKED',
@@ -942,7 +942,7 @@ const plannedSystem = [
     verify: {
       label: 'VERIFY',
       missionLabel: 'Collection verified',
-      log: ['MISSION · Collection verified — object acquired'],
+      log: ['MISSION · Grab verification complete'],
       boxes: { t04: { pos: 'near', highlighted: true, status: 'VERIFIED ✓' } },
       fps: 26,
       targetSummary: 'TARGET 04 · COLLECTED',
@@ -966,7 +966,7 @@ const plannedSystem = [
     arm_default: {
       label: 'ARM DEFAULT',
       missionLabel: 'Arm returning to default pose',
-      log: ['ARM · Arm → default pose'],
+      log: ['ARM · Arm returned to DEFAULT'],
       boxes: { t04: { pos: 'near', highlighted: true, status: 'SECURED' } },
       fps: 26,
       targetSummary: 'TARGET 04 · SECURED',
@@ -985,7 +985,7 @@ const plannedSystem = [
     return_to_bin: {
       label: 'RETURN TO BIN',
       missionLabel: 'Returning to onboard bin',
-      log: ['NAV · Returning to onboard bin'],
+      log: ['NAV · Return to onboard bin initiated'],
       fps: 27,
       targetSummary: 'TARGET 04 · SECURED',
       targetLockStatus: 'RETURNING',
@@ -997,14 +997,14 @@ const plannedSystem = [
       twinWalking: true,
       twinArm: 'default',
       twinGripper: 'closed',
-      twinMovement: 'FORWARD',
+      twinMovement: 'RETURN',
       autonomyNode: 'navigation',
       authorityNode: 'navigation',
     },
     align_bin: {
       label: 'ALIGN BIN',
       missionLabel: 'Aligning with onboard bin',
-      log: ['NAV · Aligning with onboard bin'],
+      log: ['NAV · Bin alignment complete'],
       fps: 27,
       targetSummary: 'TARGET 04 · SECURED',
       targetLockStatus: 'ALIGNING',
@@ -1022,7 +1022,7 @@ const plannedSystem = [
     deposit: {
       label: 'DEPOSIT',
       missionLabel: 'Depositing into onboard bin',
-      log: ['ARM · Deposit sequence started', 'ARM · Object released into onboard bin'],
+      log: ['ARM · Deposit sequence started', 'ARM · Deposit complete'],
       fps: 26,
       targetSummary: 'TARGET 04 · DEPOSITED',
       targetLockStatus: 'DEPOSITED',
@@ -1083,13 +1083,19 @@ const plannedSystem = [
     keyConcept: string;
     presenterNote: string;
     emphasis: string[] | null;
-    logLines: string[];
+    // Most stages log exactly what their mission state already logs (see
+    // STATE_META[state].log) — that's the single source of truth for event
+    // text, shared with the fast Run Autonomous Demo. Only presentation-only
+    // beats that don't correspond 1:1 with a mission-state transition (the
+    // intro, and the person incident sharing DETECT with Perception) need an
+    // explicit override here.
+    logLines?: string[];
   }
 
   const PRESENTATION_STAGES: PresentationStage[] = [
     {
       id: 'overview', state: 'idle', title: 'OVERVIEW',
-      currentStateText: 'System idle — introducing ARGUS-6.',
+      currentStateText: 'ARGUS-6 — a six-legged platform for environmental cleanup on difficult terrain.',
       keyConcept: 'A six-legged platform built for environmental cleanup on difficult terrain.',
       presenterNote: 'Introduce ARGUS-6, the six-legged robotic platform designed for environmental cleanup and operation on difficult terrain.',
       emphasis: null,
@@ -1097,109 +1103,103 @@ const plannedSystem = [
     },
     {
       id: 'perception', state: 'detect', title: 'PERCEPTION',
-      currentStateText: 'Camera scanning the scene — YOLO26n detecting candidate objects.',
+      currentStateText: 'YOLO26n analyzes the camera stream and identifies candidate objects and people.',
       keyConcept: 'Detection is the input. It is not yet a decision.',
       presenterNote: 'The camera provides the visual input. YOLO26n identifies objects in the scene, but detection alone does not decide what the robot should collect.',
       emphasis: ['perception', 'targeting', 'architecture'],
-      logLines: ['AI · YOLO26n — 4 candidate objects detected'],
     },
     {
-      id: 'person-alert', state: 'detect', title: 'PERSON INCIDENT ALERT',
-      currentStateText: 'Independent person-detection incident raised.',
+      id: 'person-alert', state: 'detect', title: 'PERSON INCIDENT',
+      currentStateText: 'A person detection is handled as an independent safety incident rather than becoming a trash target.',
       keyConcept: 'Incident alerts run independently of the collection pipeline.',
       presenterNote: 'The perception system also identifies people independently from the waste-target pipeline. This is treated as an incident alert rather than a collection target.',
       emphasis: ['perception', 'targeting', 'architecture'],
-      logLines: ['AI · Person detected — incident alert raised'],
+      logLines: ['AI · Person incident detected: P07'],
     },
     {
       id: 'target-selection', state: 'target_lock', title: 'TARGET SELECTION',
-      currentStateText: 'Evaluating candidate waste objects.',
+      currentStateText: 'The Target Manager combines confidence, apparent proximity, image position, and persistence before locking a target.',
       keyConcept: 'Detection ≠ Decision.',
       presenterNote: 'ARGUS-6 does not simply drive toward the first object YOLO detects. The Target Manager evaluates candidates and selects one target, then locks it so the robot doesn’t constantly switch between objects.',
       emphasis: ['targeting'],
-      logLines: ['TARGET · Target 04 selected', 'TARGET · Target 04 locked'],
     },
     {
       id: 'approach', state: 'approach', title: 'APPROACH',
-      currentStateText: 'Navigation driving the robot toward the locked target.',
+      currentStateText: 'Navigation moves ARGUS-6 toward the selected target.',
       keyConcept: 'A locked target lets navigation commit to one approach path.',
       presenterNote: 'Once the target is locked, the navigation system generates movement intent to approach it.',
       emphasis: ['navigation'],
-      logLines: ['NAV · Approaching target'],
     },
     {
       id: 'align', state: 'align', title: 'ALIGN',
-      currentStateText: 'Fine positioning correction before manipulation.',
+      currentStateText: 'The robot corrects its heading and positioning before stopping.',
       keyConcept: 'Alignment happens before the arm ever engages.',
       presenterNote: 'Before using the arm, the robot needs to position itself correctly relative to the object.',
       emphasis: ['navigation'],
-      logLines: ['NAV · Alignment achieved'],
     },
     {
       id: 'stop', state: 'stop', title: 'STOP',
-      currentStateText: 'All motion halted — ready for collection.',
+      currentStateText: 'The robot stops before manipulation begins.',
       keyConcept: 'Locomotion and manipulation never compete for control.',
       presenterNote: 'The robot stops before manipulation so locomotion and arm movement are not competing for control.',
       emphasis: ['navigation', 'collection'],
-      logLines: ['CONTROL · Robot stopped — ready for collection'],
     },
     {
       id: 'grab', state: 'grab', title: 'GRAB',
-      currentStateText: 'Arm reaching out, gripper closing on the target.',
+      currentStateText: 'The arm moves from DEFAULT and the gripper closes around the selected object.',
       keyConcept: 'Control now hands off from locomotion to manipulation.',
       presenterNote: 'The mission manager now transitions from locomotion to manipulation. The robotic arm positions the gripper and performs the pickup.',
       emphasis: ['collection'],
-      logLines: ['ARM · Pickup sequence started', 'ARM · Gripper closed'],
     },
     {
       id: 'verify', state: 'verify', title: 'VERIFY',
-      currentStateText: 'Collection verification — a logical mission step.',
+      currentStateText: 'The mission verifies the logical success condition before continuing.',
       keyConcept: 'Simulated verification, not a claim about a physical sensor.',
       presenterNote: 'The mission includes a verification stage before continuing. In the current concept simulation, this represents the logical verification step rather than a claim about a dedicated physical sensor.',
       emphasis: ['collection'],
-      logLines: ['MISSION · Collection verified — object acquired'],
     },
     {
       id: 'arm-default', state: 'arm_default', title: 'ARM DEFAULT',
-      currentStateText: 'Arm returning to its safe travel pose.',
+      currentStateText: 'The arm returns to a safe default pose before locomotion resumes.',
       keyConcept: 'A safe travel configuration before locomotion resumes.',
       presenterNote: 'The arm returns to its default travel configuration before the robot resumes locomotion.',
       emphasis: ['collection'],
-      logLines: ['ARM · Arm → default pose'],
     },
     {
       id: 'return-to-bin', state: 'return_to_bin', title: 'RETURN TO BIN',
-      currentStateText: 'Navigating back with the collected object secured.',
+      currentStateText: 'ARGUS-6 returns toward its onboard collection bin.',
       keyConcept: 'The collection cycle continues until the object is deposited.',
       presenterNote: 'After collection, the robot returns to the configured collection location.',
       emphasis: ['navigation'],
-      logLines: ['NAV · Returning to onboard bin'],
     },
     {
       id: 'align-bin', state: 'align_bin', title: 'ALIGN BIN',
-      currentStateText: 'Aligning with the onboard bin for deposit.',
+      currentStateText: 'The robot positions itself for controlled deposit.',
       keyConcept: 'The same align-before-manipulate principle as the initial pickup.',
       presenterNote: 'The robot positions itself before performing the deposit.',
       emphasis: ['navigation'],
-      logLines: ['NAV · Aligning with onboard bin'],
     },
     {
       id: 'deposit', state: 'deposit', title: 'DEPOSIT',
-      currentStateText: 'Depositing the collected object into the onboard bin.',
+      currentStateText: 'The gripper releases the collected object into the onboard bin.',
       keyConcept: 'Completes the collection cycle.',
       presenterNote: 'The arm deposits the collected waste, completing the collection cycle.',
       emphasis: ['collection'],
-      logLines: ['ARM · Deposit sequence started', 'ARM · Object released into onboard bin'],
     },
     {
       id: 'complete', state: 'complete', title: 'COMPLETE',
-      currentStateText: 'Mission complete — full loop demonstrated.',
+      currentStateText: 'The simulated cleanup mission is complete.',
       keyConcept: 'Perception → decision → navigation → manipulation → return, one system.',
       presenterNote: 'This demonstrates the complete planned autonomous collection loop, from perception through target selection, navigation, manipulation and return.',
       emphasis: null,
-      logLines: ['MISSION · Mission complete'],
     },
   ];
+
+  // A stage's log is its own override when given, otherwise the log already
+  // defined on its mission state — one source of truth for event text,
+  // shared with the fast Run Autonomous Demo instead of duplicating it.
+  const presentationStageLog = (stage: PresentationStage): string[] =>
+    stage.logLines ?? STATE_META[stage.state].log ?? [];
 
   const PERSON_ALERT_STAGE_INDEX = PRESENTATION_STAGES.findIndex((s) => s.id === 'person-alert');
 
@@ -1334,15 +1334,13 @@ const plannedSystem = [
         if (decisionTraceEl) {
           if (s.decisionTrace === 'locked') {
             decisionTraceEl.innerHTML = `
-              <div><dt>Target</dt><dd>04</dd></div>
-              <div><dt>Class</dt><dd>Plastic Bottle</dd></div>
+              <div class="a6d-decision-trace__selected"><dt>Selected Target</dt><dd>PLASTIC_BOTTLE · ID 04</dd></div>
               <div><dt>Confidence</dt><dd>91%</dd></div>
               <div><dt>Image position</dt><dd>Center-right</dd></div>
               <div><dt>Estimated proximity</dt><dd>High</dd></div>
               <div><dt>Target persistence</dt><dd>Stable</dd></div>
-              <div><dt>Safety check</dt><dd>PASS</dd></div>
-              <div><dt>Current lock</dt><dd>YES</dd></div>
-              <div class="a6d-decision-trace__decision"><dt>Decision</dt><dd>SELECT TARGET 04</dd></div>
+              <div><dt>Safety check</dt><dd>PASS (simulated)</dd></div>
+              <div class="a6d-decision-trace__why"><dt>Why?</dt><dd>High confidence + favorable image position + persistent detection + safe target classification.</dd></div>
             `;
           } else if (s.decisionTrace === 'analyzing') {
             decisionTraceEl.innerHTML = `<div class="a6d-decision-trace__idle">ANALYZING CANDIDATES…</div>`;
@@ -1602,7 +1600,7 @@ const plannedSystem = [
       const renderPresentationLog = (index: number) => {
         if (!logList) return;
         const lines: string[] = [];
-        for (let i = 0; i <= index; i++) PRESENTATION_STAGES[i].logLines.forEach((l) => lines.push(l));
+        for (let i = 0; i <= index; i++) presentationStageLog(PRESENTATION_STAGES[i]).forEach((l) => lines.push(l));
         logList.innerHTML = lines
           .map((msg, i) => `<li><span class="a6d-log__time mono">${presentationLogTime(i)}</span><span class="a6d-log__msg">${msg}</span></li>`)
           .reverse()
@@ -1811,7 +1809,7 @@ const plannedSystem = [
           alertDismissedThisRun = false;
           hidePersonAlert();
           applyState('idle');
-          if (logList) logList.innerHTML = '<li><span class="a6d-log__time mono">—</span><span class="a6d-log__msg">System idle. Press Run Autonomous Demo to begin.</span></li>';
+          if (logList) logList.innerHTML = '<li><span class="a6d-log__time mono">—</span><span class="a6d-log__msg">SYSTEM READY · Press Run Autonomous Demo to begin.</span></li>';
           logSeeded = false;
         }
       }
@@ -1884,7 +1882,7 @@ const plannedSystem = [
         alertDismissedThisRun = false;
         hidePersonAlert();
         applyState('idle');
-        if (logList) logList.innerHTML = '<li><span class="a6d-log__time mono">—</span><span class="a6d-log__msg">System idle. Press Run Autonomous Demo to begin.</span></li>';
+        if (logList) logList.innerHTML = '<li><span class="a6d-log__time mono">—</span><span class="a6d-log__msg">SYSTEM READY · Press Run Autonomous Demo to begin.</span></li>';
         logSeeded = false;
       };
       root.querySelectorAll<HTMLButtonElement>('[data-reset-demo]').forEach((btn) => btn.addEventListener('click', resetDemo));
@@ -2227,8 +2225,10 @@ const plannedSystem = [
   .a6d-decision-trace > div { padding: 0.5rem 0.65rem; border: 1px solid var(--border); border-radius: 6px; }
   .a6d-decision-trace dt { font-size: 0.56rem; letter-spacing: 0.08em; text-transform: uppercase; color: var(--text-dim); }
   .a6d-decision-trace dd { color: var(--text); margin-top: 0.15rem; }
-  .a6d-decision-trace__decision { grid-column: 1 / -1; border-color: var(--accent-line) !important; background: var(--accent-soft); }
-  .a6d-decision-trace__decision dd { color: var(--accent); font-weight: 600; }
+  .a6d-decision-trace__selected { grid-column: 1 / -1; border-color: var(--accent-line) !important; background: var(--accent-soft); }
+  .a6d-decision-trace__selected dd { color: var(--accent); font-weight: 600; font-size: 0.88rem; }
+  .a6d-decision-trace__why { grid-column: 1 / -1; }
+  .a6d-decision-trace__why dd { color: var(--text-muted); line-height: 1.5; }
   .a6d-decision-trace__idle { grid-column: 1 / -1; padding: 0.6rem 0.75rem; color: var(--text-dim); border: 1px dashed var(--border-strong); border-radius: 6px; }
 
   /* ---------------- Digital twin ---------------- */
