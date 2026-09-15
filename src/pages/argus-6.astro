@@ -74,6 +74,9 @@ const structuralStats = [
           <StatusBadge status="planned" label="Autonomy — planned" />
           <span class="mono a6-hero__by">A project by Farhan Saif</span>
         </div>
+        <a class="btn a6-hero__dashboard-link" href={link('/argus-6/dashboard')}>
+          Mission Control <span class="a6-hero__dashboard-tag mono">Concept</span>
+        </a>
       </div>
 
       <div class="a6-hero__visual" data-reveal>
@@ -94,6 +97,7 @@ const structuralStats = [
     <div class="container">
       <span class="a6-toc__label mono">On this page</span>
       <ul class="scroll-x">
+        <li><a href={link('/argus-6/dashboard')} class="mono a6-toc__doc">Dashboard <span class="a6-toc__concept">Concept</span></a></li>
         {sections.map(([id, label]) => <li><a href={`#${id}`} class="mono">{label}</a></li>)}
         <li><a href={link('/documentation')} class="mono a6-toc__doc">Documentation →</a></li>
       </ul>
@@ -735,6 +739,21 @@ const structuralStats = [
     text-transform: uppercase;
     color: var(--text-dim);
   }
+  .a6-hero__dashboard-link {
+    margin-top: 1.5rem;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.6rem;
+  }
+  .a6-hero__dashboard-tag {
+    font-size: 0.6rem;
+    letter-spacing: 0.1em;
+    color: var(--status-dev);
+    background: var(--status-dev-bg);
+    border: 1px solid color-mix(in srgb, var(--status-dev) 40%, transparent);
+    padding: 0.15rem 0.5rem;
+    border-radius: 999px;
+  }
 
   /* TOC */
   .a6-toc {
@@ -791,6 +810,16 @@ const structuralStats = [
   }
   .a6-toc__doc {
     color: var(--accent) !important;
+  }
+  .a6-toc__concept {
+    margin-left: 0.35rem;
+    font-size: 0.58rem;
+    letter-spacing: 0.08em;
+    color: var(--status-dev);
+    background: var(--status-dev-bg);
+    border: 1px solid color-mix(in srgb, var(--status-dev) 40%, transparent);
+    padding: 0.1rem 0.4rem;
+    border-radius: 999px;
   }
 
   /* Shared layout */
