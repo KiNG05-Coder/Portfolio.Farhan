@@ -429,9 +429,13 @@ const plannedSystem = [
       <dl class="a6d-alert__meta">
         <div><dt class="mono">Confidence</dt><dd class="mono" data-alert-confidence>96%</dd></div>
         <div><dt class="mono">Tracking ID</dt><dd class="mono">P07</dd></div>
+        <div><dt class="mono">GPS <span class="a6d-alert__sim">SIM</span></dt><dd class="mono" data-alert-gps>—</dd></div>
         <div><dt class="mono">Time</dt><dd class="mono" data-alert-time>—</dd></div>
       </dl>
       <span class="a6d-demo-chip">PLANNED AI INCIDENT ALERT</span>
+      <audio data-alert-sound preload="none">
+        <source src={link('/assets/argus-6/person-alert.mp3')} type="audio/mpeg" />
+      </audio>
     </div>
 
     {/* ---------------- CONTROL AUTHORITY ---------------- */}
@@ -1213,12 +1217,32 @@ const plannedSystem = [
       // ---- person alert ----
       const alertPanel = root.querySelector<HTMLElement>('[data-alert-panel]');
       const alertTime = alertPanel?.querySelector<HTMLElement>('[data-alert-time]');
+      const alertGps = alertPanel?.querySelector<HTMLElement>('[data-alert-gps]');
+      const alertSound = alertPanel?.querySelector<HTMLAudioElement>('[data-alert-sound]');
       let alertDismissedThisRun = false;
+      // Simulated position near Dhaka, jittered a little each time so it
+      // reads as a live fix rather than a hardcoded constant — still just
+      // demo data, same as every other "Simulated" GPS value on this page.
+      const BASE_LAT = 23.8103;
+      const BASE_LON = 90.4125;
+      const nextGpsFix = () => {
+        const lat = BASE_LAT + (Math.random() - 0.5) * 0.01;
+        const lon = BASE_LON + (Math.random() - 0.5) * 0.01;
+        const ns = lat >= 0 ? 'N' : 'S';
+        const ew = lon >= 0 ? 'E' : 'W';
+        return `${Math.abs(lat).toFixed(4)}° ${ns}, ${Math.abs(lon).toFixed(4)}° ${ew}`;
+      };
       const showPersonAlert = () => {
         if (!alertPanel || alertDismissedThisRun) return;
+        const wasHidden = alertPanel.hidden;
         if (alertTime) alertTime.textContent = nextTime();
+        if (alertGps) alertGps.textContent = nextGpsFix();
         alertPanel.hidden = false;
         requestAnimationFrame(() => alertPanel.classList.add('is-visible'));
+        if (wasHidden && alertSound) {
+          alertSound.currentTime = 0;
+          alertSound.play().catch(() => {});
+        }
       };
       const hidePersonAlert = () => {
         if (!alertPanel) return;
@@ -1798,9 +1822,10 @@ const plannedSystem = [
   .a6d-alert__close { width: 1.75rem; height: 1.75rem; display: grid; place-items: center; border: 1px solid var(--border-strong); border-radius: 6px; color: var(--text-muted); flex: none; }
   .a6d-alert__close:hover { color: var(--text); border-color: var(--accent-line); }
   .a6d-alert__body { margin-top: 0.55rem; font-size: 0.88rem; color: var(--text-muted); }
-  .a6d-alert__meta { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.5rem; margin: 0.85rem 0; }
-  .a6d-alert__meta dt { font-size: 0.54rem; letter-spacing: 0.08em; text-transform: uppercase; color: var(--text-dim); }
+  .a6d-alert__meta { display: grid; grid-template-columns: repeat(2, 1fr); gap: 0.5rem 0.75rem; margin: 0.85rem 0; }
+  .a6d-alert__meta dt { display: flex; align-items: center; gap: 0.35rem; font-size: 0.54rem; letter-spacing: 0.08em; text-transform: uppercase; color: var(--text-dim); }
   .a6d-alert__meta dd { font-size: 0.76rem; color: var(--text); margin-top: 0.15rem; }
+  .a6d-alert__sim { font-size: 0.5rem; letter-spacing: 0.06em; color: var(--status-dev); background: var(--status-dev-bg); border: 1px solid color-mix(in srgb, var(--status-dev) 40%, transparent); padding: 0.05rem 0.3rem; border-radius: 999px; }
   @media (max-width: 560px) { .a6d-alert { top: auto; bottom: 16px; left: 16px; right: 16px; width: auto; } }
 
   /* ---------------- Control authority ---------------- */
