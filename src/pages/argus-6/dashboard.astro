@@ -32,10 +32,9 @@ const missionSequence = [
   ['stop', 'STOP'],
   ['grab', 'GRAB'],
   ['verify', 'VERIFY'],
-  ['arm_default', 'ARM DEFAULT'],
-  ['return_to_bin', 'RETURN TO BIN'],
-  ['align_bin', 'ALIGN BIN'],
   ['deposit', 'DEPOSIT'],
+  ['arm_default', 'ARM DEFAULT'],
+  ['return_to_base', 'RETURN TO BASE'],
   ['complete', 'COMPLETE'],
 ];
 
@@ -306,7 +305,7 @@ const plannedSystem = [
 
               <g transform="translate(60,210)">
                 <rect x="-9" y="-9" width="18" height="18" rx="3" fill="#171b22" stroke="#5b9dff" stroke-width="1.5" />
-                <text x="15" y="4" class="a6d-map__label" fill="#9aa2ad">BIN</text>
+                <text x="15" y="4" class="a6d-map__label" fill="#9aa2ad">BASE</text>
               </g>
 
               <g data-map-robot transform="translate(60,210) rotate(-35)">
@@ -316,7 +315,7 @@ const plannedSystem = [
             <ul class="a6d-map-legend">
               <li><span class="a6d-legend-swatch" style="background:#5b9dff"></span>ARGUS-6</li>
               <li><span class="a6d-legend-swatch a6d-legend-swatch--ring" style="border-color:#3fb950"></span>Locked target</li>
-              <li><span class="a6d-legend-swatch a6d-legend-swatch--square"></span>Onboard bin (deposit point once the robot returns)</li>
+              <li><span class="a6d-legend-swatch a6d-legend-swatch--square"></span>Base (onboard bin travels with the robot)</li>
               <li><span class="a6d-legend-swatch a6d-legend-swatch--dash"></span>Mission boundary</li>
             </ul>
           </div>
@@ -454,7 +453,7 @@ const plannedSystem = [
         <div class="a6d-complete-banner panel" data-complete-banner hidden>
           <div>
             <span class="a6d-complete-banner__tag mono">MISSION COMPLETE</span>
-            <p>Target 04 collected and deposited in the onboard bin. This was a simulated run — no physical robot moved.</p>
+            <p>Target 04 collected, stowed in the onboard bin, and ARGUS-6 returned to base. This was a simulated run — no physical robot moved.</p>
           </div>
           <div class="a6d-complete-banner__actions">
             <button type="button" class="btn btn--primary" data-run-again>Run Again</button>
@@ -759,12 +758,12 @@ const plannedSystem = [
 <script>
   type StateId =
     | 'idle' | 'detect' | 'target_lock' | 'approach' | 'align' | 'stop'
-    | 'grab' | 'verify' | 'arm_default' | 'return_to_bin' | 'align_bin'
-    | 'deposit' | 'complete' | 'emergency_stop';
+    | 'grab' | 'verify' | 'deposit' | 'arm_default' | 'return_to_base'
+    | 'complete' | 'emergency_stop';
 
   const SEQUENCE: StateId[] = [
     'idle', 'detect', 'target_lock', 'approach', 'align', 'stop', 'grab',
-    'verify', 'arm_default', 'return_to_bin', 'align_bin', 'deposit', 'complete',
+    'verify', 'deposit', 'arm_default', 'return_to_base', 'complete',
   ];
 
   // Box geometry per phase — left/top/width/height as percentages of the
@@ -958,19 +957,34 @@ const plannedSystem = [
       autonomyNode: 'mission_manager',
       authorityNode: 'mission_manager',
     },
-    // The onboard bin travels with the robot, but the deposit maneuver is
-    // reserved for a stable, stopped stance rather than out on the terrain
-    // where the target was collected — so the arm first stows to default
-    // (still gripping the object) and the robot walks itself back before
-    // the arm swings the object into the bin.
+    // The bin is mounted on the robot itself, not a separate stop on the
+    // map — so depositing happens right where the target was collected,
+    // before the robot ever starts heading back to base.
+    deposit: {
+      label: 'DEPOSIT',
+      missionLabel: 'Depositing into onboard bin',
+      log: ['ARM · Depositing into onboard bin', 'ARM · Gripper opened'],
+      fps: 26,
+      targetSummary: 'TARGET 04 · DEPOSITED',
+      targetLockStatus: 'DEPOSITED',
+      showTargetDetail: true,
+      decisionTrace: 'locked',
+      mapRobot: { x: 320, y: 50, rot: 40 },
+      mapRoute: 'out',
+      mapTargetLocked: true,
+      twinArm: 'reach-bin',
+      twinGripper: 'open',
+      twinMovement: 'ARM ACTIVE',
+      autonomyNode: 'mission_manager',
+      authorityNode: 'mission_manager',
+    },
     arm_default: {
       label: 'ARM DEFAULT',
       missionLabel: 'Arm returning to default pose',
       log: ['ARM · Arm returned to DEFAULT'],
-      boxes: { t04: { pos: 'near', highlighted: true, status: 'SECURED' } },
       fps: 26,
-      targetSummary: 'TARGET 04 · SECURED',
-      targetLockStatus: 'SECURED',
+      targetSummary: 'TARGET 04 · DEPOSITED',
+      targetLockStatus: 'DEPOSITED',
       showTargetDetail: true,
       decisionTrace: 'locked',
       mapRobot: { x: 320, y: 50, rot: 40 },
@@ -982,12 +996,12 @@ const plannedSystem = [
       autonomyNode: 'ik_gait',
       authorityNode: 'esp8266',
     },
-    return_to_bin: {
-      label: 'RETURN TO BIN',
-      missionLabel: 'Returning to onboard bin',
-      log: ['NAV · Return to onboard bin initiated'],
+    return_to_base: {
+      label: 'RETURN TO BASE',
+      missionLabel: 'Returning to base',
+      log: ['NAV · Returning to base'],
       fps: 27,
-      targetSummary: 'TARGET 04 · SECURED',
+      targetSummary: 'TARGET 04 · DEPOSITED',
       targetLockStatus: 'RETURNING',
       showTargetDetail: true,
       decisionTrace: 'locked',
@@ -1000,42 +1014,6 @@ const plannedSystem = [
       twinMovement: 'RETURN',
       autonomyNode: 'navigation',
       authorityNode: 'navigation',
-    },
-    align_bin: {
-      label: 'ALIGN BIN',
-      missionLabel: 'Aligning with onboard bin',
-      log: ['NAV · Bin alignment complete'],
-      fps: 27,
-      targetSummary: 'TARGET 04 · SECURED',
-      targetLockStatus: 'ALIGNING',
-      showTargetDetail: true,
-      decisionTrace: 'locked',
-      mapRobot: { x: 60, y: 210, rot: -145 },
-      mapRoute: 'back',
-      mapTargetLocked: true,
-      twinArm: 'default',
-      twinGripper: 'closed',
-      twinMovement: 'STOPPING',
-      autonomyNode: 'navigation',
-      authorityNode: 'navigation',
-    },
-    deposit: {
-      label: 'DEPOSIT',
-      missionLabel: 'Depositing into onboard bin',
-      log: ['ARM · Deposit sequence started', 'ARM · Deposit complete'],
-      fps: 26,
-      targetSummary: 'TARGET 04 · DEPOSITED',
-      targetLockStatus: 'DEPOSITED',
-      showTargetDetail: true,
-      decisionTrace: 'locked',
-      mapRobot: { x: 60, y: 210, rot: -145 },
-      mapRoute: 'both',
-      mapTargetLocked: false,
-      twinArm: 'reach-bin',
-      twinGripper: 'open',
-      twinMovement: 'ARM ACTIVE',
-      autonomyNode: 'mission_manager',
-      authorityNode: 'mission_manager',
     },
     complete: {
       label: 'COMPLETE',
@@ -1159,6 +1137,13 @@ const plannedSystem = [
       emphasis: ['collection'],
     },
     {
+      id: 'deposit', state: 'deposit', title: 'DEPOSIT',
+      currentStateText: 'The gripper releases the collected object into the onboard bin, right where it was picked up.',
+      keyConcept: 'The bin travels with the robot — there is no separate trip to reach it.',
+      presenterNote: 'The bin is mounted on ARGUS-6 itself, so the arm deposits the item right there and the gripper opens.',
+      emphasis: ['collection'],
+    },
+    {
       id: 'arm-default', state: 'arm_default', title: 'ARM DEFAULT',
       currentStateText: 'The arm returns to a safe default pose before locomotion resumes.',
       keyConcept: 'A safe travel configuration before locomotion resumes.',
@@ -1166,25 +1151,11 @@ const plannedSystem = [
       emphasis: ['collection'],
     },
     {
-      id: 'return-to-bin', state: 'return_to_bin', title: 'RETURN TO BIN',
-      currentStateText: 'ARGUS-6 returns toward its onboard collection bin.',
-      keyConcept: 'The collection cycle continues until the object is deposited.',
-      presenterNote: 'After collection, the robot returns to the configured collection location.',
+      id: 'return-to-base', state: 'return_to_base', title: 'RETURN TO BASE',
+      currentStateText: 'With the item stowed on board, ARGUS-6 returns along its route to base.',
+      keyConcept: 'The collection loop ends where it started.',
+      presenterNote: 'The mission is complete once the robot is back at base — no further travel is needed since the object was deposited on the spot.',
       emphasis: ['navigation'],
-    },
-    {
-      id: 'align-bin', state: 'align_bin', title: 'ALIGN BIN',
-      currentStateText: 'The robot positions itself for controlled deposit.',
-      keyConcept: 'The same align-before-manipulate principle as the initial pickup.',
-      presenterNote: 'The robot positions itself before performing the deposit.',
-      emphasis: ['navigation'],
-    },
-    {
-      id: 'deposit', state: 'deposit', title: 'DEPOSIT',
-      currentStateText: 'The gripper releases the collected object into the onboard bin.',
-      keyConcept: 'Completes the collection cycle.',
-      presenterNote: 'The arm deposits the collected waste, completing the collection cycle.',
-      emphasis: ['collection'],
     },
     {
       id: 'complete', state: 'complete', title: 'COMPLETE',
@@ -1571,16 +1542,14 @@ const plannedSystem = [
         return () => { cancelled = true; if (timer) window.clearTimeout(timer); };
       };
 
+      // Highlights the panel(s) relevant to the current WICE stage without
+      // dimming/greying out anything else — every panel stays fully visible
+      // and readable throughout the demo.
       const applyEmphasis = (groups: string[] | null) => {
         emphasisEls.forEach((el) => {
           const own = (el.dataset.emphasisGroup ?? '').split(' ').filter(Boolean);
-          if (!wiceActive || !groups || groups.length === 0) {
-            el.classList.remove('is-emphasis-dim', 'is-emphasis-active');
-            return;
-          }
-          const match = own.some((g) => groups.includes(g));
+          const match = !!wiceActive && !!groups && groups.length > 0 && own.some((g) => groups.includes(g));
           el.classList.toggle('is-emphasis-active', match);
-          el.classList.toggle('is-emphasis-dim', !match);
         });
       };
 
@@ -1697,25 +1666,20 @@ const plannedSystem = [
             ];
           case 'verify':
             return [{ delay: 700, run: () => {} }];
-          case 'arm-default':
-            return [{ delay: 1100, run: () => {} }];
-          case 'return-to-bin':
-            return [{ delay: 3400, run: () => {} }];
-          case 'align-bin': {
-            const base = STATE_META.align_bin.mapRobot!;
-            return [
-              { delay: 0, run: () => mapRobot?.setAttribute('transform', `translate(${base.x},${base.y}) rotate(${base.rot - 6})`) },
-              { delay: 650, run: () => mapRobot?.setAttribute('transform', `translate(${base.x},${base.y}) rotate(${base.rot})`) },
-              { delay: 700, run: () => {} },
-            ];
-          }
+          // The bin is mounted on the robot itself, so deposit happens right
+          // where the target was collected — the arm swings from its GRAB
+          // pose to the onboard bin and the gripper opens, no travel needed.
           case 'deposit':
             return [
-              { delay: 0, run: () => { twinArmEl?.setAttribute('data-pose', 'default'); twinGripperEl?.setAttribute('data-state', 'closed'); } },
+              { delay: 0, run: () => { twinArmEl?.setAttribute('data-pose', 'reach-target'); twinGripperEl?.setAttribute('data-state', 'closed'); } },
               { delay: 700, run: () => twinArmEl?.setAttribute('data-pose', 'reach-bin') },
               { delay: 600, run: () => twinGripperEl?.setAttribute('data-state', 'open') },
-              { delay: 600, run: () => twinArmEl?.setAttribute('data-pose', 'default') },
+              { delay: 500, run: () => {} },
             ];
+          case 'arm-default':
+            return [{ delay: 1100, run: () => {} }];
+          case 'return-to-base':
+            return [{ delay: 3400, run: () => {} }];
           default:
             return [{ delay: 400, run: () => {} }];
         }
@@ -2138,11 +2102,12 @@ const plannedSystem = [
   }
   .a6d-candidate-list li.is-selected { color: var(--accent); border-color: var(--accent-line); background: var(--accent-soft); font-weight: 600; }
 
-  /* ---------------- Guided presentation emphasis (subtle, not hiding) ---------------- */
+  /* ---------------- Guided presentation emphasis ----------------
+     Highlights the panel(s) relevant to the current stage — nothing else
+     is dimmed or greyed out; every panel stays fully visible throughout. */
   .a6d[data-argus-dashboard] [data-emphasis-group] {
-    transition: opacity 0.3s var(--ease), filter 0.3s var(--ease);
+    transition: box-shadow 0.3s var(--ease);
   }
-  .a6d.is-wice-active [data-emphasis-group].is-emphasis-dim { opacity: 0.5; filter: saturate(0.65); }
   .a6d.is-wice-active [data-emphasis-group].is-emphasis-active { box-shadow: 0 0 0 1px var(--accent-line); border-radius: var(--radius-sm); }
   /* The fast-demo completion / e-stop banners have their own dedicated
      treatment inside the presentation control bar / info panel — avoid
