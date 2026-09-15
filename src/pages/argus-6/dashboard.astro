@@ -380,19 +380,24 @@ const plannedSystem = [
           <div class="panel a6d-quickcontrol">
             <h3 class="a6d-panel-title mono">Manual Control Preview</h3>
             <span class="a6d-demo-chip a6d-quickcontrol__flag">NOT CONNECTED TO ROBOT</span>
-            <div class="a6d-dpad">
-              <button type="button" class="a6d-dpad__btn a6d-dpad__btn--up" data-cmd-btn data-cmd="FORWARD" aria-label="Forward">↑</button>
-              <button type="button" class="a6d-dpad__btn a6d-dpad__btn--left" data-cmd-btn data-cmd="LEFT" aria-label="Left">←</button>
-              <button type="button" class="a6d-dpad__btn a6d-dpad__btn--stop" data-cmd-btn data-cmd="STOP" aria-label="Stop">STOP</button>
-              <button type="button" class="a6d-dpad__btn a6d-dpad__btn--right" data-cmd-btn data-cmd="RIGHT" aria-label="Right">→</button>
-              <button type="button" class="a6d-dpad__btn a6d-dpad__btn--down" data-cmd-btn data-cmd="BACKWARD" aria-label="Backward">↓</button>
+            <p class="a6d-quickcontrol__locked mono" data-quickcontrol-locked hidden>
+              AUTONOMOUS · Mission system has control authority
+            </p>
+            <div class="a6d-quickcontrol__body">
+              <div class="a6d-dpad">
+                <button type="button" class="a6d-dpad__btn a6d-dpad__btn--up" data-cmd-btn data-cmd="FORWARD" aria-label="Forward">↑</button>
+                <button type="button" class="a6d-dpad__btn a6d-dpad__btn--left" data-cmd-btn data-cmd="LEFT" aria-label="Left">←</button>
+                <button type="button" class="a6d-dpad__btn a6d-dpad__btn--stop" data-cmd-btn data-cmd="STOP" aria-label="Stop">STOP</button>
+                <button type="button" class="a6d-dpad__btn a6d-dpad__btn--right" data-cmd-btn data-cmd="RIGHT" aria-label="Right">→</button>
+                <button type="button" class="a6d-dpad__btn a6d-dpad__btn--down" data-cmd-btn data-cmd="BACKWARD" aria-label="Backward">↓</button>
+              </div>
+              <div class="a6d-turn-row">
+                <button type="button" class="btn" data-cmd-btn data-cmd="TURN LEFT">Turn Left</button>
+                <button type="button" class="btn" data-cmd-btn data-cmd="TURN RIGHT">Turn Right</button>
+                <button type="button" class="a6d-toggle-btn mono" data-flashlight-btn>Flashlight <span data-flashlight-state>OFF</span></button>
+              </div>
+              <p class="a6d-last-command mono">Last command: <span data-last-command>none</span></p>
             </div>
-            <div class="a6d-turn-row">
-              <button type="button" class="btn" data-cmd-btn data-cmd="TURN LEFT">Turn Left</button>
-              <button type="button" class="btn" data-cmd-btn data-cmd="TURN RIGHT">Turn Right</button>
-              <button type="button" class="a6d-toggle-btn mono" data-flashlight-btn>Flashlight <span data-flashlight-state>OFF</span></button>
-            </div>
-            <p class="a6d-last-command mono">Last command: <span data-last-command>none</span></p>
           </div>
         </div>
 
@@ -1202,14 +1207,25 @@ const plannedSystem = [
 
       // ---- mode ----
       const modeBtns = root.querySelectorAll<HTMLButtonElement>('[data-mode-btn]');
+      const manualControlButtons = root.querySelectorAll<HTMLButtonElement>(
+        '.a6d-quickcontrol [data-cmd-btn], .a6d-quickcontrol [data-flashlight-btn]'
+      );
+      const quickcontrolLocked = root.querySelector<HTMLElement>('[data-quickcontrol-locked]');
       const setMode = (mode: string) => {
         modeBtns.forEach((b) => {
           const active = b.dataset.mode === mode;
           b.classList.toggle('is-active', active);
           b.setAttribute('aria-pressed', String(active));
         });
-        root.classList.toggle('is-mode-autonomous', mode === 'autonomous');
+        const autonomous = mode === 'autonomous';
+        root.classList.toggle('is-mode-autonomous', autonomous);
         authorityCols.forEach((el) => el.classList.toggle('is-active-mode', el.dataset.authority === mode));
+        // In AUTONOMOUS mode the mission system has control authority, so
+        // the manual control preview goes greyed-out and unresponsive —
+        // real <button disabled> (not just CSS) so keyboard/AT users get
+        // the same "not available right now" state as pointer users.
+        manualControlButtons.forEach((b) => (b.disabled = autonomous));
+        if (quickcontrolLocked) quickcontrolLocked.hidden = !autonomous;
       };
       modeBtns.forEach((btn) => btn.addEventListener('click', () => setMode(btn.dataset.mode || 'manual')));
       setMode('manual');
@@ -1783,6 +1799,25 @@ const plannedSystem = [
   /* ---------------- Quick control ---------------- */
   .a6d-quickcontrol { padding: 1.1rem; }
   .a6d-quickcontrol__flag { display: inline-flex; margin-bottom: 1rem; }
+  /* AUTONOMOUS mode: the mission system has control authority, so the
+     manual controls read as unavailable — dimmed, and (via the real
+     `disabled` attribute set in JS) inert to click and keyboard alike. */
+  .a6d-quickcontrol__locked {
+    font-size: 0.68rem; letter-spacing: 0.06em; color: var(--accent);
+    margin-bottom: 1rem;
+  }
+  .a6d-quickcontrol__body {
+    transition: opacity 0.25s var(--ease);
+  }
+  .a6d.is-mode-autonomous .a6d-quickcontrol__body {
+    opacity: 0.4;
+  }
+  .a6d-dpad__btn:disabled,
+  .a6d-turn-row .btn:disabled,
+  .a6d-toggle-btn:disabled {
+    cursor: not-allowed;
+    pointer-events: none;
+  }
   .a6d-dpad { display: grid; grid-template-columns: repeat(3, 2.9rem); grid-template-rows: repeat(3, 2.9rem); gap: 0.35rem; justify-content: center; margin-bottom: 0.9rem; }
   .a6d-dpad__btn { border: 1px solid var(--border-strong); border-radius: var(--radius-sm); background: var(--surface-raised); color: var(--text); font-size: 1rem; transition: border-color 0.2s var(--ease), transform 0.15s var(--ease); }
   .a6d-dpad__btn:hover { border-color: var(--accent-line); }
