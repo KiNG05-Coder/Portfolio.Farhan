@@ -891,16 +891,17 @@ const structuralStats = [
   /* Evidence / media grid */
   .media-grid {
     display: grid;
-    gap: 1.25rem;
+    gap: 1.75rem;
   }
-  @media (min-width: 640px) {
+  @media (min-width: 700px) {
     .media-grid {
       grid-template-columns: repeat(2, 1fr);
+      gap: 2.25rem;
     }
-  }
-  @media (min-width: 1000px) {
-    .media-grid {
-      grid-template-columns: repeat(3, 1fr);
+    /* If the final slot is the odd one out, let it span the full width
+       as a featured tile instead of leaving a half-empty row. */
+    .media-grid > :last-child:nth-child(odd) {
+      grid-column: 1 / -1;
     }
   }
   .media-slot {
