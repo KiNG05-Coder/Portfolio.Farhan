@@ -24,6 +24,13 @@ export const mediaSlots: MediaSlot[] = [
     hint: 'The six-legged chassis with its ESP8266 control board and servo wiring.',
   },
   {
+    title: 'Full robot — with arm attached',
+    kind: 'photo',
+    src: '/assets/argus-6/evidence/full-robot.jpg',
+    ratio: '4 / 5',
+    hint: 'A top-down view of the complete assembled robot, with the arm and gripper attached.',
+  },
+  {
     title: 'Locomotion demonstration',
     kind: 'video',
     src: '/assets/argus-6/evidence/locomotion.mp4',
@@ -31,10 +38,10 @@ export const mediaSlots: MediaSlot[] = [
     hint: 'public/assets/argus-6/evidence/locomotion.mp4 — a clip of ARGUS-6 walking and turning.',
   },
   {
-    title: 'Robotic arm demonstration',
+    title: 'Robotic arm & gripper demonstration',
     kind: 'video',
     src: '/assets/argus-6/evidence/arm-demo.mp4',
-    ratio: '16 / 9',
-    hint: 'public/assets/argus-6/evidence/arm-demo.mp4 — the arm reaching and positioning toward an object.',
+    ratio: '464 / 832',
+    hint: 'The arm extending, rotating between positions and the gripper opening and closing.',
   },
 ];
