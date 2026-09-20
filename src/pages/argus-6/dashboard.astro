@@ -1,0 +1,2417 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import SectionHeading from '../../components/SectionHeading.astro';
+import StatusBadge from '../../components/StatusBadge.astro';
+import Callout from '../../components/Callout.astro';
+import Pipeline from '../../components/Pipeline.astro';
+import { link } from '../../lib/link';
+
+const sections = [
+  ['command', 'Command Center'],
+  ['authority', 'Control Authority'],
+  ['autonomy', 'Autonomy Stack'],
+  ['replay', 'Mission Replay'],
+  ['health', 'System Health'],
+  ['safety', 'Safety'],
+  ['fit', 'Architecture Fit'],
+  ['controller', 'Controller Mapping'],
+  ['status-table', 'Implementation Status'],
+  ['comparison', 'Today vs. Planned'],
+];
+
+// Server-rendered scaffolding only — the rich per-state behaviour (camera,
+// map, digital twin, decision trace, autonomy highlight, log lines) lives in
+// the client-side state machine below. This array just gives the timeline /
+// replay strip something to render before JS runs.
+const missionSequence = [
+  ['idle', 'IDLE'],
+  ['detect', 'DETECT'],
+  ['target_lock', 'TARGET LOCK'],
+  ['approach', 'APPROACH'],
+  ['align', 'ALIGN'],
+  ['stop', 'STOP'],
+  ['grab', 'GRAB'],
+  ['verify', 'VERIFY'],
+  ['deposit', 'DEPOSIT'],
+  ['arm_default', 'ARM DEFAULT'],
+  ['return_to_base', 'RETURN TO BASE'],
+  ['complete', 'COMPLETE'],
+];
+
+const autonomyStackNodes: [string, string][] = [
+  ['usb_camera', 'USB Camera'],
+  ['yolo', 'YOLO26n'],
+  ['perception', 'Perception'],
+  ['target_manager', 'Target Manager'],
+  ['mission_manager', 'Mission Manager'],
+  ['navigation', 'Navigation'],
+  ['ros2', 'ROS 2'],
+  ['pi', 'Raspberry Pi'],
+  ['serial', 'Serial Bridge'],
+  ['esp8266', 'ESP8266'],
+  ['ik_gait', 'IK + Gait'],
+  ['servos', 'Servos'],
+];
+
+const healthComponents = [
+  { name: 'Raspberry Pi 4', state: 'ONLINE', tone: 'ok' },
+  { name: 'ESP8266', state: 'ONLINE', tone: 'ok' },
+  { name: 'USB Camera', state: 'CONNECTED', tone: 'ok' },
+  { name: 'NEO-M8N GPS', state: 'CONNECTED', tone: 'ok' },
+  { name: 'MPU6050 IMU', state: 'CONNECTED', tone: 'ok' },
+  { name: 'Light Sensor (BH1750)', state: 'CONNECTED', tone: 'ok' },
+  { name: 'ROS 2', state: 'RUNNING', tone: 'ok' },
+  { name: 'SQLite', state: 'READY', tone: 'ok' },
+  { name: 'FastAPI', state: 'RUNNING', tone: 'ok' },
+];
+
+const implementationStatus: [string, string][] = [
+  ['Dashboard UI', 'Concept'],
+  ['Raspberry Pi autonomy stack', 'Planned'],
+  ['FastAPI', 'Planned'],
+  ['WebSocket telemetry', 'Planned'],
+  ['ROS 2 integration', 'Planned'],
+  ['Live camera', 'Planned'],
+  ['AI telemetry', 'Planned'],
+  ['Mission control', 'Planned'],
+  ['Manual controller integration', 'Planned'],
+];
+
+const builtToday = [
+  'Six-legged locomotion',
+  '18 × TD-8120MG servos (2 × PCA9685)',
+  'IK / gait system',
+  'Robotic arm',
+  'Two-finger gripper',
+  'Manual operation',
+  'ESP8266 low-level control',
+];
+
+const plannedSystem = [
+  'Raspberry Pi 4 autonomy stack',
+  'ROS 2',
+  'YOLO26n perception',
+  'Object detection / tracking',
+  'Person detection & incident alerts',
+  'GPS/IMU localization',
+  'Autonomous navigation',
+  'Target management',
+  'Mission management',
+  'Web dashboard',
+  'Pi ↔ ESP8266 integration',
+  'Automatic lighting',
+];
+---
+
+<BaseLayout
+  title="ARGUS-6 Mission Control — Concept Simulation | Farhan Saif"
+  description="An interactive concept simulation of the planned ARGUS-6 autonomous mission-control dashboard — AI perception, navigation, target locking, mission management and system health, with no connection to the physical robot."
+  path="/argus-6/dashboard"
+>
+  <div class="a6d" data-argus-dashboard>
+    {/* ---------------- COMPACT PERSISTENT BANNER ---------------- */}
+    <div class="a6d-banner">
+      <div class="container a6d-banner__inner">
+        <span class="a6d-banner__dot" aria-hidden="true"></span>
+        <span class="mono">CONCEPT SIMULATION · NO ROBOT CONNECTION</span>
+      </div>
+    </div>
+
+    {/* ---------------- HERO ---------------- */}
+    <section class="a6d-hero">
+      <span class="grid-bg" aria-hidden="true" data-parallax="0.14"></span>
+      <div class="container a6d-hero__inner">
+        <p class="eyebrow" data-reveal>ARGUS-6 · Interface Concept</p>
+        <h1 class="a6d-hero__title" data-reveal>ARGUS-6 Mission Control</h1>
+        <p class="a6d-hero__desc" data-reveal>
+          A simulated operator dashboard for the planned ARGUS-6 autonomy
+          stack. Press <strong>Run Autonomous Demo</strong> below and watch
+          perception, navigation, the robot and the mission log move as one
+          system — all of it simulated, none of it connected to hardware.
+        </p>
+        <div class="a6d-hero__links" data-reveal>
+          <a class="btn btn--primary" href={link('/argus-6')}>
+            View physical prototype <span class="arrow" aria-hidden="true">→</span>
+          </a>
+          <a class="btn" href={link('/documentation')}>Documentation</a>
+        </div>
+      </div>
+    </section>
+
+    {/* ---------------- ON-PAGE NAV ---------------- */}
+    <nav class="a6d-toc" aria-label="Dashboard sections" data-toc>
+      <div class="container">
+        <span class="a6d-toc__label mono">Sections</span>
+        <ul class="scroll-x" data-toc-list>
+          {sections.map(([id, label]) => <li><a href={`#${id}`} class="mono">{label}</a></li>)}
+        </ul>
+        <button
+          type="button"
+          class="a6d-toc__toggle"
+          data-toc-toggle
+          aria-expanded="true"
+          aria-label="Collapse section navigation"
+          title="Collapse section navigation"
+        >
+          <span class="a6d-toc__toggle-icon" aria-hidden="true">▾</span>
+        </button>
+      </div>
+    </nav>
+
+    {/* ================================================================
+        COMMAND CENTER — everything above the fold, one cohesive grid
+        driven by the client-side mission state machine.
+        ================================================================ */}
+    <section class="section a6d-command" id="command">
+      <div class="container a6d-command__container">
+
+        {/* ---- Top status / control bar ---- */}
+        <div class="a6d-statusbar panel">
+          <div class="a6d-statusbar__id">
+            <span class="a6d-statusbar__name mono">ARGUS-6</span>
+            <span class="a6d-statusbar__task mono">Environmental Cleanup</span>
+          </div>
+
+          <span class="a6d-statusbar__flag mono">
+            <span class="a6d-statusbar__flag-dot" aria-hidden="true"></span>
+            CONCEPT SIMULATION
+          </span>
+
+          <div class="a6d-mode-select" role="group" aria-label="Operating mode (simulated)">
+            <button type="button" class="a6d-mode-btn is-active" data-mode-btn data-mode="manual" aria-pressed="true">Manual</button>
+            <button type="button" class="a6d-mode-btn" data-mode-btn data-mode="autonomous" aria-pressed="false">Autonomous</button>
+          </div>
+
+          <div class="a6d-demo-actions">
+            <button type="button" class="btn btn--primary a6d-run-btn" data-run-demo>▶ Run Autonomous Demo</button>
+            <button type="button" class="btn a6d-wice-btn" data-run-wice>WICE Demo Mode</button>
+          </div>
+
+          <button type="button" class="a6d-stop-btn mono" data-stop-btn>STOP</button>
+        </div>
+
+        {/* ---- Guided WICE Presentation control bar (hidden unless presentation mode is active) ----
+             This is a dashboard playback/presentation mode only — it does not add a third robot
+             operating mode. The robot stays MANUAL / AUTONOMOUS; this bar just steps a presenter
+             through the same centralized mission state used everywhere else on the page. */}
+        <div class="a6d-wice-bar panel" data-wice-bar hidden>
+          <div class="a6d-wice-bar__top">
+            <span class="a6d-wice-bar__label mono">WICE DEMO</span>
+            <span class="a6d-wice-bar__guided mono"><span class="a6d-wice-bar__dot" aria-hidden="true"></span>GUIDED</span>
+            <button type="button" class="a6d-wice-ctrl a6d-wice-ctrl--notes" data-wice-notes-toggle aria-expanded="false">Presenter Notes</button>
+          </div>
+
+          <div class="a6d-wice-bar__controls">
+            <button type="button" class="a6d-wice-ctrl" data-wice-prev aria-label="Previous stage">← Previous Stage</button>
+            <button type="button" class="a6d-wice-ctrl" data-wice-play aria-label="Play current stage">▶ Play Stage</button>
+            <button type="button" class="a6d-wice-ctrl" data-wice-pause aria-label="Pause">⏸ Pause</button>
+            <button type="button" class="a6d-wice-ctrl a6d-wice-ctrl--primary" data-wice-next aria-label="Next stage">Next Stage →</button>
+            <span class="a6d-wice-bar__spacer" aria-hidden="true"></span>
+            <button type="button" class="a6d-wice-ctrl" data-wice-restart aria-label="Restart presentation">↻ Restart</button>
+            <button type="button" class="a6d-wice-ctrl" data-wice-exit aria-label="Exit guided presentation">Exit WICE</button>
+          </div>
+
+          <p class="a6d-wice-bar__stage mono">
+            Stage <span data-wice-stage-num>1</span> of <span data-wice-stage-total>14</span>
+            <span class="a6d-wice-bar__stage-title" data-wice-stage-title>OVERVIEW</span>
+          </p>
+
+          <div class="a6d-wice-notes" data-wice-notes hidden>
+            <span class="a6d-wice-notes__label mono">Presenter Notes</span>
+            <p class="a6d-wice-notes__text" data-wice-notes-text>—</p>
+            <button type="button" class="a6d-wice-ctrl" data-wice-notes-hide>Hide Notes</button>
+          </div>
+        </div>
+
+        {/* ---- Guided WICE Presentation — stage information panel ---- */}
+        <div class="a6d-wice-info panel" data-wice-info hidden aria-live="polite">
+          <span class="a6d-wice-info__eyebrow mono">WICE DEMO</span>
+          <p class="a6d-wice-info__stage mono">STAGE <span data-wice-info-num>1</span> / <span data-wice-info-total>14</span></p>
+          <h3 class="a6d-wice-info__title" data-wice-info-title>OVERVIEW</h3>
+          <div class="a6d-wice-info__row">
+            <span class="a6d-wice-info__key mono">Current State</span>
+            <p data-wice-info-current>—</p>
+          </div>
+          <div class="a6d-wice-info__row">
+            <span class="a6d-wice-info__key mono">Key Concept</span>
+            <p data-wice-info-concept>—</p>
+          </div>
+          <button type="button" class="btn btn--primary a6d-wice-info__next" data-wice-info-next>Next Stage →</button>
+        </div>
+
+        <p class="a6d-microcaveat mono">All panels below are driven by one simulated mission state — nothing here reads from live hardware.</p>
+
+        {/* ---- Camera + Map ---- */}
+        <div class="a6d-grid-2 a6d-grid-2--camera">
+          <div class="a6d-camera panel" id="camera" data-emphasis-group="perception">
+            <div class="a6d-camera__viewport">
+              <span class="a6d-camera__scanlines" aria-hidden="true"></span>
+              <span class="a6d-camera__vignette" aria-hidden="true"></span>
+              <span class="a6d-camera__horizon" aria-hidden="true"></span>
+
+              <span class="a6d-camera__corner a6d-camera__corner--tl" aria-hidden="true"></span>
+              <span class="a6d-camera__corner a6d-camera__corner--tr" aria-hidden="true"></span>
+              <span class="a6d-camera__corner a6d-camera__corner--bl" aria-hidden="true"></span>
+              <span class="a6d-camera__corner a6d-camera__corner--br" aria-hidden="true"></span>
+
+              <span class="a6d-camera__tag mono">● AI CAMERA <span class="a6d-demo-chip">SIM</span></span>
+
+              <div class="a6d-camera__standby mono" data-cam-standby>STANDBY — press Run Autonomous Demo</div>
+              <div class="a6d-camera__complete mono" data-cam-complete hidden>MISSION COMPLETE</div>
+
+              <div class="a6d-bbox" data-bbox="t01" hidden><span class="a6d-bbox__label mono">CAN <b>0.82</b> · ID 01</span></div>
+              <div class="a6d-bbox" data-bbox="t02" hidden><span class="a6d-bbox__label mono">CONTAINER <b>0.85</b> · ID 02</span></div>
+              <div class="a6d-bbox" data-bbox="t03" hidden><span class="a6d-bbox__label mono">CAN <b>0.79</b> · ID 03</span></div>
+              <div class="a6d-bbox a6d-bbox--primary" data-bbox="t04" hidden>
+                <span class="a6d-bbox__label mono">PLASTIC_BOTTLE <b>0.91</b> · ID 04</span>
+                <span class="a6d-bbox__status mono" data-bbox-status></span>
+              </div>
+              <div class="a6d-bbox a6d-bbox--person" data-bbox="person" hidden><span class="a6d-bbox__label mono">PERSON <b>0.96</b> · ID P07</span></div>
+
+              <div class="a6d-camera__readout mono">
+                <span>FPS <b data-cam-fps>—</b></span>
+                <span>MODEL <b>YOLO26n</b></span>
+              </div>
+            </div>
+          </div>
+
+          <div class="a6d-map panel" id="map" data-emphasis-group="navigation">
+            <span class="a6d-demo-chip a6d-map__tag">SIM · LIVE MAP</span>
+            <svg viewBox="0 0 400 260" class="a6d-map__svg" role="img" aria-label="Simulated map of ARGUS-6's position, route, targets and mission boundary">
+              <defs>
+                <pattern id="a6d-grid" width="20" height="20" patternUnits="userSpaceOnUse">
+                  <path d="M 20 0 L 0 0 0 20" fill="none" stroke="rgba(255,255,255,0.05)" stroke-width="1"/>
+                </pattern>
+              </defs>
+              <rect width="400" height="260" fill="url(#a6d-grid)" />
+              <polygon points="20,20 380,20 380,240 20,240" fill="none" stroke="rgba(255,255,255,0.16)" stroke-width="1.5" stroke-dasharray="6 5" />
+
+              <path data-route-out d="M 60 210 C 120 170, 140 120, 190 100 S 280 70, 320 50" fill="none" stroke="#5b9dff" stroke-width="2.5" pathLength="1" stroke-dasharray="1" stroke-dashoffset="1" stroke-linecap="round" />
+              <path data-route-back d="M 320 50 S 140 120, 60 210" fill="none" stroke="#3fb950" stroke-width="2.5" pathLength="1" stroke-dasharray="1" stroke-dashoffset="1" stroke-linecap="round" />
+              <path d="M 60 210 C 120 170, 140 120, 190 100 S 280 70, 320 50" fill="none" stroke="rgba(255,255,255,0.12)" stroke-width="1.5" stroke-dasharray="1 6" stroke-linecap="round" />
+
+              <circle cx="120" cy="170" r="4" fill="#8b949e" />
+              <circle cx="190" cy="100" r="4" fill="#8b949e" />
+              <circle cx="280" cy="70" r="4" fill="#8b949e" />
+
+              <g data-map-target="t01" transform="translate(230,196)"><circle r="7" fill="rgba(139,148,158,0.18)" /><circle r="3.5" fill="#8b949e" /></g>
+              <g data-map-target="t02" transform="translate(255,175)"><circle r="7" fill="rgba(139,148,158,0.18)" /><circle r="3.5" fill="#8b949e" /></g>
+              <g data-map-target="t03" transform="translate(150,150)"><circle r="7" fill="rgba(139,148,158,0.18)" /><circle r="3.5" fill="#8b949e" /></g>
+              <g data-map-target="t04" transform="translate(320,50)">
+                <circle r="10" fill="rgba(63,185,80,0.18)" data-map-target-ring />
+                <circle r="4" fill="#3fb950" />
+                <text x="13" y="4" class="a6d-map__label" fill="#9aa2ad">T04</text>
+              </g>
+
+              <g transform="translate(60,210)">
+                <rect x="-9" y="-9" width="18" height="18" rx="3" fill="#171b22" stroke="#5b9dff" stroke-width="1.5" />
+                <text x="15" y="4" class="a6d-map__label" fill="#9aa2ad">BASE</text>
+              </g>
+
+              <g data-map-robot transform="translate(60,210) rotate(-35)">
+                <polygon points="0,-11 8,9 0,4 -8,9" fill="#5b9dff" stroke="#0a0f18" stroke-width="1" />
+              </g>
+            </svg>
+            <ul class="a6d-map-legend">
+              <li><span class="a6d-legend-swatch" style="background:#5b9dff"></span>ARGUS-6</li>
+              <li><span class="a6d-legend-swatch a6d-legend-swatch--ring" style="border-color:#3fb950"></span>Locked target</li>
+              <li><span class="a6d-legend-swatch a6d-legend-swatch--square"></span>Base (onboard bin travels with the robot)</li>
+              <li><span class="a6d-legend-swatch a6d-legend-swatch--dash"></span>Mission boundary</li>
+            </ul>
+          </div>
+        </div>
+
+        {/* ---- Target/Decision + Digital Twin ---- */}
+        <div class="a6d-grid-2">
+          <div class="panel a6d-target-panel" id="target" data-emphasis-group="targeting">
+            <div class="a6d-target-panel__head">
+              <h3 class="a6d-panel-title mono">Target Manager</h3>
+              <span class="a6d-demo-chip">SIM</span>
+            </div>
+            <p class="a6d-target-status mono" data-target-summary>SEARCHING FOR TARGET</p>
+
+            <div class="a6d-target-candidates" data-target-candidates hidden>
+              <p class="a6d-panel-subtitle mono">Target Candidates</p>
+              <ul class="a6d-candidate-list" data-candidate-list>
+                <li data-candidate="t01"><span class="mono">ID 01</span><span>CAN</span><span class="mono">82%</span></li>
+                <li data-candidate="t02"><span class="mono">ID 02</span><span>CONTAINER</span><span class="mono">85%</span></li>
+                <li data-candidate="t03"><span class="mono">ID 03</span><span>CAN</span><span class="mono">79%</span></li>
+                <li data-candidate="t04"><span class="mono">ID 04</span><span>PLASTIC BOTTLE</span><span class="mono">91%</span></li>
+              </ul>
+            </div>
+
+            <dl class="a6d-metric-grid a6d-metric-grid--wide" data-target-detail hidden>
+              <div><dt class="mono">Candidates</dt><dd class="mono">4</dd></div>
+              <div><dt class="mono">Confidence</dt><dd class="mono">91%</dd></div>
+              <div><dt class="mono">Position</dt><dd class="mono">Right</dd></div>
+              <div><dt class="mono">Status</dt><dd class="mono" data-target-lock-status>WAITING</dd></div>
+            </dl>
+
+            <h4 class="a6d-panel-subtitle mono">Why did ARGUS-6 choose this target?</h4>
+            <dl class="a6d-decision-trace mono" data-decision-trace>
+              <div class="a6d-decision-trace__idle" data-decision-idle>Awaiting perception input.</div>
+            </dl>
+          </div>
+
+          <div class="panel a6d-twin-panel" id="twin" data-emphasis-group="navigation collection">
+            <div class="a6d-twin-panel__head">
+              <h3 class="a6d-panel-title mono">ARGUS-6 Digital Twin</h3>
+              <span class="a6d-demo-chip">SIM</span>
+            </div>
+            <div class="a6d-twin" data-twin>
+              <svg viewBox="0 0 220 170" class="a6d-twin__svg" role="img" aria-label="Schematic top-down view of the ARGUS-6 hexapod, showing six legs, the body, and the robotic arm">
+                <g class="a6d-twin__legs">
+                  {[
+                    { leg: 'l1', hip: [88, 76], knee: [55, 62], foot: [28, 50] },
+                    { leg: 'l2', hip: [88, 85], knee: [50, 85], foot: [18, 85] },
+                    { leg: 'l3', hip: [88, 94], knee: [55, 108], foot: [28, 120] },
+                    { leg: 'r1', hip: [132, 76], knee: [165, 62], foot: [192, 50] },
+                    { leg: 'r2', hip: [132, 85], knee: [170, 85], foot: [202, 85] },
+                    { leg: 'r3', hip: [132, 94], knee: [165, 108], foot: [192, 120] },
+                  ].map(({ leg, hip, knee, foot }) => (
+                    <g class:list={['a6d-twin__leg', `a6d-twin__leg--${leg}`]} data-leg={leg}>
+                      <path class="a6d-twin__thigh" d={`M ${hip[0]} ${hip[1]} L ${knee[0]} ${knee[1]}`} />
+                      <path class="a6d-twin__shin" d={`M ${knee[0]} ${knee[1]} L ${foot[0]} ${foot[1]}`} />
+                      <circle class="a6d-twin__foot" cx={foot[0]} cy={foot[1]} r="3" />
+                    </g>
+                  ))}
+                </g>
+                <rect class="a6d-twin__body" x="88" y="70" width="44" height="30" rx="8" />
+                <g class="a6d-twin__arm" data-twin-arm>
+                  <path class="a6d-twin__arm-upper" d="M 118 78 L 140 62" />
+                  <path class="a6d-twin__arm-lower" d="M 140 62 L 156 48" />
+                  <g class="a6d-twin__gripper" data-twin-gripper transform="translate(156,48)">
+                    <path class="a6d-twin__gripper-finger a6d-twin__gripper-finger--a" d="M 0 0 L 8 -5" />
+                    <path class="a6d-twin__gripper-finger a6d-twin__gripper-finger--b" d="M 0 0 L 8 5" />
+                  </g>
+                </g>
+                <polygon class="a6d-twin__heading" points="110,58 116,70 110,66 104,70" />
+              </svg>
+            </div>
+            <dl class="a6d-metric-grid a6d-metric-grid--wide">
+              <div><dt class="mono">Leg servos</dt><dd class="mono">18/18</dd></div>
+              <div><dt class="mono">Arm</dt><dd class="mono" data-twin-arm-value>DEFAULT</dd></div>
+              <div><dt class="mono">Gripper</dt><dd class="mono" data-twin-gripper-value>OPEN</dd></div>
+              <div><dt class="mono">Movement</dt><dd class="mono" data-twin-movement-value>IDLE</dd></div>
+            </dl>
+          </div>
+        </div>
+
+        {/* ---- Mission timeline ---- */}
+        <div class="panel a6d-timeline-panel" id="mission" data-emphasis-group="collection">
+          <div class="a6d-timeline-panel__head">
+            <h3 class="a6d-panel-title mono">Autonomous Mission</h3>
+            <span class="a6d-mission-label mono" data-mission-label>MISSION READY — awaiting demo start</span>
+          </div>
+          <ol class="a6d-state-machine scroll-x" data-mission-timeline>
+            {missionSequence.map(([id, label], i) => (
+              <li class:list={['a6d-state', { 'is-current': i === 0 }]} data-state-item data-state-id={id}>
+                <span class="a6d-state__num mono">{String(i + 1).padStart(2, '0')}</span>
+                <span class="a6d-state__label mono">{label}</span>
+              </li>
+            ))}
+          </ol>
+        </div>
+
+        {/* ---- Event log + quick control ---- */}
+        <div class="a6d-grid-2 a6d-grid-2--log">
+          <div class="panel a6d-log" id="log">
+            <div class="a6d-log__head">
+              <h3 class="a6d-panel-title mono">Event Log</h3>
+              <span class="a6d-demo-chip">SIMULATED</span>
+            </div>
+            <ul class="a6d-log__list" data-event-log>
+              <li><span class="a6d-log__time mono">—</span><span class="a6d-log__msg">SYSTEM READY · Press Run Autonomous Demo to begin.</span></li>
+            </ul>
+          </div>
+
+          <div class="panel a6d-quickcontrol">
+            <h3 class="a6d-panel-title mono">Manual Control Preview</h3>
+            <span class="a6d-demo-chip a6d-quickcontrol__flag">NOT CONNECTED TO ROBOT</span>
+            <p class="a6d-quickcontrol__locked mono" data-quickcontrol-locked hidden>
+              AUTONOMOUS · Mission system has control authority
+            </p>
+            <div class="a6d-quickcontrol__body">
+              <div class="a6d-dpad">
+                <button type="button" class="a6d-dpad__btn a6d-dpad__btn--up" data-cmd-btn data-cmd="FORWARD" aria-label="Forward">↑</button>
+                <button type="button" class="a6d-dpad__btn a6d-dpad__btn--left" data-cmd-btn data-cmd="LEFT" aria-label="Left">←</button>
+                <button type="button" class="a6d-dpad__btn a6d-dpad__btn--stop" data-cmd-btn data-cmd="STOP" aria-label="Stop">STOP</button>
+                <button type="button" class="a6d-dpad__btn a6d-dpad__btn--right" data-cmd-btn data-cmd="RIGHT" aria-label="Right">→</button>
+                <button type="button" class="a6d-dpad__btn a6d-dpad__btn--down" data-cmd-btn data-cmd="BACKWARD" aria-label="Backward">↓</button>
+              </div>
+              <div class="a6d-turn-row">
+                <button type="button" class="btn" data-cmd-btn data-cmd="TURN LEFT">Turn Left</button>
+                <button type="button" class="btn" data-cmd-btn data-cmd="TURN RIGHT">Turn Right</button>
+                <button type="button" class="a6d-toggle-btn mono" data-flashlight-btn>Flashlight <span data-flashlight-state>OFF</span></button>
+              </div>
+              <p class="a6d-last-command mono">Last command: <span data-last-command>none</span></p>
+            </div>
+          </div>
+        </div>
+
+        {/* ---- Completion banner ---- */}
+        <div class="a6d-complete-banner panel" data-complete-banner hidden>
+          <div>
+            <span class="a6d-complete-banner__tag mono">MISSION COMPLETE</span>
+            <p>Target 04 collected, stowed in the onboard bin, and ARGUS-6 returned to base. This was a simulated run — no physical robot moved.</p>
+          </div>
+          <div class="a6d-complete-banner__actions">
+            <button type="button" class="btn btn--primary" data-run-again>Run Again</button>
+            <button type="button" class="btn" data-reset-demo>Reset Demo</button>
+          </div>
+        </div>
+
+        {/* ---- Emergency stop banner ---- */}
+        <div class="a6d-estop-banner panel" data-estop-banner hidden>
+          <div>
+            <span class="a6d-estop-banner__tag mono">EMERGENCY STOP</span>
+            <p>Demo halted by operator. No signal was sent to any hardware.</p>
+          </div>
+          <button type="button" class="btn" data-reset-demo>Reset</button>
+        </div>
+      </div>
+    </section>
+
+    {/* ---------------- PERSON ALERT (fixed, slides in from left) ---------------- */}
+    <div class="a6d-alert" data-alert-panel hidden aria-live="polite">
+      <div class="a6d-alert__head">
+        <span class="a6d-alert__tag mono">⚠ PERSON DETECTED</span>
+        <button type="button" class="a6d-alert__close" data-alert-dismiss aria-label="Dismiss alert">✕</button>
+      </div>
+      <p class="a6d-alert__body">Incident detected in camera view.</p>
+      <dl class="a6d-alert__meta">
+        <div><dt class="mono">Confidence</dt><dd class="mono" data-alert-confidence>96%</dd></div>
+        <div><dt class="mono">Tracking ID</dt><dd class="mono">P07</dd></div>
+        <div><dt class="mono">GPS <span class="a6d-alert__sim">SIM</span></dt><dd class="mono" data-alert-gps>—</dd></div>
+        <div><dt class="mono">Time</dt><dd class="mono" data-alert-time>—</dd></div>
+      </dl>
+      <span class="a6d-demo-chip">PLANNED AI INCIDENT ALERT</span>
+      <audio data-alert-sound preload="none">
+        <source src={link('/assets/argus-6/person-alert.mp3')} type="audio/mpeg" />
+      </audio>
+    </div>
+
+    {/* ---------------- CONTROL AUTHORITY ---------------- */}
+    <section class="section band a6d-section" id="authority">
+      <div class="container">
+        <SectionHeading
+          eyebrow="Safety & Control"
+          title="Control Authority"
+          lead="Who is allowed to command ARGUS-6 right now. The active path below follows the mode selected above — this is a diagram of the planned architecture, not a live control link."
+        />
+        <div class="a6d-grid-2">
+          <div class="panel a6d-authority-col" data-authority="manual">
+            <span class="a6d-authority-col__label mono">Manual</span>
+            <ol class="a6d-authority-chain">
+              <li data-authority-node="controller">Controller</li>
+              <li data-authority-node="dashboard">Dashboard Action</li>
+              <li data-authority-node="safety_layer">Safety Layer</li>
+              <li data-authority-node="esp8266">ESP8266</li>
+              <li data-authority-node="robot">Robot</li>
+            </ol>
+          </div>
+          <div class="panel a6d-authority-col" data-authority="autonomous">
+            <span class="a6d-authority-col__label mono">Autonomous</span>
+            <ol class="a6d-authority-chain">
+              <li data-authority-node="perception">Perception</li>
+              <li data-authority-node="target_manager">Target Manager</li>
+              <li data-authority-node="mission_manager">Mission Manager</li>
+              <li data-authority-node="navigation">Navigation</li>
+              <li data-authority-node="safety_layer">Safety Layer</li>
+              <li data-authority-node="esp8266">ESP8266</li>
+              <li data-authority-node="robot">Robot</li>
+            </ol>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    {/* ---------------- AUTONOMY STACK ---------------- */}
+    <section class="section a6d-section" id="autonomy" data-emphasis-group="architecture">
+      <div class="container">
+        <SectionHeading
+          eyebrow="System Design"
+          title="Autonomy Stack"
+          lead="The planned data path from camera to servos. During a demo run, the layer currently doing work is highlighted."
+        />
+        <ol class="a6d-autonomy-stack" data-autonomy-stack>
+          {autonomyStackNodes.map(([id, label]) => (
+            <li data-autonomy-node={id}>
+              <span class="a6d-autonomy-stack__label mono">{label}</span>
+            </li>
+          ))}
+        </ol>
+      </div>
+    </section>
+
+    {/* ---------------- MISSION REPLAY ---------------- */}
+    <section class="section band a6d-section" id="replay">
+      <div class="container">
+        <SectionHeading
+          eyebrow="Review"
+          title="Mission Replay"
+          lead="After a run finishes, click any stage to inspect the dashboard state at that point in the mission."
+        />
+        <ol class="a6d-replay-track scroll-x" data-replay-track>
+          {missionSequence.map(([id, label]) => (
+            <li>
+              <button type="button" class="a6d-replay-dot" data-replay-btn data-state-id={id} disabled>
+                <span class="a6d-replay-dot__marker" aria-hidden="true"></span>
+                <span class="mono">{label}</span>
+              </button>
+            </li>
+          ))}
+        </ol>
+        <button type="button" class="btn a6d-replay-run" data-replay-run disabled>Replay Mission</button>
+        <p class="a6d-replay-note text-muted">Replay unlocks once a demo run has completed.</p>
+      </div>
+    </section>
+
+    {/* ---------------- SYSTEM HEALTH ---------------- */}
+    <section class="section a6d-section" id="health">
+      <div class="container">
+        <SectionHeading
+          eyebrow="System Health"
+          title="Planned Raspberry Pi System"
+          lead="Component states the operator dashboard is designed to surface once the software stack exists."
+        />
+        <div class="two-col two-col--wide-left">
+          <ul class="a6d-health-list panel" data-reveal>
+            {healthComponents.map((c) => (
+              <li class="a6d-health-row">
+                <span class="a6d-health-dot" aria-hidden="true"></span>
+                <span class="a6d-health-name">{c.name}</span>
+                <span class="a6d-health-state mono">{c.state} — SIM</span>
+              </li>
+            ))}
+          </ul>
+          <div class="panel a6d-lighting" data-reveal>
+            <span class="a6d-demo-chip">PLANNED LIGHTING SYSTEM</span>
+            <dl class="a6d-metric-grid">
+              <div><dt class="mono">Ambient</dt><dd class="mono">18 lux</dd></div>
+              <div><dt class="mono">Automatic lighting</dt><dd class="mono" data-lighting-value>OFF</dd></div>
+            </dl>
+            <Pipeline
+              label="Planned lighting pipeline"
+              variant="stack"
+              compact
+              steps={['BH1750 sensor', 'Raspberry Pi', 'Lighting decision', 'MOSFET driver', 'High-power flashlight']}
+            />
+            <Callout>
+              <p>The flashlight is planned to be driven through a MOSFET/driver stage, not directly from Raspberry Pi GPIO.</p>
+            </Callout>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    {/* ---------------- SAFETY ---------------- */}
+    <section class="section band a6d-section" id="safety">
+      <div class="container">
+        <SectionHeading
+          eyebrow="Safety"
+          title="Planned Safety Architecture"
+          lead="The same STOP authority shown in the command center above, described as a system."
+        />
+        <div class="two-col two-col--wide-left">
+          <div class="panel a6d-safety-card" data-reveal>
+            <button type="button" class="a6d-estop-btn mono" data-stop-btn>E-STOP · STOP ROBOT</button>
+            <dl class="a6d-metric-grid">
+              <div><dt class="mono">Comm. heartbeat</dt><dd class="mono">Simulated</dd></div>
+              <div><dt class="mono">Command timeout</dt><dd class="mono">500 ms</dd></div>
+            </dl>
+          </div>
+          <div>
+            <Pipeline
+              label="Safety authority chain"
+              variant="stack"
+              steps={['Operator', 'Safety Layer', 'High-Level Pi', 'ESP8266', 'Actuators']}
+            />
+            <Callout title="Planned behaviour">
+              <p>
+                The planned safety architecture gives the low-level controller
+                authority to stop motion when communication or command
+                validity fails.
+              </p>
+            </Callout>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    {/* ---------------- ARCHITECTURE FIT ---------------- */}
+    <section class="section a6d-section" id="fit">
+      <div class="container">
+        <SectionHeading
+          eyebrow="System Design"
+          title="How the Dashboard Fits Into ARGUS-6"
+          lead="The dashboard is one layer in the larger planned system — it does not talk to servos directly."
+        />
+        <Pipeline
+          label="Dashboard architecture"
+          variant="stack"
+          steps={[
+            'Browser',
+            'FastAPI + WebSocket',
+            'ROS 2',
+            'Mission / Navigation / Perception',
+            'ESP8266 Bridge',
+            'ESP8266',
+            'IK + Gait + Servo Control',
+          ]}
+        />
+        <div class="prose prose--wide" data-reveal>
+          <p>
+            The planned dashboard will act as the operator-facing layer of
+            ARGUS-6. It will provide telemetry, perception, mission state,
+            manual control and system health without directly exposing servo
+            control to the browser.
+          </p>
+        </div>
+      </div>
+    </section>
+
+    {/* ---------------- CONTROLLER MAPPING ---------------- */}
+    <section class="section band a6d-section" id="controller">
+      <div class="container">
+        <SectionHeading
+          eyebrow="Manual Control"
+          title="Planned Physical Controller Mapping"
+          lead="A handheld controller is planned to trigger the same dashboard actions shown above, rather than opening a separate control path to the robot."
+        />
+        <div class="a6d-controller-grid stagger">
+          <div class="panel a6d-controller-card" data-reveal><span class="a6d-controller-card__key mono">LEFT JOYSTICK</span><p>Robot movement</p></div>
+          <div class="panel a6d-controller-card" data-reveal><span class="a6d-controller-card__key mono">RIGHT JOYSTICK</span><p>Robotic arm</p></div>
+          <div class="panel a6d-controller-card" data-reveal><span class="a6d-controller-card__key mono">□</span><p>Grab / Release</p></div>
+          <div class="panel a6d-controller-card" data-reveal><span class="a6d-controller-card__key mono">△</span><p>Flashlight toggle</p></div>
+          <div class="panel a6d-controller-card" data-reveal><span class="a6d-controller-card__key mono">STOP</span><p>Immediate stop</p></div>
+        </div>
+      </div>
+    </section>
+
+    {/* ---------------- IMPLEMENTATION STATUS ---------------- */}
+    <section class="section a6d-section" id="status-table">
+      <div class="container">
+        <SectionHeading
+          eyebrow="Honesty"
+          title="Implementation Status"
+          lead="What exists today versus what this page previews. Kept in one place so nothing here is mistaken for a working system."
+        />
+        <ul class="a6d-status-table panel" data-reveal>
+          {implementationStatus.map(([label, status]) => (
+            <li>
+              <span class="a6d-status-table__label">{label}</span>
+              <StatusBadge status={status === 'Concept' ? 'in-development' : 'planned'} label={status} size="sm" />
+            </li>
+          ))}
+        </ul>
+      </div>
+    </section>
+
+    {/* ---------------- COMPARISON ---------------- */}
+    <section class="section band a6d-section" id="comparison">
+      <div class="container">
+        <SectionHeading
+          eyebrow="Scope"
+          title="Today vs. Planned"
+          lead="What is physically built on ARGUS-6 right now, and what the autonomous system around it still needs."
+        />
+        <div class="two-col a6d-compare-grid">
+          <div class="panel a6d-compare-col" data-reveal>
+            <h3 class="a6d-panel-title mono">Current ARGUS-6 prototype</h3>
+            <ul class="a6d-compare-list">
+              {builtToday.map((item) => <li><span class="a6d-check" aria-hidden="true">✓</span>{item}</li>)}
+            </ul>
+          </div>
+          <div class="panel a6d-compare-col a6d-compare-col--planned" data-reveal>
+            <h3 class="a6d-panel-title mono">Planned autonomous system</h3>
+            <ul class="a6d-compare-list">
+              {plannedSystem.map((item) => <li><span class="a6d-circle" aria-hidden="true">○</span>{item}</li>)}
+            </ul>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    {/* ---------------- FOOTER CTA ---------------- */}
+    <section class="section a6d-cta">
+      <div class="container">
+        <div class="a6d-cta__panel panel" data-reveal>
+          <div>
+            <h2 class="mono">This is a concept, not a control panel</h2>
+            <p class="text-muted">
+              The physical ARGUS-6 prototype is already operational. This
+              dashboard represents the planned autonomous control interface —
+              a demonstration of the intended architecture for WICE judges.
+            </p>
+          </div>
+          <div class="a6d-cta__links">
+            <a class="btn btn--primary" href={link('/argus-6')}>View physical prototype <span class="arrow" aria-hidden="true">→</span></a>
+            <a class="btn" href={link('/documentation')}>Documentation</a>
+          </div>
+        </div>
+      </div>
+    </section>
+  </div>
+</BaseLayout>
+
+<script>
+  type StateId =
+    | 'idle' | 'detect' | 'target_lock' | 'approach' | 'align' | 'stop'
+    | 'grab' | 'verify' | 'deposit' | 'arm_default' | 'return_to_base'
+    | 'complete' | 'emergency_stop';
+
+  const SEQUENCE: StateId[] = [
+    'idle', 'detect', 'target_lock', 'approach', 'align', 'stop', 'grab',
+    'verify', 'deposit', 'arm_default', 'return_to_base', 'complete',
+  ];
+
+  // Box geometry per phase — left/top/width/height as percentages of the
+  // camera viewport. Shared by every state that shows target 04 so the box
+  // only needs one definition per "phase" of the approach.
+  const T04_BOX = {
+    far: { left: 68, top: 48, width: 10, height: 20 },
+    mid: { left: 50, top: 38, width: 17, height: 32 },
+    near: { left: 40, top: 26, width: 24, height: 46 },
+  } as const;
+
+  interface StateMeta {
+    label: string;
+    missionLabel: string;
+    log?: string[];
+    cameraStandby?: boolean;
+    cameraComplete?: boolean;
+    boxes?: Partial<Record<'t01' | 't02' | 't03' | 't04' | 'person', { pos: keyof typeof T04_BOX | 'fixed'; highlighted?: boolean; status?: string; fixedStyle?: { left: number; top: number; width: number; height: number } }>>;
+    fps?: number;
+    targetSummary: string;
+    targetLockStatus?: string;
+    showTargetDetail?: boolean;
+    decisionTrace?: 'idle' | 'analyzing' | 'waiting' | 'locked';
+    mapRobot?: { x: number; y: number; rot: number };
+    mapRoute?: 'none' | 'out' | 'back' | 'both';
+    mapTargetLocked?: boolean;
+    twinWalking?: boolean;
+    twinArm?: 'default' | 'reach-target' | 'reach-bin';
+    twinGripper?: 'open' | 'closed';
+    twinMovement?: string;
+    autonomyNode?: string | string[] | null;
+    authorityNode?: string | null;
+    lightingOn?: boolean;
+  }
+
+  const STATE_META: Record<StateId, StateMeta> = {
+    idle: {
+      label: 'IDLE',
+      missionLabel: 'MISSION READY — awaiting demo start',
+      cameraStandby: true,
+      targetSummary: 'STANDBY',
+      decisionTrace: 'idle',
+      mapRobot: { x: 60, y: 210, rot: -35 },
+      mapRoute: 'none',
+      twinArm: 'default',
+      twinGripper: 'open',
+      twinMovement: 'IDLE',
+      autonomyNode: null,
+      authorityNode: null,
+    },
+    detect: {
+      label: 'DETECT',
+      missionLabel: 'Scanning for targets',
+      log: ['AI · Perception initialized', 'AI · Candidate objects detected'],
+      boxes: {
+        t01: { pos: 'fixed', fixedStyle: { left: 10, top: 60, width: 10, height: 15 } },
+        t02: { pos: 'fixed', fixedStyle: { left: 55, top: 58, width: 12, height: 16 } },
+        t03: { pos: 'fixed', fixedStyle: { left: 30, top: 65, width: 9, height: 13 } },
+        t04: { pos: 'far' },
+        person: { pos: 'fixed', fixedStyle: { left: 78, top: 15, width: 16, height: 55 } },
+      },
+      fps: 28,
+      targetSummary: 'ANALYZING CANDIDATES',
+      decisionTrace: 'waiting',
+      mapRobot: { x: 60, y: 210, rot: -35 },
+      mapRoute: 'none',
+      twinArm: 'default',
+      twinGripper: 'open',
+      twinMovement: 'IDLE',
+      autonomyNode: ['yolo', 'perception'],
+      authorityNode: 'perception',
+    },
+    target_lock: {
+      label: 'TARGET LOCK',
+      missionLabel: 'Target 04 selected',
+      log: ['TARGET · Target locked: PLASTIC_BOTTLE · ID 04'],
+      boxes: {
+        t01: { pos: 'fixed', fixedStyle: { left: 10, top: 60, width: 10, height: 15 } },
+        t02: { pos: 'fixed', fixedStyle: { left: 55, top: 58, width: 12, height: 16 } },
+        t03: { pos: 'fixed', fixedStyle: { left: 30, top: 65, width: 9, height: 13 } },
+        t04: { pos: 'far', highlighted: true, status: 'LOCKED' },
+        person: { pos: 'fixed', fixedStyle: { left: 78, top: 15, width: 16, height: 55 } },
+      },
+      fps: 28,
+      targetSummary: 'TARGET 04 · LOCKED',
+      targetLockStatus: 'LOCKED',
+      showTargetDetail: true,
+      decisionTrace: 'locked',
+      mapRobot: { x: 60, y: 210, rot: -35 },
+      mapRoute: 'none',
+      mapTargetLocked: true,
+      twinArm: 'default',
+      twinGripper: 'open',
+      twinMovement: 'IDLE',
+      autonomyNode: 'target_manager',
+      authorityNode: 'target_manager',
+    },
+    approach: {
+      label: 'APPROACH',
+      missionLabel: 'Approaching target',
+      log: ['NAV · Approach initiated'],
+      boxes: { t04: { pos: 'mid', highlighted: true, status: 'APPROACHING' } },
+      fps: 27,
+      targetSummary: 'TARGET 04 · LOCKED',
+      targetLockStatus: 'APPROACHING',
+      showTargetDetail: true,
+      decisionTrace: 'locked',
+      mapRobot: { x: 320, y: 50, rot: 40 },
+      mapRoute: 'out',
+      mapTargetLocked: true,
+      twinWalking: true,
+      twinArm: 'default',
+      twinGripper: 'open',
+      twinMovement: 'FORWARD',
+      autonomyNode: 'navigation',
+      authorityNode: 'navigation',
+    },
+    align: {
+      label: 'ALIGN',
+      missionLabel: 'Aligning collection position',
+      log: ['NAV · Alignment correction'],
+      boxes: { t04: { pos: 'near', highlighted: true, status: 'ALIGNING' } },
+      fps: 27,
+      targetSummary: 'TARGET 04 · LOCKED',
+      targetLockStatus: 'ALIGNING',
+      showTargetDetail: true,
+      decisionTrace: 'locked',
+      mapRobot: { x: 320, y: 50, rot: 40 },
+      mapRoute: 'out',
+      mapTargetLocked: true,
+      twinArm: 'default',
+      twinGripper: 'open',
+      twinMovement: 'STOPPING',
+      autonomyNode: 'navigation',
+      authorityNode: 'navigation',
+    },
+    stop: {
+      label: 'STOP',
+      missionLabel: 'Robot stopped',
+      log: ['CONTROL · Robot stopped'],
+      boxes: { t04: { pos: 'near', highlighted: true, status: 'STOPPED' } },
+      fps: 27,
+      targetSummary: 'TARGET 04 · LOCKED',
+      targetLockStatus: 'STOPPED',
+      showTargetDetail: true,
+      decisionTrace: 'locked',
+      mapRobot: { x: 320, y: 50, rot: 40 },
+      mapRoute: 'out',
+      mapTargetLocked: true,
+      twinArm: 'default',
+      twinGripper: 'open',
+      twinMovement: 'STOPPED',
+      autonomyNode: 'esp8266',
+      authorityNode: 'esp8266',
+    },
+    grab: {
+      label: 'GRAB',
+      missionLabel: 'Collecting target',
+      log: ['ARM · Grab sequence initiated', 'ARM · Gripper closed'],
+      boxes: { t04: { pos: 'near', highlighted: true, status: 'COLLECTING' } },
+      fps: 26,
+      targetSummary: 'TARGET 04 · LOCKED',
+      targetLockStatus: 'COLLECTING',
+      showTargetDetail: true,
+      decisionTrace: 'locked',
+      mapRobot: { x: 320, y: 50, rot: 40 },
+      mapRoute: 'out',
+      mapTargetLocked: true,
+      twinArm: 'reach-target',
+      twinGripper: 'closed',
+      twinMovement: 'ARM ACTIVE',
+      autonomyNode: 'mission_manager',
+      authorityNode: 'mission_manager',
+    },
+    verify: {
+      label: 'VERIFY',
+      missionLabel: 'Collection verified',
+      log: ['MISSION · Grab verification complete'],
+      boxes: { t04: { pos: 'near', highlighted: true, status: 'VERIFIED ✓' } },
+      fps: 26,
+      targetSummary: 'TARGET 04 · COLLECTED',
+      targetLockStatus: 'VERIFIED',
+      showTargetDetail: true,
+      decisionTrace: 'locked',
+      mapRobot: { x: 320, y: 50, rot: 40 },
+      mapRoute: 'out',
+      mapTargetLocked: true,
+      twinArm: 'reach-target',
+      twinGripper: 'closed',
+      twinMovement: 'IDLE',
+      autonomyNode: 'mission_manager',
+      authorityNode: 'mission_manager',
+    },
+    // The bin is mounted on the robot itself, not a separate stop on the
+    // map — so depositing happens right where the target was collected,
+    // before the robot ever starts heading back to base.
+    deposit: {
+      label: 'DEPOSIT',
+      missionLabel: 'Depositing into onboard bin',
+      log: ['ARM · Depositing into onboard bin', 'ARM · Gripper opened'],
+      fps: 26,
+      targetSummary: 'TARGET 04 · DEPOSITED',
+      targetLockStatus: 'DEPOSITED',
+      showTargetDetail: true,
+      decisionTrace: 'locked',
+      mapRobot: { x: 320, y: 50, rot: 40 },
+      mapRoute: 'out',
+      mapTargetLocked: true,
+      twinArm: 'reach-bin',
+      twinGripper: 'open',
+      twinMovement: 'ARM ACTIVE',
+      autonomyNode: 'mission_manager',
+      authorityNode: 'mission_manager',
+    },
+    arm_default: {
+      label: 'ARM DEFAULT',
+      missionLabel: 'Arm returning to default pose',
+      log: ['ARM · Arm returned to DEFAULT'],
+      fps: 26,
+      targetSummary: 'TARGET 04 · DEPOSITED',
+      targetLockStatus: 'DEPOSITED',
+      showTargetDetail: true,
+      decisionTrace: 'locked',
+      mapRobot: { x: 320, y: 50, rot: 40 },
+      mapRoute: 'out',
+      mapTargetLocked: true,
+      twinArm: 'default',
+      twinGripper: 'closed',
+      twinMovement: 'IDLE',
+      autonomyNode: 'ik_gait',
+      authorityNode: 'esp8266',
+    },
+    return_to_base: {
+      label: 'RETURN TO BASE',
+      missionLabel: 'Returning to base',
+      log: ['NAV · Returning to base'],
+      fps: 27,
+      targetSummary: 'TARGET 04 · DEPOSITED',
+      targetLockStatus: 'RETURNING',
+      showTargetDetail: true,
+      decisionTrace: 'locked',
+      mapRobot: { x: 60, y: 210, rot: -145 },
+      mapRoute: 'back',
+      mapTargetLocked: true,
+      twinWalking: true,
+      twinArm: 'default',
+      twinGripper: 'closed',
+      twinMovement: 'RETURN',
+      autonomyNode: 'navigation',
+      authorityNode: 'navigation',
+    },
+    complete: {
+      label: 'COMPLETE',
+      missionLabel: 'Mission complete',
+      log: ['MISSION · Mission complete'],
+      cameraComplete: true,
+      targetSummary: 'MISSION COMPLETE',
+      targetLockStatus: 'COMPLETE',
+      showTargetDetail: true,
+      decisionTrace: 'locked',
+      mapRobot: { x: 60, y: 210, rot: -145 },
+      mapRoute: 'both',
+      mapTargetLocked: false,
+      twinArm: 'default',
+      twinGripper: 'open',
+      twinMovement: 'IDLE',
+      autonomyNode: null,
+      authorityNode: null,
+    },
+    emergency_stop: {
+      label: 'EMERGENCY STOP',
+      missionLabel: 'EMERGENCY STOP — demo halted',
+      log: ['SAFETY · EMERGENCY STOP (demo) — all demo motion halted'],
+      targetSummary: 'HALTED',
+      showTargetDetail: false,
+      decisionTrace: 'idle',
+      twinWalking: false,
+      twinMovement: 'STOPPED',
+      autonomyNode: null,
+      authorityNode: null,
+    },
+  };
+
+  // Guided WICE Presentation Mode — a dashboard playback/presentation mode,
+  // NOT a third robot operating mode. The robot stays MANUAL / AUTONOMOUS;
+  // this is a presenter-controlled walk through the same centralized
+  // mission state (STATE_META / applyState) used everywhere else on this
+  // page. Each stage maps to one mission state plus the narrative copy the
+  // presenter needs — no separate simulation is created per panel.
+  interface PresentationStage {
+    id: string;
+    state: StateId;
+    title: string;
+    currentStateText: string;
+    keyConcept: string;
+    presenterNote: string;
+    emphasis: string[] | null;
+    // Most stages log exactly what their mission state already logs (see
+    // STATE_META[state].log) — that's the single source of truth for event
+    // text, shared with the fast Run Autonomous Demo. Only presentation-only
+    // beats that don't correspond 1:1 with a mission-state transition (the
+    // intro, and the person incident sharing DETECT with Perception) need an
+    // explicit override here.
+    logLines?: string[];
+  }
+
+  const PRESENTATION_STAGES: PresentationStage[] = [
+    {
+      id: 'overview', state: 'idle', title: 'OVERVIEW',
+      currentStateText: 'ARGUS-6 — a six-legged platform for environmental cleanup on difficult terrain.',
+      keyConcept: 'A six-legged platform built for environmental cleanup on difficult terrain.',
+      presenterNote: 'Introduce ARGUS-6, the six-legged robotic platform designed for environmental cleanup and operation on difficult terrain.',
+      emphasis: null,
+      logLines: ['SYSTEM · Guided WICE presentation started'],
+    },
+    {
+      id: 'perception', state: 'detect', title: 'PERCEPTION',
+      currentStateText: 'YOLO26n analyzes the camera stream and identifies candidate objects and people.',
+      keyConcept: 'Detection is the input. It is not yet a decision.',
+      presenterNote: 'The camera provides the visual input. YOLO26n identifies objects in the scene, but detection alone does not decide what the robot should collect.',
+      emphasis: ['perception', 'targeting', 'architecture'],
+    },
+    {
+      id: 'person-alert', state: 'detect', title: 'PERSON INCIDENT',
+      currentStateText: 'A person detection is handled as an independent safety incident rather than becoming a trash target.',
+      keyConcept: 'Incident alerts run independently of the collection pipeline.',
+      presenterNote: 'The perception system also identifies people independently from the waste-target pipeline. This is treated as an incident alert rather than a collection target.',
+      emphasis: ['perception', 'targeting', 'architecture'],
+      logLines: ['AI · Person incident detected: P07'],
+    },
+    {
+      id: 'target-selection', state: 'target_lock', title: 'TARGET SELECTION',
+      currentStateText: 'The Target Manager combines confidence, apparent proximity, image position, and persistence before locking a target.',
+      keyConcept: 'Detection ≠ Decision.',
+      presenterNote: 'ARGUS-6 does not simply drive toward the first object YOLO detects. The Target Manager evaluates candidates and selects one target, then locks it so the robot doesn’t constantly switch between objects.',
+      emphasis: ['targeting'],
+    },
+    {
+      id: 'approach', state: 'approach', title: 'APPROACH',
+      currentStateText: 'Navigation moves ARGUS-6 toward the selected target.',
+      keyConcept: 'A locked target lets navigation commit to one approach path.',
+      presenterNote: 'Once the target is locked, the navigation system generates movement intent to approach it.',
+      emphasis: ['navigation'],
+    },
+    {
+      id: 'align', state: 'align', title: 'ALIGN',
+      currentStateText: 'The robot corrects its heading and positioning before stopping.',
+      keyConcept: 'Alignment happens before the arm ever engages.',
+      presenterNote: 'Before using the arm, the robot needs to position itself correctly relative to the object.',
+      emphasis: ['navigation'],
+    },
+    {
+      id: 'stop', state: 'stop', title: 'STOP',
+      currentStateText: 'The robot stops before manipulation begins.',
+      keyConcept: 'Locomotion and manipulation never compete for control.',
+      presenterNote: 'The robot stops before manipulation so locomotion and arm movement are not competing for control.',
+      emphasis: ['navigation', 'collection'],
+    },
+    {
+      id: 'grab', state: 'grab', title: 'GRAB',
+      currentStateText: 'The arm moves from DEFAULT and the gripper closes around the selected object.',
+      keyConcept: 'Control now hands off from locomotion to manipulation.',
+      presenterNote: 'The mission manager now transitions from locomotion to manipulation. The robotic arm positions the gripper and performs the pickup.',
+      emphasis: ['collection'],
+    },
+    {
+      id: 'verify', state: 'verify', title: 'VERIFY',
+      currentStateText: 'The mission verifies the logical success condition before continuing.',
+      keyConcept: 'Simulated verification, not a claim about a physical sensor.',
+      presenterNote: 'The mission includes a verification stage before continuing. In the current concept simulation, this represents the logical verification step rather than a claim about a dedicated physical sensor.',
+      emphasis: ['collection'],
+    },
+    {
+      id: 'deposit', state: 'deposit', title: 'DEPOSIT',
+      currentStateText: 'The gripper releases the collected object into the onboard bin, right where it was picked up.',
+      keyConcept: 'The bin travels with the robot — there is no separate trip to reach it.',
+      presenterNote: 'The bin is mounted on ARGUS-6 itself, so the arm deposits the item right there and the gripper opens.',
+      emphasis: ['collection'],
+    },
+    {
+      id: 'arm-default', state: 'arm_default', title: 'ARM DEFAULT',
+      currentStateText: 'The arm returns to a safe default pose before locomotion resumes.',
+      keyConcept: 'A safe travel configuration before locomotion resumes.',
+      presenterNote: 'The arm returns to its default travel configuration before the robot resumes locomotion.',
+      emphasis: ['collection'],
+    },
+    {
+      id: 'return-to-base', state: 'return_to_base', title: 'RETURN TO BASE',
+      currentStateText: 'With the item stowed on board, ARGUS-6 returns along its route to base.',
+      keyConcept: 'The collection loop ends where it started.',
+      presenterNote: 'The mission is complete once the robot is back at base — no further travel is needed since the object was deposited on the spot.',
+      emphasis: ['navigation'],
+    },
+    {
+      id: 'complete', state: 'complete', title: 'COMPLETE',
+      currentStateText: 'The simulated cleanup mission is complete.',
+      keyConcept: 'Perception → decision → navigation → manipulation → return, one system.',
+      presenterNote: 'This demonstrates the complete planned autonomous collection loop, from perception through target selection, navigation, manipulation and return.',
+      emphasis: null,
+    },
+  ];
+
+  // A stage's log is its own override when given, otherwise the log already
+  // defined on its mission state — one source of truth for event text,
+  // shared with the fast Run Autonomous Demo instead of duplicating it.
+  const presentationStageLog = (stage: PresentationStage): string[] =>
+    stage.logLines ?? STATE_META[stage.state].log ?? [];
+
+  const PERSON_ALERT_STAGE_INDEX = PRESENTATION_STAGES.findIndex((s) => s.id === 'person-alert');
+
+  const initDashboard = () => {
+    document.querySelectorAll<HTMLElement>('[data-argus-dashboard]').forEach((root) => {
+      if (root.dataset.bound === 'true') return;
+      root.dataset.bound = 'true';
+
+      const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+      // ---- collapsible on-page section nav ----
+      const TOC_STORAGE_KEY = 'a6d-toc-collapsed';
+      const toc = document.querySelector<HTMLElement>('[data-toc]');
+      const tocToggle = toc?.querySelector<HTMLButtonElement>('[data-toc-toggle]');
+      const setTocCollapsed = (collapsed: boolean) => {
+        if (!toc || !tocToggle) return;
+        toc.dataset.collapsed = String(collapsed);
+        tocToggle.setAttribute('aria-expanded', String(!collapsed));
+        tocToggle.setAttribute('aria-label', collapsed ? 'Expand section navigation' : 'Collapse section navigation');
+        tocToggle.title = collapsed ? 'Expand section navigation' : 'Collapse section navigation';
+        try { window.localStorage.setItem(TOC_STORAGE_KEY, String(collapsed)); } catch {}
+      };
+      if (toc && tocToggle) {
+        let storedCollapsed = false;
+        try { storedCollapsed = window.localStorage.getItem(TOC_STORAGE_KEY) === 'true'; } catch {}
+        setTocCollapsed(storedCollapsed);
+        tocToggle.addEventListener('click', () => setTocCollapsed(toc.dataset.collapsed !== 'true'));
+      }
+
+      // ---- synthetic demo clock ----
+      let clockSeconds = 18 * 3600 + 42 * 60;
+      const nextTime = () => {
+        clockSeconds += 2 + Math.floor(Math.random() * 4);
+        const h = String(Math.floor(clockSeconds / 3600) % 24).padStart(2, '0');
+        const m = String(Math.floor(clockSeconds / 60) % 60).padStart(2, '0');
+        const s = String(clockSeconds % 60).padStart(2, '0');
+        return `${h}:${m}:${s}`;
+      };
+
+      const logList = root.querySelector<HTMLElement>('[data-event-log]');
+      let logSeeded = false;
+      const logEvent = (msg: string) => {
+        if (!logList) return;
+        if (!logSeeded) {
+          logList.innerHTML = '';
+          logSeeded = true;
+        }
+        const li = document.createElement('li');
+        li.innerHTML = `<span class="a6d-log__time mono">${nextTime()}</span><span class="a6d-log__msg">${msg}</span>`;
+        logList.prepend(li);
+        while (logList.children.length > 60) logList.removeChild(logList.lastElementChild as Node);
+      };
+
+      // ---- element refs ----
+      const camStandby = root.querySelector<HTMLElement>('[data-cam-standby]');
+      const camComplete = root.querySelector<HTMLElement>('[data-cam-complete]');
+      const camFps = root.querySelector<HTMLElement>('[data-cam-fps]');
+      const boxes = {
+        t01: root.querySelector<HTMLElement>('[data-bbox="t01"]'),
+        t02: root.querySelector<HTMLElement>('[data-bbox="t02"]'),
+        t03: root.querySelector<HTMLElement>('[data-bbox="t03"]'),
+        t04: root.querySelector<HTMLElement>('[data-bbox="t04"]'),
+        person: root.querySelector<HTMLElement>('[data-bbox="person"]'),
+      };
+      const t04Status = root.querySelector<HTMLElement>('[data-bbox-status]');
+
+      const targetSummaryEl = root.querySelector<HTMLElement>('[data-target-summary]');
+      const targetDetailEl = root.querySelector<HTMLElement>('[data-target-detail]');
+      const targetLockStatusEl = root.querySelector<HTMLElement>('[data-target-lock-status]');
+      const decisionTraceEl = root.querySelector<HTMLElement>('[data-decision-trace]');
+
+      const mapRobot = root.querySelector<SVGGElement>('[data-map-robot]');
+      const routeOut = root.querySelector<SVGPathElement>('[data-route-out]');
+      const routeBack = root.querySelector<SVGPathElement>('[data-route-back]');
+      const mapTargetRing = root.querySelector<SVGCircleElement>('[data-map-target-ring]');
+
+      const twin = root.querySelector<HTMLElement>('[data-twin]');
+      const twinArmEl = root.querySelector<SVGGElement>('[data-twin-arm]');
+      const twinGripperEl = root.querySelector<SVGGElement>('[data-twin-gripper]');
+      const twinArmValue = root.querySelector<HTMLElement>('[data-twin-arm-value]');
+      const twinGripperValue = root.querySelector<HTMLElement>('[data-twin-gripper-value]');
+      const twinMovementValue = root.querySelector<HTMLElement>('[data-twin-movement-value]');
+
+      const missionLabelEl = root.querySelector<HTMLElement>('[data-mission-label]');
+      const stateItems = Array.from(root.querySelectorAll<HTMLElement>('[data-state-item]'));
+
+      const autonomyNodes = Array.from(root.querySelectorAll<HTMLElement>('[data-autonomy-node]'));
+      const authorityNodes = Array.from(root.querySelectorAll<HTMLElement>('[data-authority-node]'));
+      const authorityCols = Array.from(root.querySelectorAll<HTMLElement>('[data-authority]'));
+
+      const completeBanner = root.querySelector<HTMLElement>('[data-complete-banner]');
+      const estopBanner = root.querySelector<HTMLElement>('[data-estop-banner]');
+
+      const lightingValue = root.querySelector<HTMLElement>('[data-lighting-value]');
+
+      // ---- apply a single state to every panel (the one source of truth) ----
+      let currentId: StateId = 'idle';
+      const applyState = (id: StateId) => {
+        currentId = id;
+        const s = STATE_META[id];
+
+        // camera
+        if (camStandby) camStandby.hidden = !s.cameraStandby;
+        if (camComplete) camComplete.hidden = !s.cameraComplete;
+        if (camFps) camFps.textContent = s.fps ? String(s.fps) : '—';
+
+        (Object.keys(boxes) as Array<keyof typeof boxes>).forEach((key) => {
+          const el = boxes[key];
+          if (!el) return;
+          const cfg = s.boxes?.[key];
+          if (!cfg) { el.hidden = true; return; }
+          el.hidden = false;
+          let rect: { left: number; top: number; width: number; height: number } | null = null;
+          if (cfg.pos === 'fixed') rect = cfg.fixedStyle ?? null;
+          else rect = T04_BOX[cfg.pos];
+          if (rect) {
+            el.style.left = `${rect.left}%`;
+            el.style.top = `${rect.top}%`;
+            el.style.width = `${rect.width}%`;
+            el.style.height = `${rect.height}%`;
+          }
+          el.classList.toggle('is-highlighted', !!cfg.highlighted);
+          if (key === 't04' && t04Status) t04Status.textContent = cfg.status ?? '';
+        });
+
+        // target manager
+        if (targetSummaryEl) targetSummaryEl.textContent = s.targetSummary;
+        if (targetDetailEl) targetDetailEl.hidden = !s.showTargetDetail;
+        if (targetLockStatusEl && s.targetLockStatus) targetLockStatusEl.textContent = s.targetLockStatus;
+
+        // decision trace
+        if (decisionTraceEl) {
+          if (s.decisionTrace === 'locked') {
+            decisionTraceEl.innerHTML = `
+              <div class="a6d-decision-trace__selected"><dt>Selected Target</dt><dd>PLASTIC_BOTTLE · ID 04</dd></div>
+              <div><dt>Confidence</dt><dd>91%</dd></div>
+              <div><dt>Image position</dt><dd>Center-right</dd></div>
+              <div><dt>Estimated proximity</dt><dd>High</dd></div>
+              <div><dt>Target persistence</dt><dd>Stable</dd></div>
+              <div><dt>Safety check</dt><dd>PASS (simulated)</dd></div>
+              <div class="a6d-decision-trace__why"><dt>Why?</dt><dd>High confidence + favorable image position + persistent detection + safe target classification.</dd></div>
+            `;
+          } else if (s.decisionTrace === 'analyzing') {
+            decisionTraceEl.innerHTML = `<div class="a6d-decision-trace__idle">ANALYZING CANDIDATES…</div>`;
+          } else if (s.decisionTrace === 'waiting') {
+            decisionTraceEl.innerHTML = `<div class="a6d-decision-trace__idle">WAITING FOR TARGET SELECTION</div>`;
+          } else {
+            decisionTraceEl.innerHTML = `<div class="a6d-decision-trace__idle">Awaiting perception input.</div>`;
+          }
+        }
+
+        // map
+        if (mapRobot && s.mapRobot) {
+          mapRobot.setAttribute('transform', `translate(${s.mapRobot.x},${s.mapRobot.y}) rotate(${s.mapRobot.rot})`);
+        }
+        if (routeOut) routeOut.classList.toggle('is-drawn', s.mapRoute === 'out' || s.mapRoute === 'both');
+        if (routeBack) routeBack.classList.toggle('is-drawn', s.mapRoute === 'back' || s.mapRoute === 'both');
+        if (mapTargetRing) mapTargetRing.classList.toggle('is-locked', !!s.mapTargetLocked);
+
+        // digital twin
+        if (twin) twin.classList.toggle('is-walking', !!s.twinWalking && !reduceMotion);
+        if (twinArmEl && s.twinArm) twinArmEl.setAttribute('data-pose', s.twinArm);
+        if (twinGripperEl && s.twinGripper) twinGripperEl.setAttribute('data-state', s.twinGripper);
+        if (twinArmValue) twinArmValue.textContent = (s.twinArm ?? 'default').replace('-', ' ').toUpperCase();
+        if (twinGripperValue) twinGripperValue.textContent = (s.twinGripper ?? 'open').toUpperCase();
+        if (twinMovementValue) twinMovementValue.textContent = s.twinMovement ?? 'IDLE';
+
+        // mission timeline
+        if (missionLabelEl) missionLabelEl.textContent = s.missionLabel;
+        stateItems.forEach((el) => el.classList.toggle('is-current', el.dataset.stateId === id));
+
+        // autonomy stack — a state may highlight more than one node at once
+        // (e.g. detect → YOLO26n and Perception together)
+        autonomyNodes.forEach((el) => {
+          const active = Array.isArray(s.autonomyNode)
+            ? s.autonomyNode.includes(el.dataset.autonomyNode ?? '')
+            : el.dataset.autonomyNode === s.autonomyNode;
+          el.classList.toggle('is-active', active);
+        });
+
+        // control authority
+        authorityNodes.forEach((el) => el.classList.toggle('is-active', el.dataset.authorityNode === s.authorityNode));
+
+        // lighting ties loosely to mission activity — on while the robot is doing something
+        if (lightingValue) {
+          const on = id !== 'idle' && id !== 'complete' && id !== 'emergency_stop';
+          lightingValue.textContent = on ? 'ON' : 'OFF';
+        }
+
+        // banners
+        if (completeBanner) completeBanner.hidden = id !== 'complete';
+        if (estopBanner) estopBanner.hidden = id !== 'emergency_stop';
+      };
+
+      // ---- mode ----
+      const modeBtns = root.querySelectorAll<HTMLButtonElement>('[data-mode-btn]');
+      const manualControlButtons = root.querySelectorAll<HTMLButtonElement>(
+        '.a6d-quickcontrol [data-cmd-btn], .a6d-quickcontrol [data-flashlight-btn]'
+      );
+      const quickcontrolLocked = root.querySelector<HTMLElement>('[data-quickcontrol-locked]');
+      const setMode = (mode: string) => {
+        modeBtns.forEach((b) => {
+          const active = b.dataset.mode === mode;
+          b.classList.toggle('is-active', active);
+          b.setAttribute('aria-pressed', String(active));
+        });
+        const autonomous = mode === 'autonomous';
+        root.classList.toggle('is-mode-autonomous', autonomous);
+        authorityCols.forEach((el) => el.classList.toggle('is-active-mode', el.dataset.authority === mode));
+        // In AUTONOMOUS mode the mission system has control authority, so
+        // the manual control preview goes greyed-out and unresponsive —
+        // real <button disabled> (not just CSS) so keyboard/AT users get
+        // the same "not available right now" state as pointer users.
+        manualControlButtons.forEach((b) => (b.disabled = autonomous));
+        if (quickcontrolLocked) quickcontrolLocked.hidden = !autonomous;
+      };
+      modeBtns.forEach((btn) => btn.addEventListener('click', () => setMode(btn.dataset.mode || 'manual')));
+      setMode('manual');
+
+      // ---- person alert ----
+      const alertPanel = root.querySelector<HTMLElement>('[data-alert-panel]');
+      const alertTime = alertPanel?.querySelector<HTMLElement>('[data-alert-time]');
+      const alertGps = alertPanel?.querySelector<HTMLElement>('[data-alert-gps]');
+      const alertSound = alertPanel?.querySelector<HTMLAudioElement>('[data-alert-sound]');
+      let alertDismissedThisRun = false;
+      // Simulated position near Dhaka, jittered a little each time so it
+      // reads as a live fix rather than a hardcoded constant — still just
+      // demo data, same as every other "Simulated" GPS value on this page.
+      const BASE_LAT = 23.8103;
+      const BASE_LON = 90.4125;
+      const nextGpsFix = () => {
+        const lat = BASE_LAT + (Math.random() - 0.5) * 0.01;
+        const lon = BASE_LON + (Math.random() - 0.5) * 0.01;
+        const ns = lat >= 0 ? 'N' : 'S';
+        const ew = lon >= 0 ? 'E' : 'W';
+        return `${Math.abs(lat).toFixed(4)}° ${ns}, ${Math.abs(lon).toFixed(4)}° ${ew}`;
+      };
+      const showPersonAlert = () => {
+        if (!alertPanel || alertDismissedThisRun) return;
+        const wasHidden = alertPanel.hidden;
+        if (alertTime) alertTime.textContent = nextTime();
+        if (alertGps) alertGps.textContent = nextGpsFix();
+        alertPanel.hidden = false;
+        requestAnimationFrame(() => alertPanel.classList.add('is-visible'));
+        if (wasHidden && alertSound) {
+          alertSound.loop = true;
+          alertSound.currentTime = 0;
+          alertSound.play().catch(() => {});
+        }
+      };
+      const hidePersonAlert = () => {
+        if (!alertPanel) return;
+        alertPanel.classList.remove('is-visible');
+        window.setTimeout(() => { if (alertPanel) alertPanel.hidden = true; }, 350);
+        if (alertSound) {
+          alertSound.pause();
+          alertSound.currentTime = 0;
+        }
+      };
+      alertPanel?.querySelector<HTMLButtonElement>('[data-alert-dismiss]')?.addEventListener('click', () => {
+        alertDismissedThisRun = true;
+        hidePersonAlert();
+        logEvent('OPERATOR · Person alert dismissed');
+      });
+
+      // ---- demo engine (shared by manual advance, auto demo, guided presentation, replay) ----
+      let demoTimer: number | undefined;
+      let isRunning = false;
+
+      const runBtn = root.querySelector<HTMLButtonElement>('[data-run-demo]');
+      const wiceBtn = root.querySelector<HTMLButtonElement>('[data-run-wice]');
+
+      // Guided WICE Presentation DOM refs. This is a dashboard playback mode
+      // layered on top of the same mission state — not a robot mode.
+      const wiceBar = root.querySelector<HTMLElement>('[data-wice-bar]');
+      const wiceInfo = root.querySelector<HTMLElement>('[data-wice-info]');
+      const wiceStageNumEl = root.querySelector<HTMLElement>('[data-wice-stage-num]');
+      const wiceStageTitleEl = root.querySelector<HTMLElement>('[data-wice-stage-title]');
+      const wiceInfoNumEl = root.querySelector<HTMLElement>('[data-wice-info-num]');
+      const wiceInfoTitleEl = root.querySelector<HTMLElement>('[data-wice-info-title]');
+      const wiceInfoCurrentEl = root.querySelector<HTMLElement>('[data-wice-info-current]');
+      const wiceInfoConceptEl = root.querySelector<HTMLElement>('[data-wice-info-concept]');
+      const wiceInfoNextBtn = root.querySelector<HTMLButtonElement>('[data-wice-info-next]');
+      const wicePrevBtn = root.querySelector<HTMLButtonElement>('[data-wice-prev]');
+      const wicePlayBtn = root.querySelector<HTMLButtonElement>('[data-wice-play]');
+      const wicePauseBtn = root.querySelector<HTMLButtonElement>('[data-wice-pause]');
+      const wiceNextBtn = root.querySelector<HTMLButtonElement>('[data-wice-next]');
+      const wiceRestartBtn = root.querySelector<HTMLButtonElement>('[data-wice-restart]');
+      const wiceExitBtn = root.querySelector<HTMLButtonElement>('[data-wice-exit]');
+      const wiceNotesToggleBtn = root.querySelector<HTMLButtonElement>('[data-wice-notes-toggle]');
+      const wiceNotesHideBtn = root.querySelector<HTMLButtonElement>('[data-wice-notes-hide]');
+      const wiceNotesPanel = root.querySelector<HTMLElement>('[data-wice-notes]');
+      const wiceNotesTextEl = root.querySelector<HTMLElement>('[data-wice-notes-text]');
+      const targetCandidatesEl = root.querySelector<HTMLElement>('[data-target-candidates]');
+      const candidateRows = Array.from(root.querySelectorAll<HTMLElement>('[data-candidate]'));
+      const emphasisEls = Array.from(root.querySelectorAll<HTMLElement>('[data-emphasis-group]'));
+
+      let wiceActive = false;
+      let wiceStageIndex = 0;
+      type PresentationPlayback = 'ready' | 'playing_stage' | 'paused' | 'transitioning' | 'completed';
+      let wicePlayback: PresentationPlayback = 'ready';
+      let wiceCancelIntro: (() => void) | null = null;
+      let wiceEstopLatched = false;
+      const totalStages = PRESENTATION_STAGES.length;
+
+      const clearTimers = () => {
+        if (demoTimer) { window.clearTimeout(demoTimer); demoTimer = undefined; }
+        wiceCancelIntro?.();
+        wiceCancelIntro = null;
+      };
+
+      const setRunning = (running: boolean) => {
+        isRunning = running;
+        runBtn?.toggleAttribute('disabled', running || wiceActive);
+        wiceBtn?.toggleAttribute('disabled', running || wiceActive);
+      };
+
+      const enableReplay = () => {
+        root.querySelectorAll<HTMLButtonElement>('[data-replay-btn]').forEach((b) => (b.disabled = false));
+        root.querySelector<HTMLButtonElement>('[data-replay-run]')?.removeAttribute('disabled');
+      };
+
+      const runSequence = (onDone?: () => void) => {
+        clearTimers();
+        exitPresentation({ silent: true });
+        setRunning(true);
+        alertDismissedThisRun = false;
+        hidePersonAlert();
+        let i = 0;
+        const step = () => {
+          const id = SEQUENCE[i];
+          applyState(id);
+          STATE_META[id].log?.forEach((m) => logEvent(m));
+          if (id === 'detect') window.setTimeout(showPersonAlert, 900);
+          i++;
+          if (i < SEQUENCE.length) {
+            demoTimer = window.setTimeout(step, 2600);
+          } else {
+            setRunning(false);
+            enableReplay();
+            onDone?.();
+          }
+        };
+        logEvent('SYSTEM · Autonomous demo started');
+        step();
+      };
+
+      runBtn?.addEventListener('click', () => runSequence());
+      root.querySelector<HTMLButtonElement>('[data-run-again]')?.addEventListener('click', () => runSequence());
+      root.querySelector<HTMLButtonElement>('[data-replay-run]')?.addEventListener('click', () => runSequence());
+
+      // ---- Guided WICE Presentation controller ----
+      // ARGUS-6 Mission State Machine → WICE Presentation Controller →
+      // Camera / Map / Target / Digital Twin (+ Event Log). The controller
+      // never simulates a panel on its own — it only calls applyState()
+      // (the one source of truth already used by the fast demo and replay)
+      // and layers narration/timing on top.
+
+      const runBeats = (beats: { delay: number; run: () => void }[], onDone: () => void): (() => void) => {
+        let cancelled = false;
+        let timer: number | undefined;
+        const step = (i: number) => {
+          if (cancelled) return;
+          if (i >= beats.length) { onDone(); return; }
+          beats[i].run();
+          timer = window.setTimeout(() => step(i + 1), beats[i].delay);
+        };
+        step(0);
+        return () => { cancelled = true; if (timer) window.clearTimeout(timer); };
+      };
+
+      // Highlights the panel(s) relevant to the current WICE stage without
+      // dimming/greying out anything else — every panel stays fully visible
+      // and readable throughout the demo.
+      const applyEmphasis = (groups: string[] | null) => {
+        emphasisEls.forEach((el) => {
+          const own = (el.dataset.emphasisGroup ?? '').split(' ').filter(Boolean);
+          const match = !!wiceActive && !!groups && groups.length > 0 && own.some((g) => groups.includes(g));
+          el.classList.toggle('is-emphasis-active', match);
+        });
+      };
+
+      // Deterministic, index-derived timestamps (not the live demo clock) so
+      // Previous/Next always reproduce the exact same log for a given stage.
+      const presentationLogTime = (i: number) => {
+        const totalSeconds = 18 * 3600 + 42 * 60 + i * 3 + (i % 3) * 2;
+        const h = String(Math.floor(totalSeconds / 3600) % 24).padStart(2, '0');
+        const m = String(Math.floor(totalSeconds / 60) % 60).padStart(2, '0');
+        const s = String(totalSeconds % 60).padStart(2, '0');
+        return `${h}:${m}:${s}`;
+      };
+
+      // The event log is a pure function of "which stages have been reached
+      // so far" — recomputed on every stage change, forward or backward, so
+      // Previous restores it exactly rather than trying to undo prepends.
+      const renderPresentationLog = (index: number) => {
+        if (!logList) return;
+        const lines: string[] = [];
+        for (let i = 0; i <= index; i++) presentationStageLog(PRESENTATION_STAGES[i]).forEach((l) => lines.push(l));
+        logList.innerHTML = lines
+          .map((msg, i) => `<li><span class="a6d-log__time mono">${presentationLogTime(i)}</span><span class="a6d-log__msg">${msg}</span></li>`)
+          .reverse()
+          .join('');
+        logSeeded = true;
+      };
+
+      // Resets the small bits of transient UI a stage's intro beats may have
+      // overridden (candidate list, decision-trace visibility) back to the
+      // baseline applyState() already established for the new stage.
+      const settleStage = () => {
+        if (targetCandidatesEl) targetCandidatesEl.hidden = true;
+        if (decisionTraceEl) decisionTraceEl.style.visibility = 'visible';
+        candidateRows.forEach((el) => el.classList.remove('is-selected'));
+      };
+
+      const updatePersonAlertForIndex = (index: number) => {
+        if (index >= PERSON_ALERT_STAGE_INDEX && !alertDismissedThisRun) {
+          showPersonAlert();
+        } else if (index < PERSON_ALERT_STAGE_INDEX) {
+          hidePersonAlert();
+        }
+      };
+
+      const revealBox = (el: HTMLElement | null) => {
+        if (!el) return;
+        el.hidden = false;
+        el.classList.remove('is-revealing');
+        void el.offsetWidth;
+        el.classList.add('is-revealing');
+      };
+
+      // Per-stage intro beats. Most stages just need to hold PLAYING_STAGE
+      // long enough for the existing CSS transitions (bbox/map/twin, all
+      // already driven by applyState) to settle — only a handful need a
+      // hand-authored sequence beyond a single tween (staggered detections,
+      // the candidate → decision → lock reveal, the arm/gripper sequences).
+      const getStageBeats = (stage: PresentationStage): { delay: number; run: () => void }[] => {
+        switch (stage.id) {
+          case 'perception':
+            return [
+              { delay: 0, run: () => (['t01', 't02', 't03', 't04'] as const).forEach((k) => { const el = boxes[k]; if (el) el.hidden = true; }) },
+              { delay: 260, run: () => revealBox(boxes.t01) },
+              { delay: 420, run: () => revealBox(boxes.t02) },
+              { delay: 420, run: () => revealBox(boxes.t03) },
+              { delay: 480, run: () => revealBox(boxes.t04) },
+              { delay: 420, run: () => {} },
+            ];
+          case 'person-alert':
+            return [
+              { delay: 350, run: () => showPersonAlert() },
+              { delay: 550, run: () => {} },
+            ];
+          case 'target-selection':
+            return [
+              { delay: 0, run: () => {
+                  if (targetCandidatesEl) targetCandidatesEl.hidden = false;
+                  if (decisionTraceEl) decisionTraceEl.style.visibility = 'hidden';
+                  if (targetDetailEl) targetDetailEl.hidden = true;
+                  if (targetSummaryEl) targetSummaryEl.textContent = 'ANALYZING CANDIDATES';
+                } },
+              { delay: 900, run: () => {
+                  candidateRows.find((el) => el.dataset.candidate === 't04')?.classList.add('is-selected');
+                  if (targetSummaryEl) targetSummaryEl.textContent = 'TARGET 04 SELECTED';
+                } },
+              { delay: 900, run: () => {
+                  if (targetCandidatesEl) targetCandidatesEl.hidden = true;
+                  if (decisionTraceEl) decisionTraceEl.style.visibility = 'visible';
+                  if (targetDetailEl) targetDetailEl.hidden = false;
+                } },
+              { delay: 600, run: () => {
+                  if (targetSummaryEl) targetSummaryEl.textContent = 'TARGET 04 · LOCKED';
+                  if (targetLockStatusEl) targetLockStatusEl.textContent = 'LOCKED';
+                } },
+            ];
+          case 'approach':
+            return [{ delay: 4200, run: () => {} }];
+          case 'align': {
+            const base = STATE_META.align.mapRobot!;
+            return [
+              { delay: 0, run: () => mapRobot?.setAttribute('transform', `translate(${base.x},${base.y}) rotate(${base.rot + 6})`) },
+              { delay: 700, run: () => mapRobot?.setAttribute('transform', `translate(${base.x},${base.y}) rotate(${base.rot})`) },
+              { delay: 1100, run: () => {} },
+            ];
+          }
+          case 'stop':
+            return [{ delay: 700, run: () => {} }];
+          case 'grab':
+            return [
+              { delay: 0, run: () => { twinArmEl?.setAttribute('data-pose', 'default'); twinGripperEl?.setAttribute('data-state', 'open'); } },
+              { delay: 700, run: () => twinArmEl?.setAttribute('data-pose', 'reach-target') },
+              { delay: 700, run: () => { twinGripperEl?.setAttribute('data-state', 'closed'); if (t04Status) t04Status.textContent = 'COLLECTING'; } },
+              { delay: 600, run: () => { if (t04Status) t04Status.textContent = 'COLLECTED ✓'; } },
+            ];
+          case 'verify':
+            return [{ delay: 700, run: () => {} }];
+          // The bin is mounted on the robot itself, so deposit happens right
+          // where the target was collected — the arm swings from its GRAB
+          // pose to the onboard bin and the gripper opens, no travel needed.
+          case 'deposit':
+            return [
+              { delay: 0, run: () => { twinArmEl?.setAttribute('data-pose', 'reach-target'); twinGripperEl?.setAttribute('data-state', 'closed'); } },
+              { delay: 700, run: () => twinArmEl?.setAttribute('data-pose', 'reach-bin') },
+              { delay: 600, run: () => twinGripperEl?.setAttribute('data-state', 'open') },
+              { delay: 500, run: () => {} },
+            ];
+          case 'arm-default':
+            return [{ delay: 1100, run: () => {} }];
+          case 'return-to-base':
+            return [{ delay: 3400, run: () => {} }];
+          default:
+            return [{ delay: 400, run: () => {} }];
+        }
+      };
+
+      const updateControlBarState = () => {
+        const playing = wicePlayback === 'playing_stage';
+        const atStart = wiceStageIndex === 0;
+        const atEnd = wiceStageIndex === totalStages - 1;
+        wicePrevBtn?.toggleAttribute('disabled', playing || atStart || wiceEstopLatched);
+        wicePlayBtn?.toggleAttribute('disabled', playing || wiceEstopLatched);
+        wicePauseBtn?.toggleAttribute('disabled', !playing || wiceEstopLatched);
+        wiceNextBtn?.toggleAttribute('disabled', playing || atEnd || wiceEstopLatched);
+        wiceInfoNextBtn?.toggleAttribute('disabled', playing || atEnd || wiceEstopLatched);
+      };
+
+      const renderStageChrome = () => {
+        const stage = PRESENTATION_STAGES[wiceStageIndex];
+        const num = String(wiceStageIndex + 1);
+        if (wiceStageNumEl) wiceStageNumEl.textContent = num;
+        if (wiceStageTitleEl) wiceStageTitleEl.textContent = stage.title;
+        if (wiceInfoNumEl) wiceInfoNumEl.textContent = num;
+        if (wiceInfoTitleEl) wiceInfoTitleEl.textContent = stage.title;
+        if (wiceInfoCurrentEl) wiceInfoCurrentEl.textContent = stage.currentStateText;
+        if (wiceInfoConceptEl) wiceInfoConceptEl.textContent = stage.keyConcept;
+        if (wiceNotesTextEl) wiceNotesTextEl.textContent = stage.presenterNote;
+        updateControlBarState();
+      };
+
+      // The single entry point for moving to any stage, forward or
+      // backward: it always re-derives the full simulated state from
+      // STATE_META via applyState(), so Previous restores camera, map,
+      // target, twin, mission state, decision trace, timeline and log
+      // exactly — not just the stage label.
+      const goToStage = (index: number, animate: boolean) => {
+        wiceCancelIntro?.();
+        wiceCancelIntro = null;
+        wiceStageIndex = Math.max(0, Math.min(totalStages - 1, index));
+        const stage = PRESENTATION_STAGES[wiceStageIndex];
+        applyState(stage.state);
+        applyEmphasis(stage.emphasis);
+        settleStage();
+        if (!animate || stage.id !== 'person-alert') updatePersonAlertForIndex(wiceStageIndex);
+        renderPresentationLog(wiceStageIndex);
+        renderStageChrome();
+
+        const finish = () => {
+          wiceCancelIntro = null;
+          wicePlayback = wiceStageIndex === totalStages - 1 ? 'completed' : 'paused';
+          updateControlBarState();
+        };
+
+        if (animate) {
+          wicePlayback = 'playing_stage';
+          updateControlBarState();
+          wiceCancelIntro = runBeats(getStageBeats(stage), finish);
+        } else {
+          finish();
+        }
+      };
+
+      const startPresentation = () => {
+        clearTimers();
+        setRunning(true);
+        wiceActive = true;
+        wiceEstopLatched = false;
+        alertDismissedThisRun = false;
+        hidePersonAlert();
+        root.classList.add('is-wice-active');
+        if (wiceBar) wiceBar.hidden = false;
+        if (wiceInfo) wiceInfo.hidden = false;
+        goToStage(0, false);
+      };
+
+      function exitPresentation(opts?: { silent?: boolean }) {
+        wiceCancelIntro?.();
+        wiceCancelIntro = null;
+        if (!wiceActive) return;
+        wiceActive = false;
+        wiceEstopLatched = false;
+        root.classList.remove('is-wice-active');
+        if (wiceBar) wiceBar.hidden = true;
+        if (wiceInfo) wiceInfo.hidden = true;
+        if (wiceNotesPanel) wiceNotesPanel.hidden = true;
+        wiceNotesToggleBtn?.setAttribute('aria-expanded', 'false');
+        applyEmphasis(null);
+        if (targetCandidatesEl) targetCandidatesEl.hidden = true;
+        if (decisionTraceEl) decisionTraceEl.style.visibility = 'visible';
+        setRunning(false);
+        if (!opts?.silent) {
+          alertDismissedThisRun = false;
+          hidePersonAlert();
+          applyState('idle');
+          if (logList) logList.innerHTML = '<li><span class="a6d-log__time mono">—</span><span class="a6d-log__msg">SYSTEM READY · Press Run Autonomous Demo to begin.</span></li>';
+          logSeeded = false;
+        }
+      }
+
+      const restartPresentation = () => {
+        wiceCancelIntro?.();
+        wiceCancelIntro = null;
+        wiceEstopLatched = false;
+        alertDismissedThisRun = false;
+        hidePersonAlert();
+        goToStage(0, false);
+      };
+
+      wiceBtn?.addEventListener('click', startPresentation);
+      wicePrevBtn?.addEventListener('click', () => { if (wiceStageIndex > 0) goToStage(wiceStageIndex - 1, false); });
+      wiceNextBtn?.addEventListener('click', () => { if (wiceStageIndex < totalStages - 1) goToStage(wiceStageIndex + 1, true); });
+      wiceInfoNextBtn?.addEventListener('click', () => { if (wiceStageIndex < totalStages - 1) goToStage(wiceStageIndex + 1, true); });
+      wicePlayBtn?.addEventListener('click', () => { if (wicePlayback !== 'playing_stage') goToStage(wiceStageIndex, true); });
+      wicePauseBtn?.addEventListener('click', () => {
+        if (wicePlayback !== 'playing_stage') return;
+        wiceCancelIntro?.();
+        wiceCancelIntro = null;
+        wicePlayback = 'paused';
+        updateControlBarState();
+      });
+      wiceRestartBtn?.addEventListener('click', restartPresentation);
+      wiceExitBtn?.addEventListener('click', () => exitPresentation());
+      wiceNotesToggleBtn?.addEventListener('click', () => {
+        const show = wiceNotesPanel?.hidden ?? true;
+        if (wiceNotesPanel) wiceNotesPanel.hidden = !show;
+        wiceNotesToggleBtn.setAttribute('aria-expanded', String(show));
+      });
+      wiceNotesHideBtn?.addEventListener('click', () => {
+        if (wiceNotesPanel) wiceNotesPanel.hidden = true;
+        wiceNotesToggleBtn?.setAttribute('aria-expanded', 'false');
+      });
+
+      // ---- STOP / RESET ----
+      const freezeMapRobot = () => {
+        if (!mapRobot) return;
+        const computed = getComputedStyle(mapRobot).transform;
+        if (computed && computed !== 'none') {
+          mapRobot.style.transition = 'none';
+          mapRobot.setAttribute('transform', mapRobot.getAttribute('transform') || '');
+          void mapRobot.getBoundingClientRect();
+          mapRobot.style.transition = '';
+        }
+      };
+
+      const stopSimulation = () => {
+        const wasIdle = !isRunning && !wiceActive && currentId === 'idle';
+        clearTimers();
+        freezeMapRobot();
+        setRunning(false);
+        if (wiceActive) {
+          wiceEstopLatched = true;
+          wicePlayback = 'paused';
+          updateControlBarState();
+        }
+        if (twin) twin.classList.remove('is-walking');
+        applyState('emergency_stop');
+        if (!wasIdle) logEvent('SAFETY · EMERGENCY STOP (demo) — all demo motion halted');
+      };
+      root.querySelectorAll<HTMLButtonElement>('[data-stop-btn]').forEach((btn) => btn.addEventListener('click', stopSimulation));
+
+      const resetDemo = () => {
+        exitPresentation({ silent: true });
+        clearTimers();
+        setRunning(false);
+        alertDismissedThisRun = false;
+        hidePersonAlert();
+        applyState('idle');
+        if (logList) logList.innerHTML = '<li><span class="a6d-log__time mono">—</span><span class="a6d-log__msg">SYSTEM READY · Press Run Autonomous Demo to begin.</span></li>';
+        logSeeded = false;
+      };
+      root.querySelectorAll<HTMLButtonElement>('[data-reset-demo]').forEach((btn) => btn.addEventListener('click', resetDemo));
+
+      // ---- replay (scrub through completed states) ----
+      root.querySelectorAll<HTMLButtonElement>('[data-replay-btn]').forEach((btn) => {
+        btn.addEventListener('click', () => {
+          if (btn.disabled) return;
+          clearTimers();
+          exitPresentation({ silent: true });
+          setRunning(false);
+          const id = btn.dataset.stateId as StateId;
+          applyState(id);
+        });
+      });
+
+      // ---- manual control preview (independent of the mission engine) ----
+      const lastCommandEl = root.querySelector<HTMLElement>('[data-last-command]');
+      root.querySelectorAll<HTMLButtonElement>('[data-cmd-btn]').forEach((btn) => {
+        btn.addEventListener('click', () => {
+          const cmd = btn.dataset.cmd || '';
+          if (lastCommandEl) lastCommandEl.textContent = cmd;
+          logEvent(`CONTROL · Demo command: ${cmd} (control preview — not sent to robot)`);
+        });
+      });
+
+      const flashlightBtn = root.querySelector<HTMLButtonElement>('[data-flashlight-btn]');
+      const flashlightState = root.querySelector<HTMLElement>('[data-flashlight-state]');
+      flashlightBtn?.addEventListener('click', () => {
+        const isOn = flashlightState?.textContent === 'ON';
+        if (flashlightState) flashlightState.textContent = isOn ? 'OFF' : 'ON';
+        logEvent(`LIGHTING · Flashlight toggled ${isOn ? 'OFF' : 'ON'} (concept demo)`);
+      });
+
+      // ---- initial paint ----
+      applyState('idle');
+    });
+  };
+
+  initDashboard();
+  document.addEventListener('astro:page-load', initDashboard);
+</script>
+
+<style>
+  .a6d {
+    --a6d-danger: #e5484d;
+    --a6d-danger-bg: rgba(229, 72, 77, 0.12);
+    --a6d-danger-line: rgba(229, 72, 77, 0.4);
+  }
+
+  /* Several elements in this component set their own `display` (grid/flex)
+     for when they're shown, which otherwise silently beats the browser's
+     default `[hidden]{display:none}` UA rule (author origin always wins
+     over UA origin for non-important declarations, regardless of
+     specificity). Force it explicitly so `hidden` always works here. */
+  .a6d [hidden] { display: none !important; }
+
+  /* ---------------- Persistent banner ---------------- */
+  .a6d-banner {
+    background: var(--bg-elev);
+    border-bottom: 1px solid var(--border);
+  }
+  .a6d-banner__inner {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    padding-block: 0.5rem;
+    font-size: 0.68rem;
+    letter-spacing: 0.1em;
+    color: var(--status-dev);
+  }
+  .a6d-banner__dot {
+    width: 6px; height: 6px; border-radius: 50%;
+    background: var(--status-dev);
+    box-shadow: 0 0 0 3px var(--status-dev-bg);
+  }
+
+  /* ---------------- Hero ---------------- */
+  .a6d-hero {
+    position: relative;
+    padding-block: clamp(2.5rem, 6vw, 4rem) clamp(2rem, 5vw, 3rem);
+    overflow: hidden;
+    border-bottom: 1px solid var(--border);
+  }
+  .a6d-hero__inner { position: relative; z-index: 1; max-width: 46rem; }
+  .a6d-hero__title { font-size: clamp(2rem, 5.5vw, 3.2rem); letter-spacing: -0.03em; margin-top: 0.75rem; }
+  .a6d-hero__desc { margin-top: 1rem; font-size: clamp(1rem, 2.2vw, 1.1rem); color: var(--text-muted); max-width: 58ch; }
+  .a6d-hero__links { margin-top: 1.5rem; display: flex; gap: 0.75rem; flex-wrap: wrap; }
+
+  /* ---------------- TOC ---------------- */
+  .a6d-toc {
+    position: sticky; top: 4.25rem; z-index: 50;
+    background: color-mix(in srgb, var(--bg) 92%, transparent);
+    backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
+    border-bottom: 1px solid var(--border);
+  }
+  .a6d-toc .container { display: flex; align-items: center; gap: 1rem; }
+  .a6d-toc__label { font-size: 0.62rem; letter-spacing: 0.16em; text-transform: uppercase; color: var(--text-dim); flex: none; padding-block: 0.75rem; }
+  @media (max-width: 620px) { .a6d-toc__label { display: none; } }
+  .a6d-toc ul { display: flex; gap: 0.25rem; padding-block: 0.5rem; white-space: nowrap; min-width: 0; flex: 1; -webkit-overflow-scrolling: touch; }
+  .a6d-toc a { display: inline-block; padding: 0.4rem 0.7rem; font-size: 0.68rem; letter-spacing: 0.08em; text-transform: uppercase; color: var(--text-muted); border-radius: 5px; transition: color 0.2s var(--ease), background 0.2s var(--ease); }
+  .a6d-toc__toggle {
+    flex: none;
+    display: grid; place-items: center;
+    width: 1.8rem; height: 1.8rem;
+    border: 1px solid var(--border-strong); border-radius: 6px;
+    color: var(--text-muted);
+    transition: color 0.2s var(--ease), border-color 0.2s var(--ease);
+  }
+  .a6d-toc__toggle:hover { color: var(--accent); border-color: var(--accent-line); }
+  .a6d-toc__toggle-icon { display: inline-block; font-size: 0.7rem; transition: transform 0.25s var(--ease); }
+  .a6d-toc[data-collapsed="true"] .a6d-toc__toggle-icon { transform: rotate(180deg); }
+  .a6d-toc[data-collapsed="true"] .a6d-toc__label,
+  .a6d-toc[data-collapsed="true"] ul { display: none; }
+  .a6d-toc[data-collapsed="true"] .container { padding-block: 0.3rem; }
+  .a6d-toc a:hover { color: var(--text); background: rgba(255, 255, 255, 0.04); }
+
+  .a6d-section { padding-block: clamp(2.75rem, 6vw, 5rem); }
+  .band { border-block: 1px solid var(--border); background: var(--bg-elev); }
+
+  /* Local copies of page-scoped grid utilities from the main ARGUS-6 page. */
+  .two-col { display: grid; gap: 2rem; }
+  @media (min-width: 900px) {
+    .two-col { grid-template-columns: 1fr 1fr; gap: 3rem; align-items: start; }
+    .two-col--wide-left { grid-template-columns: 0.85fr 1.15fr; }
+  }
+  .prose--wide { max-width: none; margin-top: 2rem; }
+
+  /* ---------------- Shared bits ---------------- */
+  .a6d-demo-chip {
+    display: inline-flex; align-items: center;
+    font-family: var(--font-mono); font-size: 0.58rem; letter-spacing: 0.14em; text-transform: uppercase;
+    color: var(--status-dev); background: var(--status-dev-bg);
+    border: 1px solid color-mix(in srgb, var(--status-dev) 40%, transparent);
+    padding: 0.18rem 0.5rem; border-radius: 999px; white-space: nowrap;
+  }
+  .a6d-panel-title { font-size: 0.8rem; letter-spacing: 0.1em; text-transform: uppercase; color: var(--text); margin-bottom: 0.75rem; }
+  .a6d-panel-subtitle { font-size: 0.68rem; letter-spacing: 0.08em; text-transform: uppercase; color: var(--text-dim); margin: 1rem 0 0.6rem; }
+  .a6d-microcaveat { font-size: 0.66rem; letter-spacing: 0.04em; color: var(--text-dim); }
+
+  .a6d-metric-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 0.6rem; margin: 0.75rem 0; }
+  .a6d-metric-grid--wide { grid-template-columns: 1fr; }
+  @media (min-width: 420px) { .a6d-metric-grid--wide { grid-template-columns: repeat(2, 1fr); } }
+  .a6d-metric-grid > div { padding: 0.55rem 0.7rem; border: 1px solid var(--border); border-radius: var(--radius-sm); }
+  .a6d-metric-grid dt { font-size: 0.56rem; letter-spacing: 0.1em; text-transform: uppercase; color: var(--text-dim); }
+  .a6d-metric-grid dd { font-size: 0.86rem; color: var(--text); margin-top: 0.15rem; }
+
+  /* ---------------- Command center grid ---------------- */
+  .a6d-command { padding-block: clamp(1.75rem, 4vw, 2.5rem); }
+  .a6d-command__container { display: grid; gap: 1.25rem; }
+  .a6d-grid-2 { display: grid; gap: 1.25rem; }
+  @media (min-width: 940px) {
+    .a6d-grid-2 { grid-template-columns: 1fr 1fr; align-items: start; }
+    .a6d-grid-2--camera { grid-template-columns: 1.7fr 1fr; }
+    .a6d-grid-2--log { grid-template-columns: 1.2fr 1fr; }
+  }
+  /* Grid/flex items default to a content-based min-width, which lets
+     unbroken content (long button rows, long labels) force a track wider
+     than the viewport instead of wrapping within it. Force them to
+     actually respect their track/container width everywhere in this
+     layout. */
+  .a6d-command__container > *,
+  .a6d-grid-2 > *,
+  .a6d-statusbar > *,
+  .a6d-decision-trace > *,
+  .a6d-metric-grid > * {
+    min-width: 0;
+  }
+
+  /* ---------------- Status bar ---------------- */
+  .a6d-statusbar {
+    padding: 0.9rem 1.2rem;
+    display: flex; flex-wrap: wrap; align-items: center; gap: 0.9rem 1.4rem;
+  }
+  .a6d-statusbar__id { display: grid; gap: 0.1rem; }
+  .a6d-statusbar__name { font-size: 1rem; letter-spacing: 0.08em; font-weight: 600; }
+  .a6d-statusbar__task { font-size: 0.62rem; letter-spacing: 0.1em; color: var(--text-dim); text-transform: uppercase; }
+  .a6d-statusbar__flag { display: inline-flex; align-items: center; gap: 0.4rem; font-size: 0.62rem; letter-spacing: 0.1em; color: var(--status-dev); }
+  .a6d-statusbar__flag-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--status-dev); box-shadow: 0 0 0 3px var(--status-dev-bg); }
+
+  .a6d-mode-select { display: inline-flex; border: 1px solid var(--border-strong); border-radius: 999px; padding: 0.2rem; gap: 0.2rem; }
+  .a6d-mode-btn { font-family: var(--font-mono); font-size: 0.66rem; letter-spacing: 0.1em; text-transform: uppercase; padding: 0.4rem 0.85rem; border-radius: 999px; color: var(--text-muted); transition: background 0.2s var(--ease), color 0.2s var(--ease); }
+  .a6d-mode-btn.is-active { background: var(--accent-soft); color: var(--accent); }
+
+  .a6d-demo-actions { display: flex; gap: 0.6rem; flex-wrap: wrap; margin-left: auto; }
+  .a6d-run-btn, .a6d-wice-btn { font-size: 0.7rem; padding: 0.6rem 1rem; }
+  .a6d-run-btn:disabled, .a6d-wice-btn:disabled { opacity: 0.45; pointer-events: none; }
+
+  .a6d-stop-btn {
+    font-size: 0.72rem; font-weight: 700; letter-spacing: 0.1em;
+    padding: 0.6rem 1.1rem;
+    color: var(--a6d-danger); background: var(--a6d-danger-bg);
+    border: 1px solid var(--a6d-danger-line); border-radius: var(--radius-sm);
+    transition: background 0.2s var(--ease), transform 0.15s var(--ease);
+  }
+  .a6d-stop-btn:hover { background: color-mix(in srgb, var(--a6d-danger) 20%, transparent); }
+  .a6d-stop-btn:active { transform: scale(0.97); }
+
+  /* ---------------- Guided WICE Presentation control bar ---------------- */
+  .a6d-wice-bar {
+    padding: 0.85rem 1.1rem;
+    display: grid; gap: 0.6rem;
+    border-left: 2px solid var(--accent);
+  }
+  .a6d-wice-bar__top { display: flex; align-items: center; gap: 0.75rem; flex-wrap: wrap; }
+  .a6d-wice-bar__label { font-size: 0.68rem; letter-spacing: 0.12em; color: var(--text); font-weight: 600; }
+  .a6d-wice-bar__guided {
+    display: inline-flex; align-items: center; gap: 0.35rem;
+    font-size: 0.6rem; letter-spacing: 0.1em; color: var(--accent);
+  }
+  .a6d-wice-bar__dot { width: 6px; height: 6px; border-radius: 50%; background: var(--accent); box-shadow: 0 0 0 3px var(--accent-soft); }
+  .a6d-wice-bar__spacer { flex: 1; }
+  .a6d-wice-bar__controls { display: flex; align-items: center; gap: 0.4rem; flex-wrap: wrap; }
+  .a6d-wice-bar__stage { font-size: 0.7rem; color: var(--text-dim); letter-spacing: 0.03em; }
+  .a6d-wice-bar__stage-title { margin-left: 0.5rem; color: var(--accent); letter-spacing: 0.08em; }
+
+  .a6d-wice-ctrl {
+    font-size: 0.62rem; letter-spacing: 0.06em; padding: 0.4rem 0.75rem;
+    border: 1px solid var(--border-strong); border-radius: 6px; color: var(--text-muted);
+    transition: color 0.2s var(--ease), border-color 0.2s var(--ease), opacity 0.2s var(--ease);
+  }
+  .a6d-wice-ctrl:hover:not(:disabled) { color: var(--accent); border-color: var(--accent-line); }
+  .a6d-wice-ctrl:disabled { opacity: 0.4; pointer-events: none; }
+  .a6d-wice-ctrl--primary { color: var(--accent); border-color: var(--accent-line); background: var(--accent-soft); font-weight: 600; }
+  .a6d-wice-ctrl--notes[aria-expanded="true"] { color: var(--accent); border-color: var(--accent-line); }
+
+  .a6d-wice-notes {
+    padding: 0.75rem 0.9rem; border: 1px dashed var(--border-strong); border-radius: var(--radius-sm);
+    display: grid; gap: 0.4rem; justify-items: start;
+  }
+  .a6d-wice-notes__label { font-size: 0.58rem; letter-spacing: 0.12em; color: var(--text-dim); }
+  .a6d-wice-notes__text { font-size: 0.82rem; color: var(--text-muted); margin: 0; max-width: 62ch; }
+
+  /* ---------------- Guided WICE Presentation info panel ---------------- */
+  .a6d-wice-info { padding: 1rem 1.2rem; border-left: 2px solid var(--accent-line); display: grid; gap: 0.4rem; }
+  .a6d-wice-info__eyebrow { font-size: 0.58rem; letter-spacing: 0.14em; color: var(--text-dim); }
+  .a6d-wice-info__stage { font-size: 0.66rem; letter-spacing: 0.08em; color: var(--accent); }
+  .a6d-wice-info__title { font-size: 1.05rem; letter-spacing: 0.02em; margin: 0.1rem 0 0.4rem; }
+  .a6d-wice-info__row { display: grid; gap: 0.1rem; margin-top: 0.3rem; }
+  .a6d-wice-info__key { font-size: 0.56rem; letter-spacing: 0.1em; text-transform: uppercase; color: var(--text-dim); }
+  .a6d-wice-info__row p { margin: 0; font-size: 0.88rem; color: var(--text); }
+  .a6d-wice-info__next { margin-top: 0.6rem; justify-self: start; font-size: 0.68rem; padding: 0.55rem 0.9rem; }
+  .a6d-wice-info__next:disabled { opacity: 0.45; pointer-events: none; }
+
+  /* ---------------- Target candidates (Stage 4 reveal) ---------------- */
+  .a6d-target-candidates { margin: 0.75rem 0; }
+  .a6d-candidate-list { display: grid; gap: 0.3rem; }
+  .a6d-candidate-list li {
+    display: grid; grid-template-columns: auto 1fr auto; gap: 0.75rem; align-items: baseline;
+    padding: 0.45rem 0.65rem; border: 1px solid var(--border); border-radius: 6px;
+    font-size: 0.78rem; color: var(--text-muted);
+    transition: border-color 0.3s var(--ease), background 0.3s var(--ease), color 0.3s var(--ease);
+  }
+  .a6d-candidate-list li.is-selected { color: var(--accent); border-color: var(--accent-line); background: var(--accent-soft); font-weight: 600; }
+
+  /* ---------------- Guided presentation emphasis ----------------
+     Highlights the panel(s) relevant to the current stage — nothing else
+     is dimmed or greyed out; every panel stays fully visible throughout. */
+  .a6d[data-argus-dashboard] [data-emphasis-group] {
+    transition: box-shadow 0.3s var(--ease);
+  }
+  .a6d.is-wice-active [data-emphasis-group].is-emphasis-active { box-shadow: 0 0 0 1px var(--accent-line); border-radius: var(--radius-sm); }
+  /* The fast-demo completion / e-stop banners have their own dedicated
+     treatment inside the presentation control bar / info panel — avoid
+     showing both at once, since their buttons (Run Again / Reset) would
+     otherwise hijack the presenter out of guided mode. */
+  .a6d.is-wice-active .a6d-complete-banner,
+  .a6d.is-wice-active .a6d-estop-banner {
+    display: none !important;
+  }
+
+  /* Bounding boxes appearing during the Stage 2 perception reveal */
+  .a6d-bbox.is-revealing { animation: a6d-bbox-in 0.4s var(--ease); }
+  @keyframes a6d-bbox-in { from { opacity: 0; transform: scale(0.85); } to { opacity: 1; transform: scale(1); } }
+
+  /* ---------------- Camera ---------------- */
+  .a6d-camera { padding: 1rem; }
+  .a6d-camera__viewport {
+    position: relative; aspect-ratio: 16 / 9; border-radius: var(--radius-sm); overflow: hidden;
+    background: radial-gradient(ellipse at 30% 20%, rgba(91,157,255,0.08), transparent 55%), linear-gradient(180deg, #0c1016 0%, #0a0d12 55%, #05070a 100%);
+    border: 1px solid var(--border-strong);
+  }
+  .a6d-camera__horizon { position: absolute; left: 0; right: 0; bottom: 0; height: 42%; background: linear-gradient(180deg, transparent, rgba(63,185,80,0.05) 40%, rgba(20,26,20,0.35)); border-top: 1px solid rgba(255,255,255,0.05); }
+  .a6d-camera__scanlines { position: absolute; inset: 0; background: repeating-linear-gradient(180deg, rgba(255,255,255,0.025) 0px, rgba(255,255,255,0.025) 1px, transparent 1px, transparent 3px); mix-blend-mode: overlay; pointer-events: none; }
+  .a6d-camera__vignette { position: absolute; inset: 0; box-shadow: inset 0 0 6rem rgba(0,0,0,0.6); pointer-events: none; }
+
+  .a6d-camera__corner { position: absolute; width: 16px; height: 16px; border: 1.5px solid rgba(91,157,255,0.55); }
+  .a6d-camera__corner--tl { top: 10px; left: 10px; border-right: 0; border-bottom: 0; }
+  .a6d-camera__corner--tr { top: 10px; right: 10px; border-left: 0; border-bottom: 0; }
+  .a6d-camera__corner--bl { bottom: 10px; left: 10px; border-right: 0; border-top: 0; }
+  .a6d-camera__corner--br { bottom: 10px; right: 10px; border-left: 0; border-top: 0; }
+
+  .a6d-camera__tag { position: absolute; top: 12px; left: 34px; display: flex; align-items: center; gap: 0.4rem; font-size: 0.6rem; letter-spacing: 0.1em; color: var(--status-dev); background: rgba(8,9,11,0.55); padding: 0.2rem 0.5rem; border-radius: 4px; }
+
+  .a6d-camera__standby, .a6d-camera__complete {
+    position: absolute; inset: 0; display: grid; place-items: center;
+    font-size: 0.78rem; letter-spacing: 0.08em; color: var(--text-dim); text-align: center; padding: 1rem;
+  }
+  .a6d-camera__complete { color: var(--status-working); font-size: 1rem; letter-spacing: 0.14em; }
+
+  .a6d-camera__readout { position: absolute; right: 10px; bottom: 10px; display: flex; align-items: center; gap: 0.6rem; font-size: 0.64rem; color: var(--text-muted); background: rgba(8,9,11,0.55); padding: 0.3rem 0.6rem; border-radius: 6px; }
+  .a6d-camera__readout b { color: var(--text); }
+
+  .a6d-bbox {
+    position: absolute; border: 1.5px solid #3fb950; border-radius: 3px;
+    box-shadow: 0 0 0 1px rgba(0,0,0,0.4);
+    transition: left 0.9s var(--ease), top 0.9s var(--ease), width 0.9s var(--ease), height 0.9s var(--ease), box-shadow 0.3s var(--ease), border-color 0.3s var(--ease);
+  }
+  .a6d-bbox--person { border-color: #d9a441; }
+  .a6d-bbox.is-highlighted { box-shadow: 0 0 0 3px rgba(255,255,255,0.2), 0 0 16px rgba(63,185,80,0.4); }
+  .a6d-bbox__label { position: absolute; top: -1.4rem; left: -1.5px; font-size: 0.56rem; letter-spacing: 0.03em; white-space: nowrap; color: #0a0f0a; background: #3fb950; padding: 0.12rem 0.4rem; border-radius: 3px 3px 3px 0; }
+  .a6d-bbox--person .a6d-bbox__label { color: #1a1305; background: #d9a441; }
+  .a6d-bbox__label b { font-weight: 700; }
+  .a6d-bbox__status { position: absolute; bottom: -1.3rem; left: -1.5px; font-size: 0.54rem; letter-spacing: 0.06em; color: var(--accent); background: rgba(8,9,11,0.7); padding: 0.1rem 0.35rem; border-radius: 3px; white-space: nowrap; }
+
+  /* ---------------- Map ---------------- */
+  .a6d-map { position: relative; padding: 1rem; }
+  .a6d-map__tag { position: absolute; top: 1rem; left: 1rem; z-index: 1; }
+  .a6d-map__svg { width: 100%; height: auto; display: block; }
+  .a6d-map__label { font: 500 8px var(--font-mono); letter-spacing: 0.02em; }
+  .a6d-map-legend { display: grid; gap: 0.5rem; margin-top: 0.75rem; font-size: 0.76rem; color: var(--text-muted); }
+  .a6d-map-legend li { display: flex; align-items: center; gap: 0.6rem; }
+  .a6d-legend-swatch { width: 10px; height: 10px; border-radius: 50%; flex: none; }
+  .a6d-legend-swatch--ring { background: transparent; border: 2px solid; }
+  .a6d-legend-swatch--square { background: transparent; border: 1.5px solid var(--accent); border-radius: 3px; }
+  .a6d-legend-swatch--dash { width: 16px; height: 0; border-top: 1.5px dashed var(--border-strong); border-radius: 0; }
+
+  .a6d-map__svg [data-map-robot] { transition: transform 2.4s var(--ease); }
+  .a6d-map__svg path[data-route-out], .a6d-map__svg path[data-route-back] { transition: stroke-dashoffset 2s var(--ease); }
+  .a6d-map__svg path[data-route-out].is-drawn, .a6d-map__svg path[data-route-back].is-drawn { stroke-dashoffset: 0; }
+  .a6d-map__svg [data-map-target-ring] { transition: opacity 0.3s var(--ease); }
+  .a6d-map__svg [data-map-target-ring].is-locked { animation: a6d-ring-pulse 1.8s ease-in-out infinite; }
+  @keyframes a6d-ring-pulse { 0%, 100% { r: 10; opacity: 0.5; } 50% { r: 14; opacity: 0.12; } }
+
+  /* ---------------- Target / decision panel ---------------- */
+  .a6d-target-panel, .a6d-twin-panel { padding: 1.2rem; }
+  .a6d-target-panel__head, .a6d-twin-panel__head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 0.6rem; }
+  .a6d-target-status { font-size: 0.95rem; color: var(--accent); letter-spacing: 0.04em; }
+
+  .a6d-decision-trace { display: grid; grid-template-columns: repeat(2, 1fr); gap: 0.5rem; font-size: 0.78rem; }
+  .a6d-decision-trace > div { padding: 0.5rem 0.65rem; border: 1px solid var(--border); border-radius: 6px; }
+  .a6d-decision-trace dt { font-size: 0.56rem; letter-spacing: 0.08em; text-transform: uppercase; color: var(--text-dim); }
+  .a6d-decision-trace dd { color: var(--text); margin-top: 0.15rem; }
+  .a6d-decision-trace__selected { grid-column: 1 / -1; border-color: var(--accent-line) !important; background: var(--accent-soft); }
+  .a6d-decision-trace__selected dd { color: var(--accent); font-weight: 600; font-size: 0.88rem; }
+  .a6d-decision-trace__why { grid-column: 1 / -1; }
+  .a6d-decision-trace__why dd { color: var(--text-muted); line-height: 1.5; }
+  .a6d-decision-trace__idle { grid-column: 1 / -1; padding: 0.6rem 0.75rem; color: var(--text-dim); border: 1px dashed var(--border-strong); border-radius: 6px; }
+
+  /* ---------------- Digital twin ---------------- */
+  .a6d-twin { padding: 0.5rem; }
+  .a6d-twin__svg { width: 100%; height: auto; display: block; }
+  .a6d-twin__body { fill: var(--surface-raised); stroke: var(--accent-line); stroke-width: 1.5; }
+  .a6d-twin__leg { transform-box: view-box; }
+  .a6d-twin__leg--l1 { transform-origin: 88px 76px; }
+  .a6d-twin__leg--l2 { transform-origin: 88px 85px; }
+  .a6d-twin__leg--l3 { transform-origin: 88px 94px; }
+  .a6d-twin__leg--r1 { transform-origin: 132px 76px; }
+  .a6d-twin__leg--r2 { transform-origin: 132px 85px; }
+  .a6d-twin__leg--r3 { transform-origin: 132px 94px; }
+  .a6d-twin__thigh, .a6d-twin__shin { fill: none; stroke: var(--text-muted); stroke-width: 2.5; stroke-linecap: round; }
+  .a6d-twin__foot { fill: var(--accent); }
+  .a6d-twin__heading { fill: var(--accent); opacity: 0.85; }
+
+  .a6d-twin.is-walking .a6d-twin__leg { animation: a6d-twin-step 0.9s ease-in-out infinite; }
+  .a6d-twin.is-walking .a6d-twin__leg--r1,
+  .a6d-twin.is-walking .a6d-twin__leg--l2,
+  .a6d-twin.is-walking .a6d-twin__leg--r3 { animation-delay: 0.45s; }
+  @keyframes a6d-twin-step { 0%, 100% { transform: rotate(-7deg); opacity: 1; } 50% { transform: rotate(7deg); opacity: 0.8; } }
+
+  .a6d-twin__arm { transform-box: view-box; transform-origin: 118px 78px; transition: transform 0.9s var(--ease); }
+  .a6d-twin__arm[data-pose="reach-target"] { transform: rotate(-38deg); }
+  .a6d-twin__arm[data-pose="reach-bin"] { transform: rotate(48deg); }
+  .a6d-twin__arm-upper, .a6d-twin__arm-lower { fill: none; stroke: var(--accent); stroke-width: 3; stroke-linecap: round; }
+  .a6d-twin__gripper-finger { fill: none; stroke: var(--accent); stroke-width: 2.5; stroke-linecap: round; transform-box: fill-box; transform-origin: 0 0; transition: transform 0.4s var(--ease); }
+  .a6d-twin__gripper[data-state="closed"] .a6d-twin__gripper-finger--a { transform: rotate(12deg); }
+  .a6d-twin__gripper[data-state="closed"] .a6d-twin__gripper-finger--b { transform: rotate(-12deg); }
+
+  /* ---------------- Mission timeline ---------------- */
+  .a6d-timeline-panel { padding: 1.1rem 1.2rem; }
+  .a6d-timeline-panel__head { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 0.5rem; margin-bottom: 0.9rem; }
+  .a6d-mission-label { font-size: 0.72rem; color: var(--accent); letter-spacing: 0.02em; }
+  .a6d-state-machine { display: flex; gap: 0.5rem; padding-bottom: 0.2rem; }
+  .a6d-state {
+    display: flex; align-items: center; gap: 0.4rem; flex: none;
+    padding: 0.5rem 0.75rem; border: 1px solid var(--border); border-radius: 999px;
+    font-size: 0.7rem; color: var(--text-dim);
+    transition: border-color 0.2s var(--ease), color 0.2s var(--ease), background 0.2s var(--ease);
+  }
+  .a6d-state__num { color: var(--text-dim); font-size: 0.6rem; }
+  .a6d-state.is-current { color: var(--accent); border-color: var(--accent-line); background: var(--accent-soft); }
+  .a6d-state.is-current .a6d-state__num { color: var(--accent); }
+
+  /* ---------------- Event log ---------------- */
+  .a6d-log { padding: 1.1rem; }
+  .a6d-log__head { display: flex; align-items: center; justify-content: space-between; gap: 1rem; margin-bottom: 0.6rem; }
+  .a6d-log__head .a6d-panel-title { margin-bottom: 0; }
+  .a6d-log__list { display: grid; gap: 0.1rem; max-height: 300px; overflow-y: auto; scrollbar-width: thin; scrollbar-color: var(--border-strong) transparent; }
+  .a6d-log__list li { display: flex; gap: 0.75rem; padding: 0.4rem 0.3rem; font-size: 0.78rem; border-bottom: 1px solid var(--border); }
+  .a6d-log__list li:last-child { border-bottom: 0; }
+  .a6d-log__time { color: var(--text-dim); flex: none; }
+  .a6d-log__msg { color: var(--text-muted); }
+
+  /* ---------------- Quick control ---------------- */
+  .a6d-quickcontrol { padding: 1.1rem; }
+  .a6d-quickcontrol__flag { display: inline-flex; margin-bottom: 1rem; }
+  /* AUTONOMOUS mode: the mission system has control authority, so the
+     manual controls read as unavailable — dimmed, and (via the real
+     `disabled` attribute set in JS) inert to click and keyboard alike. */
+  .a6d-quickcontrol__locked {
+    font-size: 0.68rem; letter-spacing: 0.06em; color: var(--accent);
+    margin-bottom: 1rem;
+  }
+  .a6d-quickcontrol__body {
+    transition: opacity 0.25s var(--ease);
+  }
+  .a6d.is-mode-autonomous .a6d-quickcontrol__body {
+    opacity: 0.4;
+  }
+  .a6d-dpad__btn:disabled,
+  .a6d-turn-row .btn:disabled,
+  .a6d-toggle-btn:disabled {
+    cursor: not-allowed;
+    pointer-events: none;
+  }
+  .a6d-dpad { display: grid; grid-template-columns: repeat(3, 2.9rem); grid-template-rows: repeat(3, 2.9rem); gap: 0.35rem; justify-content: center; margin-bottom: 0.9rem; }
+  .a6d-dpad__btn { border: 1px solid var(--border-strong); border-radius: var(--radius-sm); background: var(--surface-raised); color: var(--text); font-size: 1rem; transition: border-color 0.2s var(--ease), transform 0.15s var(--ease); }
+  .a6d-dpad__btn:hover { border-color: var(--accent-line); }
+  .a6d-dpad__btn:active { transform: scale(0.94); }
+  .a6d-dpad__btn--up { grid-column: 2; grid-row: 1; }
+  .a6d-dpad__btn--left { grid-column: 1; grid-row: 2; }
+  .a6d-dpad__btn--stop { grid-column: 2; grid-row: 2; font-family: var(--font-mono); font-size: 0.58rem; color: var(--a6d-danger); border-color: var(--a6d-danger-line); background: var(--a6d-danger-bg); }
+  .a6d-dpad__btn--right { grid-column: 3; grid-row: 2; }
+  .a6d-dpad__btn--down { grid-column: 2; grid-row: 3; }
+  .a6d-turn-row { display: flex; gap: 0.5rem; flex-wrap: wrap; margin-bottom: 0.9rem; }
+  .a6d-turn-row .btn { padding: 0.55rem 0.9rem; font-size: 0.64rem; }
+  .a6d-toggle-btn { font-size: 0.62rem; letter-spacing: 0.06em; padding: 0.55rem 0.8rem; border: 1px solid var(--border-strong); border-radius: var(--radius-sm); color: var(--text-muted); }
+  .a6d-toggle-btn:hover { color: var(--accent); border-color: var(--accent-line); }
+  .a6d-last-command { font-size: 0.76rem; color: var(--text-muted); padding-top: 0.75rem; border-top: 1px solid var(--border); }
+  .a6d-last-command span { color: var(--accent); }
+
+  /* ---------------- Completion / E-STOP banners ---------------- */
+  .a6d-complete-banner, .a6d-estop-banner {
+    padding: 1.1rem 1.3rem; display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 1rem;
+  }
+  .a6d-complete-banner { border-left: 2px solid var(--status-working); }
+  .a6d-estop-banner { border-left: 2px solid var(--a6d-danger); }
+  .a6d-complete-banner__tag { font-size: 0.78rem; letter-spacing: 0.1em; color: var(--status-working); font-weight: 700; }
+  .a6d-estop-banner__tag { font-size: 0.78rem; letter-spacing: 0.1em; color: var(--a6d-danger); font-weight: 700; }
+  .a6d-complete-banner p, .a6d-estop-banner p { margin-top: 0.3rem; font-size: 0.85rem; color: var(--text-muted); }
+  .a6d-complete-banner__actions { display: flex; gap: 0.6rem; flex-wrap: wrap; }
+
+  /* ---------------- Person alert (fixed, slides from left) ---------------- */
+  .a6d-alert {
+    position: fixed; left: 24px; top: 120px; z-index: 400;
+    width: min(320px, calc(100vw - 48px));
+    padding: 1.1rem 1.25rem;
+    background: var(--surface); background-image: var(--surface-grad);
+    border: 1px solid var(--border); border-left: 2px solid var(--a6d-danger);
+    border-radius: var(--radius); box-shadow: var(--shadow-lg);
+    transform: translateX(-130%); opacity: 0;
+    transition: transform 0.5s var(--ease), opacity 0.4s var(--ease);
+  }
+  .a6d-alert.is-visible { transform: translateX(0); opacity: 1; }
+  .a6d-alert__head { display: flex; align-items: center; justify-content: space-between; gap: 1rem; }
+  .a6d-alert__tag { font-size: 0.74rem; letter-spacing: 0.06em; color: var(--a6d-danger); font-weight: 700; }
+  .a6d-alert__close { width: 1.75rem; height: 1.75rem; display: grid; place-items: center; border: 1px solid var(--border-strong); border-radius: 6px; color: var(--text-muted); flex: none; }
+  .a6d-alert__close:hover { color: var(--text); border-color: var(--accent-line); }
+  .a6d-alert__body { margin-top: 0.55rem; font-size: 0.88rem; color: var(--text-muted); }
+  .a6d-alert__meta { display: grid; grid-template-columns: repeat(2, 1fr); gap: 0.5rem 0.75rem; margin: 0.85rem 0; }
+  .a6d-alert__meta dt { display: flex; align-items: center; gap: 0.35rem; font-size: 0.54rem; letter-spacing: 0.08em; text-transform: uppercase; color: var(--text-dim); }
+  .a6d-alert__meta dd { font-size: 0.76rem; color: var(--text); margin-top: 0.15rem; }
+  .a6d-alert__sim { font-size: 0.5rem; letter-spacing: 0.06em; color: var(--status-dev); background: var(--status-dev-bg); border: 1px solid color-mix(in srgb, var(--status-dev) 40%, transparent); padding: 0.05rem 0.3rem; border-radius: 999px; }
+  @media (max-width: 560px) { .a6d-alert { top: auto; bottom: 16px; left: 16px; right: 16px; width: auto; } }
+
+  /* ---------------- Control authority ---------------- */
+  .a6d-authority-col { padding: 1.1rem; opacity: 0.55; transition: opacity 0.3s var(--ease); }
+  .a6d-authority-col.is-active-mode { opacity: 1; }
+  .a6d-authority-col__label { font-size: 0.72rem; letter-spacing: 0.1em; color: var(--text-muted); display: block; margin-bottom: 0.75rem; }
+  .a6d-authority-chain { display: grid; gap: 0.35rem; }
+  .a6d-authority-chain li {
+    padding: 0.5rem 0.75rem; border: 1px solid var(--border); border-radius: 6px;
+    font-size: 0.78rem; color: var(--text-dim); text-align: center;
+    transition: border-color 0.25s var(--ease), color 0.25s var(--ease), background 0.25s var(--ease);
+  }
+  .a6d-authority-chain li + li { margin-top: 0; }
+  .a6d-authority-chain li.is-active { color: var(--accent); border-color: var(--accent-line); background: var(--accent-soft); }
+
+  /* ---------------- Autonomy stack ---------------- */
+  .a6d-autonomy-stack { display: grid; gap: 0.4rem; max-width: 420px; margin-inline: auto; }
+  .a6d-autonomy-stack li {
+    padding: 0.65rem 1rem; border: 1px solid var(--border); border-radius: var(--radius-sm);
+    text-align: center; transition: border-color 0.25s var(--ease), background 0.25s var(--ease);
+  }
+  .a6d-autonomy-stack__label { font-size: 0.78rem; letter-spacing: 0.06em; color: var(--text-muted); }
+  .a6d-autonomy-stack li.is-active { border-color: var(--accent-line); background: var(--accent-soft); }
+  .a6d-autonomy-stack li.is-active .a6d-autonomy-stack__label { color: var(--accent); }
+
+  /* ---------------- Replay ---------------- */
+  .a6d-replay-track { display: flex; gap: 0.5rem; padding-bottom: 0.75rem; margin-bottom: 1rem; }
+  .a6d-replay-dot { display: flex; flex-direction: column; align-items: center; gap: 0.3rem; flex: none; padding: 0.5rem 0.4rem; opacity: 0.5; }
+  .a6d-replay-dot:not(:disabled) { opacity: 1; cursor: pointer; }
+  .a6d-replay-dot__marker { width: 9px; height: 9px; border-radius: 50%; background: var(--border-strong); transition: background 0.2s var(--ease); }
+  .a6d-replay-dot:not(:disabled):hover .a6d-replay-dot__marker { background: var(--accent); }
+  .a6d-replay-dot span.mono { font-size: 0.6rem; letter-spacing: 0.04em; color: var(--text-dim); }
+  .a6d-replay-run:disabled { opacity: 0.45; pointer-events: none; }
+  .a6d-replay-note { font-size: 0.8rem; margin-top: 0.75rem; }
+
+  /* ---------------- System health ---------------- */
+  .a6d-health-list { padding: 0.5rem; margin-bottom: 1.25rem; }
+  .a6d-health-row { display: flex; align-items: center; gap: 0.8rem; padding: 0.65rem 0.75rem; border-bottom: 1px solid var(--border); }
+  .a6d-health-row:last-child { border-bottom: 0; }
+  .a6d-health-dot { width: 8px; height: 8px; border-radius: 50%; flex: none; background: var(--status-working); box-shadow: 0 0 0 3px var(--status-working-bg); }
+  .a6d-health-name { font-size: 0.85rem; color: var(--text); flex: 1; }
+  .a6d-health-state { font-size: 0.66rem; color: var(--text-dim); letter-spacing: 0.04em; }
+  .a6d-lighting { padding: 1.25rem; }
+
+  /* ---------------- Safety ---------------- */
+  .a6d-safety-card { padding: 1.4rem; display: grid; gap: 1.1rem; }
+  .a6d-estop-btn {
+    justify-self: start; font-size: 0.78rem; font-weight: 600; letter-spacing: 0.08em;
+    padding: 0.9rem 1.4rem; border: 1px solid var(--a6d-danger-line); border-radius: var(--radius-sm);
+    color: var(--a6d-danger); background: var(--a6d-danger-bg);
+    transition: background 0.2s var(--ease), transform 0.15s var(--ease);
+  }
+  .a6d-estop-btn:hover { background: color-mix(in srgb, var(--a6d-danger) 20%, transparent); }
+  .a6d-estop-btn:active { transform: scale(0.98); }
+
+  /* ---------------- Controller mapping ---------------- */
+  .a6d-controller-grid { display: grid; gap: 1rem; }
+  @media (min-width: 640px) { .a6d-controller-grid { grid-template-columns: repeat(3, 1fr); } }
+  @media (min-width: 960px) { .a6d-controller-grid { grid-template-columns: repeat(5, 1fr); } }
+  .a6d-controller-card { padding: 1.1rem; display: grid; gap: 0.4rem; text-align: center; justify-items: center; }
+  .a6d-controller-card__key { font-size: 0.75rem; letter-spacing: 0.08em; color: var(--accent); }
+  .a6d-controller-card p { font-size: 0.85rem; color: var(--text-muted); }
+
+  /* ---------------- Implementation status ---------------- */
+  .a6d-status-table { padding: 0.5rem; display: grid; }
+  .a6d-status-table li { display: flex; align-items: center; justify-content: space-between; gap: 1rem; padding: 0.75rem 1rem; border-bottom: 1px solid var(--border); }
+  .a6d-status-table li:last-child { border-bottom: 0; }
+  .a6d-status-table__label { font-size: 0.88rem; color: var(--text); }
+
+  /* ---------------- Comparison ---------------- */
+  .a6d-compare-grid { align-items: start; }
+  .a6d-compare-col { padding: 1.4rem; }
+  .a6d-compare-list { display: grid; gap: 0.65rem; }
+  .a6d-compare-list li { display: flex; align-items: baseline; gap: 0.6rem; font-size: 0.9rem; color: var(--text-muted); }
+  .a6d-check { color: var(--status-working); font-weight: 700; }
+  .a6d-circle { color: var(--status-planned); }
+  .a6d-compare-col--planned .a6d-panel-title { color: var(--text-muted); }
+
+  /* ---------------- Footer CTA ---------------- */
+  .a6d-cta__panel { padding: clamp(1.5rem, 4vw, 2.5rem); display: grid; gap: 1.5rem; }
+  @media (min-width: 780px) { .a6d-cta__panel { grid-template-columns: 1fr auto; align-items: center; } }
+  .a6d-cta__panel h2 { font-size: 1.05rem; letter-spacing: 0.04em; margin-bottom: 0.5rem; }
+  .a6d-cta__panel p { max-width: 60ch; font-size: 0.95rem; }
+  .a6d-cta__links { display: flex; gap: 0.75rem; flex-wrap: wrap; }
+
+  @media (prefers-reduced-motion: reduce) {
+    .a6d-twin__leg, .a6d-bbox, .a6d-map__svg [data-map-robot],
+    .a6d-map__svg path[data-route-out], .a6d-map__svg path[data-route-back],
+    .a6d-map__svg [data-map-target-ring], .a6d-twin__arm, .a6d-twin__gripper-finger,
+    .a6d-alert {
+      animation: none !important;
+      transition-duration: 0.001ms !important;
+    }
+  }
+</style>

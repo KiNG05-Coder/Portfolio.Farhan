@@ -32,6 +32,7 @@ export const nav = [
   { label: 'Home', href: '/' },
   { label: 'Portfolio', href: '/portfolio' },
   { label: 'ARGUS-6', href: '/argus-6' },
+  { label: 'Dashboard', href: '/argus-6/dashboard' },
   { label: 'EcoGuard', href: '/ecoguard' },
   { label: 'Documentation', href: '/documentation' },
   { label: 'Contact', href: '/contact' },
