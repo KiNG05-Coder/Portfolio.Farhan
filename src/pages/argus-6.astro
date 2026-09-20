@@ -19,6 +19,7 @@ import { implemented, planned } from '../data/prototype';
 import { roadmap } from '../data/roadmap';
 import { theoryCategories } from '../data/theory';
 import { mediaSlots } from '../data/media';
+import { targetMarkets, valueProps, commercializationPathway } from '../data/commercialization';
 import { link } from '../lib/link';
 
 const sections = [
@@ -39,6 +40,7 @@ const sections = [
   ['theory', 'Concepts & Theory'],
   ['decisions', 'Engineering Decisions'],
   ['testing', 'Testing & Development'],
+  ['commercialization', 'Commercialization'],
 ];
 
 const structuralStats = [
@@ -735,6 +737,90 @@ const problemTable = [
     </div>
   </section>
 
+  {/* ---------------- COMMERCIALIZATION ---------------- */}
+  <section class="section" id="commercialization">
+    <div class="container">
+      <SectionHeading
+        eyebrow="Commercialization"
+        title="Commercialization & Market Potential"
+        lead="Turning a multifunctional field-robotics prototype into an affordable platform for real-world applications."
+      />
+
+      <div class="commerce-stack">
+        <div class="commerce-group">
+          <span class="commerce-label mono">Target Markets</span>
+          <div class="market-grid stagger">
+            {targetMarkets.map((m) => (
+              <div class="market-card panel" data-reveal>
+                <h3 class="market-card__title">{m.name}</h3>
+                <ul class="market-card__list">
+                  {m.points.map((p) => <li>{p}</li>)}
+                </ul>
+              </div>
+            ))}
+          </div>
+          <p class="commerce-caveat text-muted">
+            Potential applications based on the platform's designed capabilities — not existing customers, contracts or confirmed demand.
+          </p>
+        </div>
+
+        <div class="commerce-group">
+          <span class="commerce-label mono">Production &amp; Pricing</span>
+          <div class="econ-grid" data-reveal>
+            <div class="econ-card">
+              <span class="econ-card__label mono">Estimated Production Cost</span>
+              <span class="econ-card__value mono"><span class="econ-card__currency">৳</span>60,000</span>
+              <span class="econ-card__sub">per unit</span>
+            </div>
+            <div class="econ-card">
+              <span class="econ-card__label mono">Proposed Selling Price</span>
+              <span class="econ-card__value mono"><span class="econ-card__currency">৳</span>75,000</span>
+              <span class="econ-card__sub">per unit</span>
+            </div>
+            <div class="econ-card econ-card--margin">
+              <span class="econ-card__label mono">Potential Gross Margin</span>
+              <span class="econ-card__value mono"><span class="econ-card__currency">৳</span>15,000</span>
+              <span class="econ-card__sub">per unit · 20% of selling price</span>
+            </div>
+          </div>
+          <p class="commerce-caveat text-muted">
+            Estimates based on the current prototype configuration. Gross margin is before R&amp;D, labor, marketing, distribution, taxes, warranty, servicing and other operating expenses — it is not net profit.
+          </p>
+        </div>
+
+        <div class="commerce-group">
+          <span class="commerce-label mono">Why ARGUS-6?</span>
+          <div class="value-grid stagger">
+            {valueProps.map((v) => (
+              <div class="value-card panel" data-reveal>
+                <h3 class="value-card__title">{v.title}</h3>
+                <p class="value-card__desc text-muted">{v.description}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        <div class="commerce-group">
+          <span class="commerce-label mono">Commercialization Pathway</span>
+          <Pipeline
+            label="Commercialization pathway"
+            steps={commercializationPathway}
+          />
+        </div>
+      </div>
+
+      <div class="commerce-closing" data-reveal>
+        <p class="commerce-closing__statement">
+          From a student-built prototype to an affordable field robotics platform.
+        </p>
+        <p class="commerce-closing__sub text-muted">
+          ARGUS-6 demonstrates how robotics, AI and modular hardware can be
+          combined into a practical platform for challenging outdoor environments.
+        </p>
+      </div>
+    </div>
+  </section>
+
   {/* ---------------- DOCS LINK ---------------- */}
   <section class="section a6-docs-cta">
     <div class="container">
@@ -938,6 +1024,197 @@ const problemTable = [
     font-size: 0.75rem;
     color: var(--text-dim);
     max-width: 60ch;
+  }
+
+  /* Commercialization */
+  .commerce-stack {
+    display: grid;
+    gap: clamp(2.5rem, 6vw, 4rem);
+  }
+  .commerce-group {
+    display: grid;
+    gap: 1.5rem;
+  }
+  .commerce-label {
+    font-size: 0.7rem;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--text-dim);
+  }
+  .commerce-caveat {
+    font-size: 0.82rem;
+    max-width: 60ch;
+  }
+
+  /* Target markets */
+  .market-grid {
+    display: grid;
+    gap: 1.25rem;
+  }
+  @media (min-width: 640px) {
+    .market-grid {
+      grid-template-columns: repeat(2, 1fr);
+    }
+  }
+  @media (min-width: 1080px) {
+    .market-grid {
+      grid-template-columns: repeat(4, 1fr);
+    }
+  }
+  .market-card {
+    padding: 1.4rem;
+    display: grid;
+    gap: 0.9rem;
+    align-content: start;
+    transition: border-color 0.25s var(--ease), transform 0.25s var(--ease);
+  }
+  .market-card:hover {
+    border-color: var(--accent-line);
+    transform: translateY(-3px);
+  }
+  .market-card__title {
+    font-size: 0.92rem;
+    letter-spacing: 0.02em;
+  }
+  .market-card__list {
+    display: grid;
+    gap: 0.55rem;
+  }
+  .market-card__list li {
+    position: relative;
+    padding-left: 1.1rem;
+    font-size: 0.85rem;
+    color: var(--text-muted);
+  }
+  .market-card__list li::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0.55em;
+    width: 5px;
+    height: 5px;
+    background: var(--accent-line);
+    border-radius: 1px;
+  }
+
+  /* Production economics — the most visually prominent part of the section */
+  .econ-grid {
+    display: grid;
+    gap: 1px;
+    background: var(--border);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    overflow: hidden;
+  }
+  @media (min-width: 780px) {
+    .econ-grid {
+      grid-template-columns: repeat(3, 1fr);
+    }
+  }
+  .econ-card {
+    background: var(--surface);
+    padding: clamp(1.5rem, 4vw, 2.25rem);
+    display: grid;
+    gap: 0.5rem;
+    justify-items: start;
+  }
+  .econ-card--margin {
+    background: color-mix(in srgb, var(--accent) 7%, var(--surface));
+  }
+  .econ-card__label {
+    font-size: 0.66rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--text-dim);
+  }
+  .econ-card__value {
+    font-size: clamp(2.1rem, 5.5vw, 3.25rem);
+    font-weight: 600;
+    letter-spacing: -0.02em;
+    color: var(--text);
+  }
+  .econ-card__currency {
+    font-family: var(--font-sans);
+    font-size: 0.52em;
+    font-weight: 600;
+    margin-right: 0.1rem;
+  }
+  .econ-card--margin .econ-card__value {
+    color: var(--accent);
+  }
+  .econ-card__sub {
+    font-size: 0.78rem;
+    color: var(--text-muted);
+  }
+
+  /* Why ARGUS-6 value proposition */
+  .value-grid {
+    display: grid;
+    gap: 1.25rem;
+  }
+  @media (min-width: 640px) {
+    .value-grid {
+      grid-template-columns: repeat(2, 1fr);
+    }
+  }
+  @media (min-width: 1080px) {
+    .value-grid {
+      grid-template-columns: repeat(4, 1fr);
+    }
+  }
+  .value-card {
+    padding: 1.4rem;
+    display: grid;
+    gap: 0.6rem;
+    align-content: start;
+    transition: border-color 0.25s var(--ease), transform 0.25s var(--ease);
+  }
+  .value-card:hover {
+    border-color: var(--accent-line);
+    transform: translateY(-3px);
+  }
+  .value-card__title {
+    font-size: 1rem;
+    color: var(--accent);
+  }
+  .value-card__desc {
+    font-size: 0.88rem;
+  }
+
+  /* Closing statement */
+  .commerce-closing {
+    margin-top: clamp(3rem, 7vw, 4.5rem);
+    padding-top: clamp(2.5rem, 6vw, 3.5rem);
+    border-top: 1px solid var(--border);
+    text-align: center;
+    max-width: 52rem;
+    margin-inline: auto;
+    display: grid;
+    gap: 0.9rem;
+  }
+  .commerce-closing__statement {
+    font-size: clamp(1.4rem, 3.4vw, 2.1rem);
+    font-weight: 600;
+    letter-spacing: -0.02em;
+    line-height: 1.25;
+    color: var(--text);
+  }
+  @supports (background-clip: text) or (-webkit-background-clip: text) {
+    .commerce-closing__statement {
+      background: linear-gradient(
+        180deg,
+        var(--text),
+        color-mix(in srgb, var(--text) 72%, var(--text-muted))
+      );
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+    }
+  }
+  .commerce-closing__sub {
+    font-size: 0.98rem;
+    max-width: 56ch;
+    margin-inline: auto;
   }
 
   /* Shared layout */
