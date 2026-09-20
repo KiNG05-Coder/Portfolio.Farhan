@@ -26,15 +26,15 @@ export const mediaSlots: MediaSlot[] = [
   {
     title: 'Robotic arm demonstration',
     kind: 'video',
-    src: '/assets/argus-6/evidence/arm-demo.mp4',
+    src: '/assets/argus-6/arm-demo.mp4',
     ratio: '16 / 9',
-    hint: 'public/assets/argus-6/evidence/arm-demo.mp4 — the arm reaching and positioning toward an object.',
+    hint: 'public/assets/argus-6/arm-demo.mp4 — the arm reaching and positioning toward an object.',
   },
   {
     title: 'Locomotion demonstration',
     kind: 'video',
-    src: '/assets/argus-6/evidence/locomotion.mp4',
+    src: '/assets/argus-6/locomotion.mp4',
     ratio: '16 / 9',
-    hint: 'public/assets/argus-6/evidence/locomotion.mp4 — a clip of ARGUS-6 walking and turning.',
+    hint: 'public/assets/argus-6/locomotion.mp4 — a clip of ARGUS-6 walking and turning.',
   },
 ];
