@@ -23,11 +23,7 @@ import { link } from '../lib/link';
 
 const sections = [
   ['problem', 'The Problem'],
-  ['status', 'Prototype Status'],
-  ['evidence', 'Evidence'],
   ['mission', 'The Mission'],
-  ['capabilities', 'Capabilities'],
-  ['explore', 'Explore'],
   ['architecture', 'System Architecture'],
   ['locomotion', 'Locomotion'],
   ['arm', 'Robotic Arm'],
@@ -35,6 +31,10 @@ const sections = [
   ['ai', 'AI & Perception'],
   ['navigation', 'Navigation & Exploration'],
   ['missions', 'Mission System'],
+  ['status', 'Prototype Status'],
+  ['evidence', 'Evidence'],
+  ['capabilities', 'Capabilities'],
+  ['explore', 'Explore'],
   ['roadmap', 'Roadmap'],
   ['theory', 'Concepts & Theory'],
   ['decisions', 'Engineering Decisions'],
@@ -171,43 +171,6 @@ const problemTable = [
     </div>
   </section>
 
-  {/* ---------------- PROTOTYPE STATUS ---------------- */}
-  <section class="section status-section" id="status">
-    <div class="container">
-      <SectionHeading
-        eyebrow="Prototype Status"
-        title="A working robot, with a planned brain"
-        lead="ARGUS-6 is already a functioning physical robot. Everything below the fold on this page builds on that fact — the autonomous Raspberry Pi system is the next development phase, not a claim about today."
-      />
-      <PrototypeStatus implemented={implemented} planned={planned} />
-    </div>
-  </section>
-
-  {/* ---------------- EVIDENCE / MEDIA ---------------- */}
-  <section class="section band" id="evidence">
-    <div class="container">
-      <SectionHeading
-        eyebrow="Evidence"
-        title="The physical prototype"
-        lead="Real media of ARGUS-6 as built. Slots without a file yet show exactly what should be added and where."
-      />
-      <div class="media-grid stagger">
-        {mediaSlots.map((slot) => (
-          <figure class="media-slot" data-reveal>
-            <Placeholder
-              src={slot.src}
-              alt={`${slot.title} — ${slot.hint}`}
-              ratio={slot.ratio}
-              label={`${slot.kind.toUpperCase()} — ${slot.title.toUpperCase()}`}
-              hint={slot.hint}
-            />
-            <figcaption class="media-slot__caption mono">{slot.title}</figcaption>
-          </figure>
-        ))}
-      </div>
-    </div>
-  </section>
-
   {/* ---------------- MISSION ---------------- */}
   <section class="section" id="mission">
     <div class="container">
@@ -237,57 +200,6 @@ const problemTable = [
           </p>
         </div>
         <StatStrip stats={structuralStats} />
-      </div>
-    </div>
-  </section>
-
-  {/* ---------------- CAPABILITIES ---------------- */}
-  <section class="section band" id="capabilities">
-    <div class="container">
-      <SectionHeading
-        eyebrow="Capabilities"
-        title="What works, and what doesn't yet"
-        lead="Each capability carries a status. Working means it runs on the robot today; planned means it is designed but not implemented."
-      />
-      <div class="cap-grid stagger">
-        {capabilities.map((c) => <CapabilityCard capability={c} />)}
-      </div>
-      <Callout variant="caution" title="Status honesty">
-        <p>
-          Human detection and autonomous exploration are planned capabilities.
-          They are part of the design but are not running on ARGUS-6 yet, and are
-          marked accordingly above.
-        </p>
-      </Callout>
-    </div>
-  </section>
-
-  {/* ---------------- EXPLORE ---------------- */}
-  <section class="section" id="explore">
-    <div class="container">
-      <SectionHeading
-        eyebrow="Explore"
-        title="Building understanding before acting"
-        lead="At a high level, exploration is a loop: move through an unknown area, take in information, decide where to go, interpret what is found, and act."
-      />
-      <Pipeline
-        label="Exploration loop"
-        variant="stack"
-        steps={[
-          { label: 'Explore', note: 'Move through an area that is not yet mapped or understood.' },
-          { label: 'Perceive', note: 'Take in camera and sensor information about the surroundings.' },
-          { label: 'Navigate', note: 'Choose where to move next while avoiding obstacles.' },
-          { label: 'Analyze', note: 'Interpret what has been found — people, objects, hazards.' },
-          { label: 'Respond', note: 'Act on the mission: collect an object, mark a location, continue.' },
-        ]}
-      />
-      <div class="explore__caveat">
-        <Callout variant="caution">
-          <p>
-            Fully autonomous exploration has not been field-proven on ARGUS-6. This
-            describes the intended behaviour, not a demonstrated result.
-          </p>
-        </Callout>
       </div>
     </div>
   </section>
@@ -652,6 +564,94 @@ const problemTable = [
             </p>
           </Callout>
         </div>
+      </div>
+    </div>
+  </section>
+
+  {/* ---------------- PROTOTYPE STATUS ---------------- */}
+  <section class="section status-section" id="status">
+    <div class="container">
+      <SectionHeading
+        eyebrow="Prototype Status"
+        title="A working robot, with a planned brain"
+        lead="ARGUS-6 is already a functioning physical robot. Everything below the fold on this page builds on that fact — the autonomous Raspberry Pi system is the next development phase, not a claim about today."
+      />
+      <PrototypeStatus implemented={implemented} planned={planned} />
+    </div>
+  </section>
+
+  {/* ---------------- EVIDENCE / MEDIA ---------------- */}
+  <section class="section band" id="evidence">
+    <div class="container">
+      <SectionHeading
+        eyebrow="Evidence"
+        title="The physical prototype"
+        lead="Real media of ARGUS-6 as built. Slots without a file yet show exactly what should be added and where."
+      />
+      <div class="media-grid stagger">
+        {mediaSlots.map((slot) => (
+          <figure class="media-slot" data-reveal>
+            <Placeholder
+              src={slot.src}
+              alt={`${slot.title} — ${slot.hint}`}
+              ratio={slot.ratio}
+              label={`${slot.kind.toUpperCase()} — ${slot.title.toUpperCase()}`}
+              hint={slot.hint}
+            />
+            <figcaption class="media-slot__caption mono">{slot.title}</figcaption>
+          </figure>
+        ))}
+      </div>
+    </div>
+  </section>
+
+  {/* ---------------- CAPABILITIES ---------------- */}
+  <section class="section band" id="capabilities">
+    <div class="container">
+      <SectionHeading
+        eyebrow="Capabilities"
+        title="What works, and what doesn't yet"
+        lead="Each capability carries a status. Working means it runs on the robot today; planned means it is designed but not implemented."
+      />
+      <div class="cap-grid stagger">
+        {capabilities.map((c) => <CapabilityCard capability={c} />)}
+      </div>
+      <Callout variant="caution" title="Status honesty">
+        <p>
+          Human detection and autonomous exploration are planned capabilities.
+          They are part of the design but are not running on ARGUS-6 yet, and are
+          marked accordingly above.
+        </p>
+      </Callout>
+    </div>
+  </section>
+
+  {/* ---------------- EXPLORE ---------------- */}
+  <section class="section" id="explore">
+    <div class="container">
+      <SectionHeading
+        eyebrow="Explore"
+        title="Building understanding before acting"
+        lead="At a high level, exploration is a loop: move through an unknown area, take in information, decide where to go, interpret what is found, and act."
+      />
+      <Pipeline
+        label="Exploration loop"
+        variant="stack"
+        steps={[
+          { label: 'Explore', note: 'Move through an area that is not yet mapped or understood.' },
+          { label: 'Perceive', note: 'Take in camera and sensor information about the surroundings.' },
+          { label: 'Navigate', note: 'Choose where to move next while avoiding obstacles.' },
+          { label: 'Analyze', note: 'Interpret what has been found — people, objects, hazards.' },
+          { label: 'Respond', note: 'Act on the mission: collect an object, mark a location, continue.' },
+        ]}
+      />
+      <div class="explore__caveat">
+        <Callout variant="caution">
+          <p>
+            Fully autonomous exploration has not been field-proven on ARGUS-6. This
+            describes the intended behaviour, not a demonstrated result.
+          </p>
+        </Callout>
       </div>
     </div>
   </section>
