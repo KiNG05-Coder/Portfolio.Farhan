@@ -24,17 +24,17 @@ export const mediaSlots: MediaSlot[] = [
     hint: 'The six-legged chassis with its ESP8266 control board and servo wiring.',
   },
   {
-    title: 'Locomotion demonstration',
-    kind: 'video',
-    src: '/assets/argus-6/evidence/locomotion.mp4',
-    ratio: '16 / 9',
-    hint: 'public/assets/argus-6/evidence/locomotion.mp4 — a clip of ARGUS-6 walking and turning.',
-  },
-  {
     title: 'Robotic arm demonstration',
     kind: 'video',
     src: '/assets/argus-6/evidence/arm-demo.mp4',
     ratio: '16 / 9',
     hint: 'public/assets/argus-6/evidence/arm-demo.mp4 — the arm reaching and positioning toward an object.',
+  },
+  {
+    title: 'Locomotion demonstration',
+    kind: 'video',
+    src: '/assets/argus-6/evidence/locomotion.mp4',
+    ratio: '16 / 9',
+    hint: 'public/assets/argus-6/evidence/locomotion.mp4 — a clip of ARGUS-6 walking and turning.',
   },
 ];
