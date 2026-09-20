@@ -22,6 +22,7 @@ import { mediaSlots } from '../data/media';
 import { link } from '../lib/link';
 
 const sections = [
+  ['problem', 'The Problem'],
   ['status', 'Prototype Status'],
   ['evidence', 'Evidence'],
   ['mission', 'The Mission'],
@@ -45,6 +46,22 @@ const structuralStats = [
   { value: '3', label: 'DOF per leg' },
   { value: '18', label: 'Servos' },
   { value: '2', label: 'Controllers' },
+];
+
+const problemStats = [
+  { value: '124M+', label: 'People affected by disasters, per year (avg. 2015–2023)' },
+  { value: '41,683', label: 'Disaster-related deaths, per year (avg. 2015–2023)' },
+  { value: '92,199', label: 'Critical facilities damaged/destroyed, per year' },
+  { value: '4,500', label: 'U.S. National Park search-and-rescue incidents, per year' },
+];
+
+const problemTable = [
+  { problem: 'Disaster impact', data: '124M+ people affected/year', response: 'Search & rescue support' },
+  { problem: 'Disaster mortality', data: '41,683 deaths/year (avg)', response: 'Remote reconnaissance & support' },
+  { problem: 'Infrastructure damage', data: '92,199 facilities/year', response: 'Terrain-capable inspection' },
+  { problem: 'SAR workload', data: '~4,500 US NPS incidents/yr, 50k–100k pers-hrs', response: 'Reduces responder exposure in rugged terrain' },
+  { problem: 'Mountain litter', data: '99.7% of visitors report seeing plastic waste', response: 'Litter detection & collection' },
+  { problem: 'Waste trend', data: '60% say mountain waste increased over 5 years', response: 'Ongoing environmental monitoring' },
 ];
 ---
 
@@ -103,6 +120,56 @@ const structuralStats = [
       </ul>
     </div>
   </nav>
+
+  {/* ---------------- PROBLEM ---------------- */}
+  <section class="section band" id="problem">
+    <div class="container">
+      <SectionHeading
+        eyebrow="Why This Matters"
+        title="The Problem ARGUS-6 Is Built For"
+        lead="Disaster response and environmental cleanup share the same obstacle: the places that need the most help are often the hardest and most dangerous for people to reach."
+      />
+
+      <div class="problem-stack">
+        <StatStrip stats={problemStats} />
+
+        <div class="problem-table-wrap scroll-x">
+          <table class="problem-table">
+            <thead>
+              <tr>
+                <th>Problem</th>
+                <th>Data</th>
+                <th>ARGUS-6's response</th>
+              </tr>
+            </thead>
+            <tbody>
+              {problemTable.map((row) => (
+                <tr>
+                  <td>{row.problem}</td>
+                  <td>{row.data}</td>
+                  <td>{row.response}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+
+        <Callout variant="caution" title="Still happening">
+          <p>
+            This isn't historical. In March 2026 alone, Great Smoky Mountains
+            National Park logged 18 backcountry rescue incidents, including
+            technical rope rescues and helicopter extractions. Sequoia &amp;
+            Kings Canyon had already activated 60 SAR missions by mid-2025.
+          </p>
+        </Callout>
+      </div>
+
+      <p class="problem-sources mono">
+        Sources: UNDRR Sendai Framework Monitor (2015–2023); U.S. National
+        Park Service; UNEP mountain waste &amp; plastic pollution surveys, 2025.
+      </p>
+    </div>
+  </section>
 
   {/* ---------------- PROTOTYPE STATUS ---------------- */}
   <section class="section status-section" id="status">
@@ -820,6 +887,57 @@ const structuralStats = [
     border: 1px solid color-mix(in srgb, var(--status-dev) 40%, transparent);
     padding: 0.1rem 0.4rem;
     border-radius: 999px;
+  }
+
+  /* Problem section */
+  .problem-stack {
+    display: grid;
+    gap: clamp(2rem, 5vw, 3rem);
+  }
+  .problem-table-wrap {
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    background: var(--surface);
+  }
+  .problem-table {
+    width: 100%;
+    min-width: 640px;
+    border-collapse: collapse;
+    font-size: 0.88rem;
+  }
+  .problem-table th {
+    text-align: left;
+    padding: 0.85rem 1.1rem;
+    font-family: var(--font-mono);
+    font-size: 0.64rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--text-dim);
+    border-bottom: 1px solid var(--border-strong);
+    white-space: nowrap;
+  }
+  .problem-table td {
+    padding: 0.95rem 1.1rem;
+    border-bottom: 1px solid var(--border);
+    color: var(--text-muted);
+    vertical-align: top;
+  }
+  .problem-table tbody tr:last-child td {
+    border-bottom: none;
+  }
+  .problem-table td:first-child {
+    color: var(--text);
+    font-weight: 600;
+    white-space: nowrap;
+  }
+  .problem-table td:last-child {
+    color: var(--text);
+  }
+  .problem-sources {
+    margin-top: 1.25rem;
+    font-size: 0.75rem;
+    color: var(--text-dim);
+    max-width: 60ch;
   }
 
   /* Shared layout */

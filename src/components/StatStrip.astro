@@ -68,13 +68,15 @@ const { stats } = Astro.props;
     document.querySelectorAll<HTMLElement>('[data-stats]').forEach((strip) => {
       if (strip.dataset.done === 'true' || strip.dataset.bound === 'true') return;
       strip.dataset.bound = 'true';
-      const items = [...strip.querySelectorAll<HTMLElement>('[data-count]')].map(
-        (el) => ({ el, target: parseFloat(el.dataset.value || el.textContent || '0') })
-      );
-      // Final, correct values regardless of animation.
+      const items = [...strip.querySelectorAll<HTMLElement>('[data-count]')].map((el) => {
+        const raw = el.dataset.value || el.textContent || '0';
+        return { el, raw, target: parseFloat(raw.replace(/,/g, '')) };
+      });
+      // Final, correct values regardless of animation — always the exact
+      // original text, so formatting like commas or a "M+" suffix survives.
       const settle = () => {
-        items.forEach(({ el, target }) => {
-          if (!Number.isNaN(target)) el.textContent = String(target);
+        items.forEach(({ el, raw }) => {
+          el.textContent = raw;
         });
         strip.dataset.done = 'true';
       };
