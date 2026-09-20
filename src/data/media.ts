@@ -17,24 +17,24 @@ export type MediaSlot = {
 
 export const mediaSlots: MediaSlot[] = [
   {
-    title: 'Chassis & control electronics',
+    title: 'Full robot — chassis, arm & gripper',
     kind: 'photo',
     src: '/assets/argus-6/argus-6-hero.jpg',
-    ratio: '4 / 3',
-    hint: 'The six-legged chassis with its ESP8266 control board and servo wiring.',
+    ratio: '4 / 5',
+    hint: 'A top-down view of the complete assembled robot, with the arm and gripper attached.',
   },
   {
     title: 'Robotic arm demonstration',
     kind: 'video',
     src: '/assets/argus-6/arm-demo.mp4',
-    ratio: '16 / 9',
-    hint: 'public/assets/argus-6/arm-demo.mp4 — the arm reaching and positioning toward an object.',
+    ratio: '1080 / 1936',
+    hint: 'The arm extending, rotating between positions and the gripper opening and closing.',
   },
   {
     title: 'Locomotion demonstration',
     kind: 'video',
     src: '/assets/argus-6/locomotion.mp4',
-    ratio: '16 / 9',
-    hint: 'public/assets/argus-6/locomotion.mp4 — a clip of ARGUS-6 walking and turning.',
+    ratio: '1080 / 1936',
+    hint: 'ARGUS-6 walking on all six legs.',
   },
 ];
